@@ -1,0 +1,13 @@
+*.log
+*.nav
+*.snm
+*.synctex.gz
+*.gz
+*.toc
+*.tuc
+*.vrb
+*.aux
+*.Rhistory
+
+/apunte_quarto/
+/propuesta_solicitud_curso/

@@ -1,0 +1,325 @@
+\usepackage[spanish, es-noquoting, es-noshorthands]{babel}
+\unaccentedoperators
+\usetheme[nofirafonts]{focus}
+
+\usepackage{svg}
+
+\usepackage{tabularray}
+\usepackage{hyperref}
+\usepackage{emoji}
+\usepackage{enumitem}
+\usepackage{subcaption}
+
+
+\usepackage{listings}
+\usepackage{color}
+
+
+\usepackage{fontspec}
+\setsansfont[Ligatures={TeX, Common}]{Lux Sans}
+\setmonofont[Contextuals=Alternate]{Cascadia Code NF}
+
+
+\definecolor{main}{HTML}{001489}
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{unlfce}{HTML}{001489}
+
+\colorlet{R_BOOLEAN}{violet}
+\colorlet{R_OPERATOR}{magenta}
+\colorlet{R_MISSING}{violet}
+\colorlet{R_STRING}{dkgreen}
+\colorlet{R_COMMENT}{gray}
+\colorlet{R_DELIMITER}{purple}
+\colorlet{R_NUMBER}{mauve}
+\colorlet{R_NORMAL}{unlfce}
+\colorlet{R_KEYWORD}{blue}
+\colorlet{R_SYMBOL}{orange}
+\colorlet{R_KEY}{R_NORMAL}
+\colorlet{R_FUNCTION}{blue}
+
+\colorlet{JULIA_SYMBOL}{orange}
+\colorlet{JULIA_OPERATOR}{magenta}
+\colorlet{JULIA_DELIMITER}{purple}
+\colorlet{JULIA_BOOLEAN}{violet}
+\colorlet{JULIA_MISSING}{violet}
+\colorlet{JULIA_STRING}{dkgreen}
+\colorlet{JULIA_COMMENT}{gray}
+\colorlet{JULIA_NORMAL}{unlfce}
+
+\colorlet{PYTHON_STRING}{dkgreen}
+\colorlet{PYTHON_COMMENT}{gray}
+
+
+
+
+
+
+\lstset{ 
+	basicstyle=\footnotesize\ttfamily,
+	numbers=left,
+	numberstyle=\tiny\color{gray},
+	stepnumber=1,
+	numbersep=5pt,
+	backgroundcolor=\color{white},
+	showspaces=false,
+	showstringspaces=false,
+	showtabs=false,
+	frame=single,
+	rulecolor=\color{black},
+	captionpos=b,
+	breaklines=true,
+	breakatwhitespace=false,
+	keywordstyle=\color{blue},
+	commentstyle=\color{dkgreen},
+	stringstyle=\color{mauve},
+%	escapeinside={\%*}{*)},
+	columns=fullflexible,
+	keepspaces=true,
+}
+
+
+
+
+
+
+\lstdefinestyle{RScript}{
+	language=R,
+	stringstyle=\color{R_STRING},
+	commentstyle=\itshape\color{R_COMMENT},
+	sensitive=true,
+	keywordstyle=\color{R_KEYWORD},
+	tabsize=2,
+	alsoletter={_,.},
+	morekeywords={
+		select, filter, arrange, mutate, summarise, ungroup,
+		ggplot, aes, theme, labs, factorial,
+		ymd, mdy, dmy, year, month, day, lag, lead,
+		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages
+	},
+	otherkeywords={
+		group_by, if_else, case_when, pivot_longer, pivot_wider,
+		left_join, right_join, inner_join, full_join,
+		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot, 
+		facet_wrap, facet_grid, read_csv, read_excel, as_tibble, paste0,
+		as.logical, as.integer, as.numeric, as.character, is.na,
+		fct_reorder, fct_relevel, fct_lump, fct_infreq, data.frame, as_date, 
+		case_match, which.max, na.omit, read_csv2, all_of, any_of, contains, 
+		matches, everything, starts_with, ends_with, num_range, is.numeric
+	},
+	moredelim=[is][\color{R_NORMAL}]{`}{`},
+	moredelim=[is][\color{R_NORMAL}]{`:pk:}{`}, %<- packagename
+	moredelim=[is][\color{R_NUMBER}]{`:nm:}{`}, %<- numeric.
+	moredelim=[is][\color{R_FUNCTION}]{`:fn:}{`}, %<- simbolos.
+	moredelim=[is][\color{R_SYMBOL}]{`:sy:}{`}, %<- simbolos.
+	moredelim=[is][\color{R_SYMBOL}]{`:bn:}{`}, %<- bare names
+	moredelim=[is][\color{R_SYMBOL}]{`:dt:}{`}, %<- fechas
+	moredelim=[is][\color{R_KEY}]{`:ky:}{`}, %<- keys
+	emph={T, F, TRUE, FALSE},
+	emphstyle={\color{R_BOOLEAN}\bfseries},
+	literate=
+	*{:}{{\textcolor{R_OPERATOR}{\bfseries{:}}}}1
+	{\~}{{\textcolor{R_OPERATOR}{\bfseries{\textasciitilde}}}}1
+	{]}{{\textcolor{R_DELIMITER}{\bfseries{]}}}}1
+	{[}{{\textcolor{R_DELIMITER}{\bfseries{[}}}}1
+	{?}{{\textcolor{R_OPERATOR}{\bfseries{?}}}}1
+	{<}{{\textcolor{R_OPERATOR}{\bfseries{<}}}}1  
+	{>}{{\textcolor{R_OPERATOR}{\bfseries{>}}}}1 
+	{=}{{\textcolor{R_OPERATOR}{\bfseries{=}}}}1
+	{+}{{\textcolor{R_OPERATOR}{\bfseries{+}}}}1  
+	{-}{{\textcolor{R_OPERATOR}{\bfseries{-}}}}1 
+	{*}{{\textcolor{R_OPERATOR}{\bfseries{*}}}}1
+	{\^}{{\textcolor{R_OPERATOR}{\bfseries{\textasciicircum}}}}1
+	{\&}{{\textcolor{R_OPERATOR}{\bfseries{\&}}}}1 
+	{|}{{\textcolor{R_OPERATOR}{\bfseries{|}}}}1
+	{\$}{{\textcolor{R_OPERATOR}{\bfseries{\$}}}}1 
+	{/}{{\textcolor{R_OPERATOR}{\bfseries{/}}}}1  
+	{!}{{\textcolor{R_OPERATOR}{\bfseries{!}}}}1 
+	{|>}{{\textcolor{R_OPERATOR}{\bfseries{|>}}}}2
+	{\%in\%}{{\textcolor{R_OPERATOR}{\bfseries{\%in\negthinspace\%}}}}4
+	{<-}{{\textcolor{R_OPERATOR}{\bfseries{<-}}}}2
+	{->}{{\textcolor{R_OPERATOR}{\bfseries{->}}}}2  
+	{==}{{\textcolor{R_OPERATOR}{\bfseries{==}}}}2 
+	{!=}{{\textcolor{R_OPERATOR}{\bfseries{!=}}}}2
+	{>=}{{\textcolor{R_OPERATOR}{\bfseries{>=}}}}2
+	{<=}{{\textcolor{R_OPERATOR}{\bfseries{<=}}}}2
+	{\%\%}{{\textcolor{R_OPERATOR}{\bfseries{\%\negthinspace\%}}}}2
+	{\%/\%}{{\textcolor{R_OPERATOR}{\bfseries{\%/\negthinspace\%}}}}3
+	{\%>\%}{{\textcolor{R_OPERATOR}{\bfseries{\texttt{\%>\negthinspace\%}}}}}3
+	{NA}{{\textcolor{R_MISSING}{\bfseries{NA}}}}2
+	{0}{{\textcolor{R_NUMBER}{\bfseries{0}}}}1
+	{1}{{\textcolor{R_NUMBER}{\bfseries{1}}}}1
+	{2}{{\textcolor{R_NUMBER}{\bfseries{2}}}}1
+	{3}{{\textcolor{R_NUMBER}{\bfseries{3}}}}1
+	{4}{{\textcolor{R_NUMBER}{\bfseries{4}}}}1
+	{5}{{\textcolor{R_NUMBER}{\bfseries{5}}}}1
+	{6}{{\textcolor{R_NUMBER}{\bfseries{6}}}}1
+	{7}{{\textcolor{R_NUMBER}{\bfseries{7}}}}1
+	{8}{{\textcolor{R_NUMBER}{\bfseries{8}}}}1
+	{9}{{\textcolor{R_NUMBER}{\bfseries{9}}}}1
+	{::}{{\textcolor{R_OPERATOR}{\bfseries{:\negthinspace:}}}}1
+}
+
+
+\definecolor{darkgray}{rgb}{0.3,0.3,0.3}
+\lstdefinestyle{RConsole}{
+	basicstyle=\footnotesize\ttfamily\color{darkgray},
+	numbers=none,
+	tabsize=2,
+	literate=
+	{|>}{{|>}}2 
+	{<-}{{<-}}2 
+	{==}{{==}}2 
+	{!=}{{!=}}2
+	{>=}{{>=}}2
+	{<=}{{<=}}2,
+}
+
+
+
+
+
+
+
+\lstdefinestyle{JuliaScript}{
+	tabsize=4,
+	alsoletter={_, !, @},
+	stringstyle=\color{JULIA_STRING},
+	commentstyle=\itshape\color{JULIA_COMMENT},
+	morecomment=[l]{\#},
+	morecomment=[s]{\#=}{=\#}, 
+	morekeywords={
+		function, end, if, else, elseif, for, while, return, struct, mutable, mean, 
+		macro, module, import, using, export, try, catch, let, local, global, const,
+		abstract, type, do, quote, true, false, nothing, missing,
+		DataFrame, select, filter, combine, transform, groupby, innerjoin, leftjoin, antijoin,
+		Video, Action, Background, Object, render, javis,
+		println, print, length, size, typeof, ccall, ByRow, subset
+	},
+	otherkeywords={
+		push!, append!, filter!, select!, transform!,
+		@time, @show, @info, @warn, @error, @macroexpand, @rsubset, @groupby, @combine, @chain, @filter, @group_by, @summarize
+	},
+	moredelim=[is][\color{JULIA_NORMAL}]{`}{`},
+	moredelim=[is][\color{JULIA_SYMBOL}]{`:sy:}{`},
+	moredelim=[is][\color{JULIA_SYMBOL}]{`:bn:}{`}, %bare column name
+	emph={begin, end},
+	emphstyle={\color{purple}\bfseries},
+	literate=
+	*{:}{{\textcolor{JULIA_OPERATOR}{\bfseries{:}}}}1
+	{]}{{\textcolor{JULIA_DELIMITER}{\bfseries{]}}}}1
+	{[}{{\textcolor{JULIA_DELIMITER}{\bfseries{[}}}}1
+	{false}{{\textcolor{JULIA_BOOLEAN}{\bfseries{false}}}}4
+	{true}{{\textcolor{JULIA_BOOLEAN}{\bfseries{true}}}}5
+	{<}{{\textcolor{JULIA_OPERATOR}{\bfseries{<}}}}1  
+	{>}{{\textcolor{JULIA_OPERATOR}{\bfseries{>}}}}1 
+	{=}{{\textcolor{JULIA_OPERATOR}{\bfseries{=}}}}1
+	{+}{{\textcolor{JULIA_OPERATOR}{\bfseries{+}}}}1  
+	{-}{{\textcolor{JULIA_OPERATOR}{\bfseries{-}}}}1 
+	{*}{{\textcolor{JULIA_OPERATOR}{\bfseries{*}}}}1
+	{\^}{{\textcolor{JULIA_OPERATOR}{\bfseries{\textasciicircum}}}}1
+	{\&}{{\textcolor{JULIA_OPERATOR}{\bfseries{\&}}}}1 
+	{|}{{\textcolor{JULIA_OPERATOR}{\bfseries{|}}}}1
+	{/}{{\textcolor{JULIA_OPERATOR}{\bfseries{/}}}}1  
+	{!}{{\textcolor{JULIA_OPERATOR}{\bfseries{!}}}}1
+	{\%\%}{{\textcolor{JULIA_OPERATOR}{\bfseries{\%\%}}}}2
+	{\%/\%}{{\textcolor{JULIA_OPERATOR}{\bfseries{\%/\%}}}}3
+	{missing}{{\textcolor{JULIA_MISSING}{\bfseries{missing}}}}2
+	{|>}{{\textcolor{JULIA_OPERATOR}{\bfseries{|>}}}}2
+	{->}{{\textcolor{JULIA_OPERATOR}{\bfseries{->}}}}2
+	{=>}{{\textcolor{JULIA_OPERATOR}{\bfseries{=>}}}}2
+	{==}{{\textcolor{JULIA_OPERATOR}{\bfseries{==}}}}2
+	{.==}{{\textcolor{JULIA_OPERATOR}{\bfseries{\textperiodcentered\negthinspace==}}}}2
+	{!=}{{\textcolor{JULIA_OPERATOR}{\bfseries{!=}}}}2
+	{>=}{{\textcolor{JULIA_OPERATOR}{\bfseries{>=}}}}2
+	{<=}{{\textcolor{JULIA_OPERATOR}{\bfseries{<=}}}}2
+	{===}{{\textcolor{JULIA_OPERATOR}{\bfseries{===}}}}3
+	{!==}{{\textcolor{JULIA_OPERATOR}{\bfseries{!==}}}}3
+	{::}{{\textcolor{JULIA_OPERATOR}{\bfseries{::}}}}2,
+}
+
+
+
+
+
+
+
+
+\lstdefinestyle{PythonScript}{
+	language=Python,
+	tabsize=4,
+	stringstyle=\color{PYTHON_STRING},
+	commentstyle=\itshape\color{PYTHON_COMMENT},
+	alsoletter={_},
+	morekeywords={
+		import, from, as, def, return, if, elif, else, for, while, in, is, and, or, not,
+		with, try, except, finally, raise, class, lambda, None, True, False,
+		read_csv, read_excel, DataFrame, Series, groupby, agg, pivot_table, 
+		merge, concat, drop, fillna, apply, lambda, query, loc, iloc, 
+		head, tail, describe, info, plot, reset_index, mean, rename, group_by
+	},
+	emph={},
+	emphstyle=\color{purple}\bfseries,
+	emph={[2]self, cls},
+	emphstyle={[2]\color{orange}\itshape},
+	literate={==}{{==}}2 
+	{!=}{{!=}}2
+	{>=}{{>=}}2
+	{<=}{{<=}}2
+	{+=}{{+=}}2
+	{-=}{{-=}}2
+	{*=}{{*=}}2
+	{/=}{{/=}}2,
+}
+
+
+
+
+
+
+\ExplSyntaxOn
+\NewDocumentEnvironment{shake}{ +b }
+{
+	\text_map_inline:nn { #1 }
+	{
+		\str_if_eq:nnTF { ##1 } { ~ } { ~ }
+		{
+			\raisebox{ \fp_eval:n { (rand() - 0.5) * 3 } pt }{ ##1 }
+		}
+	}
+}{}
+\ExplSyntaxOff
+
+\def\shaky#1{\begin{shake}#1\end{shake}}
+
+
+
+
+\def\titleitem#1{\par\vspace{0.5em}\textbf{#1}\par}
+\def\subtitleitem#1{\textbf{#1}}
+\def\quotation#1{\guillemetleft #1\guillemetright}
+\def\rscript#1{\lstinline[style=RScript, basicstyle=\normalsize\ttfamily]♪#1♪}
+
+
+
+
+\def\oboxc#1{\hbox to 0pt {\hss#1\hss}}
+\ExplSyntaxOn
+% :)
+\def\asky{
+	\hbox~to~1em{
+		\hss
+		\raise-3pt\oboxc{{\color{unlfce}$\smallsmile$}}
+		\oboxc{\rscript{?}}
+		\raise1.5pt\oboxc{.~.}
+		\hss
+	}
+}
+\ExplSyntaxOff
+
+
+
+\author{Jonat\'an Perren}
+\title{R: limpieza, manipulaci\'on y exploraci\'on de datos}

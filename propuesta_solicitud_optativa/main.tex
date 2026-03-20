@@ -1,0 +1,224 @@
+%ConTeXT -v.nomeacuerdo
+
+\mainlanguage[spanish]
+\setupbodyfont[dejavu, sans, 10pt]
+%\setupinteraction[state=start]
+
+
+\setuplayout[
+    backspace=2cm,
+    topspace=2cm,
+    header=0.5cm,
+    footer=0.5cm,
+    width=middle,
+    height=middle]
+
+\definehead[inciso][section]
+  [style=\WORD\bold]
+
+\definehead[eje][subsection]
+  [style=\Word\bold,
+  bodypartlabel=eje]
+\setuplabeltext[eje={Eje~}]
+
+
+\setuphead[subsection][style=\Word\bold,]
+\defineitemgroup[enumerate][itemize]
+\setupitemgroup[enumerate][each][n]
+\setuppagenumbering[location=]
+
+\starttext
+  \startalignment[left]
+    Universidad Nacional del Litoral\\
+    Facultad de Ciencias Económicas
+  \stopalignment
+  
+  \blank[2*line]
+  \startalignment[middle]
+    \tfc\bold Programa de "R para limpieza,\\
+    manipulación y exploración de datos"
+  \stopalignment
+  \blank[2*line]
+
+  \startinciso[title={Denominación de la asignatura}]
+    R para limpieza, manipulación y exploración de datos.
+  \stopinciso
+
+  \startinciso[title={Carrera}]
+    Licenciatura en Economía
+  \stopinciso
+
+  \startinciso[title={R\'egimen de cursado}]
+    Cuatrimestral
+  \stopinciso
+
+
+
+  \startinciso[title={Modalidad de cursado}]
+    Presencial
+  \stopinciso
+
+
+  
+  \startinciso[title={Propuesta de enseñanza estructurada teniendo en cuenta la siguiente organización metodológica}]
+    Clases te\'orico-prácticas.
+  \stopinciso
+
+
+
+
+  \startinciso[title={Carga horaria total}]
+    45.5 h totales: 32.5 h presenciales + 13 h autónomas.
+  \stopinciso
+
+
+
+  \startinciso[title={Propósitos y objetivos}]
+    En cuanto a los propósitos, se pretende que los estudiantes adquieran competencias en el uso de R para limpieza, manipulación y exploración de datos, con el fin de mejorar su capacidad para analizar y visualizar datos en contextos académicos y profesionales.
+    \startitemize
+      \item Promover la alfabetización de datos y la reproducibilidad: Fomentar la adopción de flujos de trabajo que superen las limitaciones de las hojas de cálculo, priorizando procesos auditables, escalables y transparentes mediante el uso de código.
+      \item Facilitar la transición hacia la programación estadística: Introducir a los estudiantes en la lógica de programación y el pensamiento algorítmico, sirviendo como puente instrumental para la aplicación empírica de conceptos teóricos de estadística y economía.
+      \item Desarrollar competencias de comunicación técnica: Capacitar a los asistentes en la generación automática de reportes profesionales que integren análisis, narrativa y visualización, optimizando el tiempo dedicado a tareas repetitivas.
+      \item Integración curricular: Alinear las competencias tecnológicas con los estándares académicos de la Facultad, proporcionando una base sólida en R que potencie el desempeño en asignaturas correlativas y proyectos de investigación.
+    \stopitemize
+
+    Al finalizar el taller, se espera que los estudiantes sean capaces de:
+    \startitemize
+      \item Comprender la lógica de programación en R, diferenciando el enfoque vectorial de otros paradigmas y gestionando eficientemente el entorno de trabajo RStudio.
+      \item Gestionar el ciclo de vida de los datos, desde la importación de diversas fuentes (Excel, CSV, texto) hasta la organización de proyectos reproducibles.
+      \item Implementar técnicas de Data Wrangling utilizando el ecosistema tidyverse para limpiar, transformar, filtrar y reestructurar bases de datos complejas.
+      \item Analizar series temporales, aplicando funciones específicas para el manejo de fechas, cálculo de rezagos y variaciones interanuales o mensuales.
+      \item Diseñar visualizaciones de datos efectivas, aplicando la gramática de gráficos (ggplot2) para revelar patrones y comunicar hallazgos con calidad de publicación.
+      \item Automatizar la producción de informes técnicos, utilizando Quarto para crear documentos dinámicos (PDF, HTML, Word) que vinculen directamente el código con sus resultados, garantizando la reproducibilidad del análisis.
+    \stopitemize
+  \stopinciso
+
+
+
+  \startinciso[title={Programa anal\'itico}]
+    El programa se estructura en cinco ejes temáticos que articulan de manera progresiva las competencias necesarias para el análisis de datos con R.
+
+    \starteje[title={Familiarización con el entorno}]
+      Este eje inicial introduce al estudiante en el ecosistema de trabajo con R, estableciendo las bases conceptuales y prácticas necesarias para un uso eficiente del lenguaje. Se presentan los fundamentos de la programación orientada a objetos y la lógica vectorial, elemento distintivo de R que permite operar sobre conjuntos de datos de forma natural y eficiente. Los participantes aprenderán a gestionar el entorno de desarrollo RStudio, comprendiendo la diferencia entre el uso interactivo de la consola y el desarrollo de scripts reproducibles. Se trabajará con los tipos de datos fundamentales (numéricos, caracteres, lógicos) y las estructuras básicas (vectores, matrices, factores, data frames y listas), enfatizando el manejo adecuado de valores perdidos. Adicionalmente, se introducen las estructuras de control de flujo (condicionales y bucles), destacando cuándo es apropiado su uso frente a alternativas vectorizadas más eficientes.
+    \stopeje
+
+    \starteje[title={Carga de datos}]
+      Este eje proporciona las herramientas necesarias para trabajar con los formatos de archivo más comunes en el ámbito profesional y académico. Se aborda la lectura de archivos de Excel (formato propietario ampliamente utilizado), archivos de texto delimitado (CSV, TSV) y otros formatos estructurados. Los estudiantes aprenderán a gestionar proyectos de RStudio mediante archivos .Rproj, estableciendo flujos de trabajo organizados con rutas relativas que favorecen la reproducibilidad. Se introducen buenas prácticas para la inspección inicial de los datos importados, verificando tipos de columnas, dimensiones y detección temprana de problemas de codificación o formato.
+    \stopeje
+
+    \starteje[title={Manipulación de datos}]
+      Se adopta el ecosistema \emph{tidyverse}, especialmente el paquete \type{dplyr}, que propone una gramática consistente para la manipulación de datos mediante verbos específicos. Los estudiantes dominarán las operaciones fundamentales: selección de columnas (\type{select}), filtrado de filas según condiciones (\type{filter}), ordenamiento (\type{arrange}), creación y modificación de variables (\type{mutate}), y agregación de información (\type{summarise}). Se introduce el operador pipe para encadenar operaciones de forma fluida y legible. Se profundiza en el tratamiento de datos faltantes, operaciones condicionales vectorizadas (\type{if_else}, \type{case_when}) y la estrategia \emph{split-apply-combine} para análisis por grupos. Adicionalmente, se trabaja con el manejo especializado de fechas mediante \type{lubridate}, permitiendo el cálculo de rezagos, variaciones temporales e indicadores dinámicos. El eje se completa con técnicas de reestructuración de datos (\type{pivot_longer}, \type{pivot_wider}) y operaciones relacionales para combinar múltiples tablas de datos (\type{joins}).
+    \stopeje
+
+    \starteje[title={Representación de los datos}]
+      Este eje se centra en \emph{ggplot2}, implementación del paradigma de "gramática de gráficos" que permite construir visualizaciones complejas mediante la combinación sistemática de capas. Los estudiantes aprenderán a mapear variables de sus datos a propiedades estéticas (posición, color, tamaño, forma), construyendo gráficos de distribución (histogramas, densidades, boxplots), relación (scatterplots, gráficos de línea) y comparación categórica. Se profundiza en técnicas avanzadas como el uso de facetas para pequeños múltiples, personalización de escalas, ejes y etiquetas, y la aplicación de temas profesionales. Los participantes desarrollarán criterios de diseño para crear visualizaciones no solo técnicamente correctas, sino comunicativamente efectivas y estéticamente apropiadas para contextos académicos y profesionales.
+    \stopeje
+
+    \starteje[title={Generación de informes}]
+      Este eje final integra todas las competencias previas mediante la creación de documentos dinámicos con Quarto. Los estudiantes aprenderán a combinar texto narrativo en formato Markdown con bloques de código ejecutable R, generando reportes que vinculan directamente el análisis con sus resultados. Se trabaja la configuración de \emph{chunks} de código para controlar la visibilidad de código, resultados y mensajes en el documento final. Se introducen técnicas de formateo profesional de tablas (\type{gt}, \type{kableExtra}), implementación de referencias cruzadas a figuras y secciones, y la generación de múltiples formatos de salida (HTML, PDF, Word) desde un mismo código fuente. Finalmente, se presenta la parametrización de reportes, permitiendo generar automáticamente múltiples versiones de un mismo análisis con diferentes datos o configuraciones, maximizando la eficiencia y minimizando errores en actualizaciones periódicas.
+    \stopeje
+  \stopinciso
+
+
+
+  \startinciso[title={Planificaci\'on y distribuci\'on de las actividades}]
+    \startalignment[middle]
+    \setupTABLE[c][each][align=middle, width=3em]
+    \setupTABLE[c][1][align=middle, width=3.5em]
+    \bTABLE
+      \bTABLEhead
+        \bTR
+          \bTH
+          \eTH
+          \bTH[nc=13]
+            Semanas
+          \eTH
+        \eTR
+        \bTR
+          \bTH
+          \eTH
+          \bTH S1\eTH\bTH S2\eTH\bTH S3\eTH\bTH S4\eTH\bTH S5\eTH\bTH S6\eTH\bTH S7\eTH\bTH S8\eTH\bTH S9\eTH\bTH S10\eTH\bTH S11\eTH\bTH S12\eTH\bTH S13\eTH
+        \eTR
+      \eTABLEhead
+      \bTABLEbody
+        \bTR
+          \bTD
+            Eje 1
+          \eTD
+          \bTD X\eTD\bTD X\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD
+        \eTR
+        \bTR
+          \bTD
+            Eje 2
+          \eTD
+          \bTD\eTD \bTD\eTD \bTD X\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD
+        \eTR
+        \bTR
+          \bTD
+            Eje 3
+          \eTD
+          \bTD\eTD \bTD\eTD \bTD\eTD \bTD X\eTD \bTD X\eTD \bTD X\eTD \bTD X\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD
+        \eTR
+        \bTR
+          \bTD
+            Eje 4
+          \eTD
+          \bTD\eTD\bTD\eTD\bTD X\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD\eTD\bTD X\eTD\bTD X\eTD\bTD X\eTD\bTD\eTD\bTD\eTD
+        \eTR
+        \bTR
+          \bTD
+            Eje 5
+          \eTD
+          \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD\eTD \bTD X\eTD \bTD X\eTD \bTD X\eTD
+        \eTR
+      \eTABLEbody
+    \eTABLE
+    \stopalignment
+  \stopinciso
+
+
+  \startinciso[title={Bibliograf\'ia b\'asica y ampliatoria}]
+    \startitemize[symbol=bullet]
+      \item {\bf Material de cátedra:} Apuntes y scripts desarrollados específicamente para el curso.
+      \item {\bf Hernández, F. \& Usuga, O.} {\it Manual de R}. Disponible en: \goto{https://fhernanb.github.io/Manual-de-R/}[url(https://fhernanb.github.io/Manual-de-R/)]
+      \item {\bf Mendoza Vega, J. B.} {\it R para principiantes}. Disponible en: \goto{https://bookdown.org/jboscomendoza/r-principiantes4/}[url(https://bookdown.org/jboscomendoza/r-principiantes4/)]
+      \item {\bf Posit Cheatsheets:} Hojas de trucos oficiales. Disponible en: \goto{https://posit.co/resources/cheatsheets/}[url(https://posit.co/resources/cheatsheets/)]
+    \stopitemize
+  \stopinciso
+
+
+  \startinciso[title={Sistema de evaluaci\'on}]
+    La evaluación se concibe como un proceso continuo e integral, estructurado en dos modalidades complementarias: \bold{formativa} (seguimiento constante) y \bold{sumativa} (integración de saberes).
+
+    \startsubsection[title={Modos de evaluación e instrumentos}]
+      \startenumerate
+        \item \bold{Evaluación Formativa: Actividades Prácticas Semanales (APS)}
+          Con la finalidad de recolectar evidencias continuas y acompañar el proceso de aprendizaje, se implementará un esquema de entregas semanales.
+
+          \startitemize
+            \item \bold{Descripción:} Al finalizar cada clase, se asignará una actividad práctica para realizar de forma asincrónica. Estas tareas consisten en ejercicios de los temas vistos en la sesión articulados con los temas de encuentros anteriores.
+            \item \bold{Objetivo:} Verificar la comprensión gradual de los contenidos y brindar retroalimentación rápida antes de avanzar al siguiente tema.
+            \item \bold{Cantidad:} Se prevé una actividad por cada unidad/clase dictada.
+            \item \bold{Entrega:} Se entregará la actividad en Classroom.
+            \item \bold{Calificación:} Se calificará como \bold{aprobado} o \bold{no aprobado}.
+          \stopitemize
+
+        \item \bold{Evaluación Sumativa: Trabajo Práctico Integrador (TPI)}
+          En lugar de exámenes parciales fragmentados, se evaluará opcionalmente la capacidad del estudiante para articular todas las competencias de la asignatura mediante un único proyecto transversal.
+
+          \startitemize
+            \item \bold{Descripción:} Un trabajo de elaboración propia que deberá resolver una problemática compleja utilizando las herramientas adquiridas durante todo el cursado.
+            \item \bold{Instancias del TPI:}
+            \startenumerate
+                \item \bold{Entrega} Al finalizar el cursado en Classroom.
+                \item \bold{Calificación:} Se calificará como \bold{aprobado} o \bold{no aprobado}.
+            \stopenumerate
+          \stopitemize
+        \stopenumerate
+    \stopsubsection
+
+    \startsubsection[title={Condiciones de Promoción}]
+    Para aprobar la materia deber\'a alcanzar 10 puntos entre todas las actividades, correspondiendole 1 punto a cada actividad semanal aprobada y 5 puntos por el trabajo final.
+    \stopsubsection
+\stoptext
+
