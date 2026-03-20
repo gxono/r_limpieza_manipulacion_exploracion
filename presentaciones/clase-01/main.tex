@@ -1,1 +1,1469 @@
-\documentclass[8pt]{beamer}\usepackage{../config}\begin{document}	\subtitle{1er encuentro: Instalaci\'on y primeros pasos}	\begin{frame}[plain]		\maketitle	\end{frame}	\begin{frame}{Instalación y configuración del entorno (R y RStudio)}		Para trabajar con R, necesitamos instalar tres programas:		\begin{enumerate}			\item  R: Es el lenguaje de programación y el motor de cálculo. Se descarga desde CRAN (The Comprehensive R Archive Network).			\url{http://mirror.fcaglp.unlp.edu.ar/CRAN/}						\item RStudio: Es un Entorno de Desarrollo Integrado (IDE). Es una interfaz amigable que nos facilita escribir código, ver gráficos y gestionar archivos.			\url{https://posit.co/download/rstudio-desktop}						\item Rtools (Solo Windows): Es un conjunto de herramientas necesarias para compilar paquetes desde su código fuente. Aunque al principio no lo notes, es fundamental tenerlo instalado para evitar errores futuros.			\url{https://cran.r-project.org/bin/windows/Rtools/}		\end{enumerate}	\end{frame}	\begin{frame}{Instalación y configuración del entorno (R y RStudio)}		\begin{alertblock}{}			El orden es clave. Primero instala R, luego Rtools (si usas Windows) y finalmente RStudio.		\end{alertblock}						Pod\'es encontrar m\'as informaci\'on sobre c\'omo en la pesta\~na \href{https://servicios.unl.edu.ar/aulavirtual/fce/course/view.php?id=575}{\textbf{Software para el curso} del aula}.	\end{frame}					\begin{frame}[fragile]{Introducción al entorno RStudio}		Al abrir RStudio, verás la pantalla dividida en paneles:		\begin{enumerate}			\item Consola (Console): Es donde R ejecuta las instrucciones y muestra los resultados inmediatos. Si escribes \rscript{2 + 2} y das \verb|Enter|, verás \rscript{4}.						\item Editor de Código (Source/Script): Aquí escribimos nuestros programas (scripts). Es como un bloc de notas inteligente. El código aquí no se ejecuta hasta que tú lo ordenas (usualmente con \verb|Ctrl + Enter| para ejecutar un chunk).						\item Entorno (Environment): Muestra todos los objetos (variables, datos) que has creado y están disponibles en la memoria.						\item Archivos/Gráficos/Ayuda (Files/Plots/Help): Un panel multifunción para navegar carpetas, ver visualizaciones y consultar documentación.		\end{enumerate}	\end{frame}				\begin{frame}{Introducción al entorno RStudio}		Puedes acceder a un \textit{cheatsheet} de RStudio desde aquí: \url{https://rstudio.github.io/cheatsheets/html/rstudio-ide.html}				\begin{figure}[h!]			\includegraphics[width = 0.7\linewidth]{img/rstudio-cheatsheet.png}		\end{figure}				Una versi\'on en espa\~nol est\'a en la pesta\~na \textbf{Material de consulta r\'apida}  en el aula virtual.	\end{frame}	\begin{frame}[fragile]{Buenas prácticas: Organización del Script}		Un \textit{script} es un fichero de texto en el que organizaremos el código. En ocasiones, un proyecto puede tener varios scripts involucrados.				Para crear un nuevo script iremos a \verb|File > New file > R Script|.				Un \textit{script} ordenado es un \text{script} feliz (y reproducible). Segu\'i estas reglas de oro:		\begin{enumerate}			\item Encabezado: Comienza siempre cargando todos los paquetes necesarios (\rscript{library(...)}) en las primeras líneas.			\item Comentarios: Usa \rscript{#} para explicar el \textit{por qué} de tu código, no el \text{qué} (el código ya dice qué hace).		\end{enumerate}				\begin{lstlisting}[style=RScript]# install.packages("dplyr")library(dplyr) # Para poder usar lag.datos <- c(150, 100, 50, 15, 150)#   Variación relativa de un vector <- Esto dice "qué". Evitar a menos# que sea una definición extensa y requiera explicación detallada en# cada paso.variacion_relativa = function(x) {	return ((x - lag(x)) / lag(x))}`:fn:variacion_relativa`(datos)\end{lstlisting}\begin{lstlisting}[style=RConsole][1]         NA -0.3333333 -0.5000000 -0.7000000  9.0000000\end{lstlisting}	\end{frame}\begin{frame}[fragile]{Buenas prácticas: Organización del Script}	También se puede implementar el típico \emph{docstring} para documentar extensamente una aplicaci\'on. Pero, como estamos aprendiendo, no es necesario tanto rigor. Esto es fundamentalmente \'util cuando se trabaja con proyectos muy extensos, colaborativos o paquetes.	\begin{lstlisting}[style=RScript]#' Calcular el doble de un número n#' Toma un argumento numérico y devuelve el doble.#' @param n El número a doblar#' @return El doble de n#' @examples#' doble_de(15)doble_de <- function(n) return(2 * n)`:fn:doble_de`(10)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 20\end{lstlisting}\end{frame}\begin{frame}[fragile]{Buenas prácticas en general}	Asegúrate siempre de guardar tu trabajo en un fichero y de fijar tu directorio de trabajo donde este esté. Para conocer tu directorio de trabajo ejecuta\begin{lstlisting}[style=RScript]getwd() #get working directory\end{lstlisting}Para configurar el directorio de trabajo se puede ejecutar\begin{lstlisting}[style=RScript]setwd("C:...") #set working directory\end{lstlisting}con tu direcci\'on deseada, o en RStudio desde la pestaña\\\verb|Session > Set Working Directory > To Source File Location|Cuando se selecciona esa opción se puede apreciar en la consola que se ha ejecutado el comando antes mencionado en la dirección del fichero de trabajo.\end{frame}\begin{frame}[fragile]{¿Por qué ajustar el directorio de trabajo?}	El motivo por el cual se ajusta el directorio de trabajo es que R sepa cuál es el directorio raíz desde donde se cargan o dónde debe exportar los archivos.\end{frame}\begin{frame}[fragile]{Objetos básicos y asignación de variables}	Podemos usar R como una calculadora. La consola de R actúa como un entorno interactivo donde podemos evaluar expresiones matemáticas inmediatamente. Es el uso más básico del lenguaje.		Los operadores aritméticos estándar funcionan como se espera:	\begin{itemize}	 \item Suma: \rscript{+}	 \item Resta: \rscript{-}	 \item Multiplicación: \rscript{*}	 \item División: \rscript{/}	 \item Potenciación: \rscript{^}	 \end{itemize}\end{frame}\begin{frame}[fragile]\begin{lstlisting}[style=RScript]5 + 5	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 10\end{lstlisting}\begin{lstlisting}[style=RScript]5 * 5\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 25	\end{lstlisting}\begin{lstlisting}[style=RScript]5 / 5	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 1\end{lstlisting}\begin{lstlisting}[style=RScript]5 ^ 5	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 3125	\end{lstlisting}\end{frame}\begin{frame}[fragile]	También disponemos de funciones matemáticas predefinidas. Una función se llama por su nombre seguido de paréntesis \rscript{`:fn:nombre_funcion`(argumento)}.	\begin{lstlisting}[style=RScript]sqrt(9) #raíz cuadrada\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 3\end{lstlisting}\begin{lstlisting}[style=RScript]abs(-5) #valor absoluto\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 5\end{lstlisting}\begin{lstlisting}[style=RScript]log(10) #logaritmo natural\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 2.302585\end{lstlisting}\begin{lstlisting}[style=RScript]factorial(4) #factorial\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 24\end{lstlisting}\end{frame}\begin{frame}[fragile]{Consultar definiciones}	Para consultar la definición y el comportamiento de una función, el contenido o variables de un marco de datos, podemos usar el prefijo \rscript{?} antes del elemento. 		Se puede convertir en tu mejor compañero en R \asky\end{frame}\begin{frame}[fragile]	También se pueden hacer comparaciones. Se pueden usar operadores como \texttt{>}, \texttt{<}, \texttt{>}= (\rscript{>=}), \texttt{<}= (\rscript{<=}) entre otros. Quizá te sorprenda que las comparaciones de igualdad se hacen con == (y no con =) y las de desigualdad con != (\rscript{!=}). El operador de conjunci\'on es \rscript{&} y el de disyunci\'on es  \rscript{|}. 	\begin{lstlisting}[style=RScript]3 < 53 < 33 <= 3\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE[1] FALSE[1] TRUE\end{lstlisting}\begin{lstlisting}[style=RScript]edad <- 30; edad == 30\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE\end{lstlisting}\begin{lstlisting}[style=RScript]TRUE & FALSE	TRUE | FALSE\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE[1] TRUE\end{lstlisting}\end{frame}\begin{frame}[fragile]	Podemos combinar operaciones respetando la precedencia matemática o usando paréntesis para agrupar.	\begin{lstlisting}[style=RScript](5 + 5) * 2\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 20\end{lstlisting}\begin{lstlisting}[style=RScript]5 + 5 * 2\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 15\end{lstlisting}\begin{lstlisting}[style=RScript]sqrt(sqrt(9) + 3 * 2)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 3.0\end{lstlisting}\begin{lstlisting}[style=RScript]n <- 10(n != 10) | ((n >= 10) & (n <= 20))\end{lstlisting}\begin{lstlisting}[style=RScript][1] TRUE\end{lstlisting}\end{frame}	\begin{frame}[fragile]{Parada t\'ecnica}	En una diapositiva anterior ten\'iamos		\begin{lstlisting}[style=RScript]# install.packages("dplyr")library(dplyr)datos <- c(150, 100, 50, 15, 150)variacion_relativa = function(x) {	return ((x - lag(x)) / lag(x))}`:fn:variacion_relativa`(datos)\end{lstlisting}\begin{lstlisting}[style=RConsole][1]         NA -0.3333333 -0.5000000 -0.7000000  9.0000000\end{lstlisting}		Intenta averiguar:	\begin{enumerate}		\item ?`Por qu\'e es necesario definir funciones en ocasiones?		\item ?`C\'omo funciona el mecanismo para la definici\'on de nuevas funciones?		\item Licenciados y licenciadas en econom\'ia... Averig\"uen qu\'e hace \rscript{lag()}\\?`Viene incluido en R? ?`C\'omo es que lo estoy usando?	\end{enumerate}		Intenten esquematizar el comportamiento de esta función. ?`Qu\'e dato recibe? ?`C\'omo lo procesa?\end{frame}\begin{frame}[fragile]{Asignación en variables}	En R, guardamos valores dentro de objetos (variables) para usarlos después. La ventaja de esto es que se puede reutilizar la cantidad de veces que uno quiera y, si necesita cambiarla, lo hace desde un solo lugar. Para esto usamos el operador de asignación \verb|<-| (Mi typeface tiene las ligaduras activadas, por lo que en lugar de ver \verb|<-| ver\'as \rscript{<-}).	\begin{lstlisting}[style=RScript]valor <- 7valor + 8\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 15\end{lstlisting}\begin{lstlisting}[style=RScript]valor ^ valor	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 823543\end{lstlisting}\begin{lstlisting}[style=RScript]valor <- 5 #Si volvemos a cambia la primera lineavalor + 8	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 13\end{lstlisting}\end{frame}\begin{frame}[fragile]	Aunque el signo igual \rscript{=} también funciona, por convención y buenas prácticas en R se prefiere \rscript{<-}.\begin{lstlisting}[style=RScript]# Asignamos el valor 10 al objeto 'x'x <- 10# Ahora podemos usar 'x' en operacionesx * 2\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 20\end{lstlisting}\begin{lstlisting}[style=RScript]x = 10 #Funciona, pero NO se recomiendax * 2\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 20\end{lstlisting}\begin{lstlisting}[style=RScript]10 -> x #Funciona, pero NO se recomiendax * 2\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 20\end{lstlisting}\end{frame}\begin{frame}[fragile]{Nombre de los objetos}	R es muy flexible, pero seguir convenciones hace que tu código sea legible para tu \guillemetleft yo\guillemetright\ del futuro (\shaky{y para tu profe que te va a tener que corregir} \emoji{upside-down-face}).		\titleitem{Reglas duras (condiciones necesarias)}	\begin{itemize}		\item Deben comenzar con una letra.		\item No pueden contener espacios (usa guion bajo \rscript{_}).		\item R distingue mayúsculas de minúsculas (\rscript{Dato} es distinto de \rscript{dato}).	\end{itemize}		\titleitem{Convenciones de estilo (condiciones recomendadas)}	\begin{itemize}		\item snake\_case (recomendado por tidyverse): \rscript{mi_variable}, \rscript{promedio_edad}. Es fácil de leer.		\item camelCase: \rscript{miVariable}, \rscript{promedioEdad}. Común en \textbf{otros} lenguajes.		\item dot.case: \rscript{`mi.variable`}. Histórico en R, pero a veces confunde con métodos de objetos o con variables ocultas.	\end{itemize}\end{frame}\begin{frame}[fragile]	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l l X},				hlines,				vlines,				row{1} = {bg=gray9, font=\bfseries},				column{2} = {font=\ttfamily}, % Esto hace que todo en la col 2 sea monoespaciado automáticamente				cells = {valign=m},			}			Estado & Variable & Razón \\			Recomendado & ingreso\_total & Descriptivo y usa \textit{sc}. \\			Correcto & IngresoTotal & Estilo \textit{UpperCamelCase}. \\			Correcto & ingresoTotal & Estilo \textit{LowerCamelCase}. \\			Correcto & ingreso.total & Estilo antiguo. \\			Incorrecto & 1ingreso & Empieza con número. \\			Incorrecto & ingreso total & Contiene espacios. \\			Incorrecto & ingreso-total & El guion \texttt{-} es un operador.\\			Evitar & c, t, df & Nombres de funciones del sistema o muy ambiguos. \\			Evitar & x, cosa & No describe el contenido del objeto. \\			Evitar & prom\_edad\_2023 & Muy largo; se prefiere un equilibrio como \texttt{promedio\_edad}. \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Vectores y tipos de datos (numéricos, caracteres, lógicos)}	Comprender los tipos de datos es fundamental cuando trabajamos en R, especialmente porque más adelante estaremos procesando data frames (marco de datos) que contienen múltiples variables. Cada variable en un data frame tiene un tipo específico (números, texto, categorías, etc.), y conocer estos tipos nos permitirá aplicar las operaciones correctas y evitar errores al procesarlos.		Del mismo modo, es esencial entender los vectores, ya que la información en R está alojada en esta estructura: cada columna de un dataframe es un vector, y las operaciones que apliquemos sobre ellos determinarán el análisis que podamos realizar.\end{frame}\begin{frame}[fragile]	Ac\'a podemos ver c\'omo es que teniendo el tipo de dato correcto (\rscript{Date}) podemos extraer informaci\'on \'util.	\begin{lstlisting}[style=RScript]# install.packages("lubridate")library(lubridate) #Para manejar fechasfechas <- c("2023-01-01", "2025-03-02",						"2023-08-07", "2023-11-10")class(fechas)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] "character"\end{lstlisting}\begin{lstlisting}[style=RScript]fechas <- as_date(fechas) #Cambiamos el tipo de datos a fecha.class(fechas)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] "Date"\end{lstlisting}\begin{lstlisting}[style=RScript]year(fechas)  #Obtener añosmonth(fechas) #Obtener mesesday(fechas)   #Obtener días\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 2023 2025 2023 2023[1]  1  3  8 11[1]  1  2  7 10\end{lstlisting}\end{frame}\begin{frame}[fragile]	El vector es la estructura de datos fundamental en R. Un vector es una colección ordenada de elementos \textbf{del mismo tipo} (Recod\'a esto para mas adelante). Para cargar un vector por extensión, se utiliza la instrucción \rscript{c(`item1`, `item2`, ...)}.	\begin{lstlisting}[style=RScript]texto		<- c("A", "b", "C", "5")enteros <- c(1, 5, 6, 8)mixto		<- c("1", "2", 3, 4) #!!!#   Esto último NO devuelve error, pero tampoco almacena los datos# como se los cargamos. ¿Qué es lo que está haciendo?\end{lstlisting}\end{frame}\begin{frame}[fragile]{Tipos principales}	En R existen varios tipos de datos, incluyendo factores (categóricos), fechas (Date/POSIXct), complejos (números complejos) y otros tipos especializados que veremos más adelante en el curso. Incluso, cuando aprendas a usar listas, podr\'ias crear tus propios tipos de datos.		Por ahora, comenzaremos con los tres tipos más frecuentes en análisis de datos:		\begin{enumerate}		\item L\'ogicos		\item Num\'ericos		\item Cadena de texto	\end{enumerate}\end{frame}\begin{frame}[fragile]{Tipos principales: Lógicos}	Solo toman valores \rscript{TRUE} o \rscript{T} (Verdadero) o \rscript{FALSE} o \rscript{F} (Falso).		\titleitem{Ejemplos de variables estadísticas}	\begin{itemize}		\item Aprobó/Desaprobó un examen. 		\item Tiene empleo/No tiene empleo. 		\item Posee vivienda propia (Sí/No). 		\item Está inscripto en un programa social. 		\item Respondió a una encuesta.	\end{itemize}\end{frame}\begin{frame}[fragile]\begin{lstlisting}[style=RScript]es_mayor_de_edad = TRUEes_mayor_de_edad\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE\end{lstlisting}\begin{lstlisting}[style=RScript]aprobado <- c(TRUE, FALSE, TRUE, TRUE) #Vector de aprobadosaprobado\end{lstlisting}\begin{lstlisting}[style=RConsole][1]  TRUE FALSE  TRUE  TRUE\end{lstlisting}\end{frame}\begin{frame}[fragile]{Otras formas de generar valores lógicos}Además de asignar directamente \rscript{TRUE} o \rscript{FALSE}, los valores lógicos se generan frecuentemente como resultado de operaciones\end{frame}\begin{frame}[fragile]{}	\titleitem{Operadores de comparación}	Comparan valores y devuelven \rscript{TRUE} o \rscript{FALSE}. \begin{lstlisting}[style=RScript]# Comparaciones numéricasedad <- 25edad >= 18           # ¿Es mayor o igual a 18?\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE\end{lstlisting}	\begin{lstlisting}[style=RScript]edad == 30           # ¿Es igual a 30? (notá que es == y no =)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE	\end{lstlisting}\begin{lstlisting}[style=RScript]# Comparaciones con vectores (elemento a elemento)notas  <- c(8, 5, 7, 4, 9)aprobo <- notas >= 6  # Vector lógico indicando quiénes aprobaron	aprobo\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE FALSE TRUE FALSE TRUE\end{lstlisting}La lógica detrás de por qu\'e funciona este último ejemplo la veremos luego.\end{frame}\begin{frame}[fragile]	\titleitem{Funciones is.*}	Verifican el tipo de un objeto.\begin{lstlisting}[style=RScript]x <- 42is.numeric(x)        # ¿Es numérico?\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE\end{lstlisting}\begin{lstlisting}[style=RScript]is.character(x)      # ¿Es texto?	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE\end{lstlisting}\begin{lstlisting}[style=RScript]is.logical(x)      # ¿Es lógico?	\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE\end{lstlisting}\begin{lstlisting}[style=RScript]y <- "Hola"is.character(y)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE\end{lstlisting}\end{frame}\begin{frame}[fragile]	\titleitem{Otras funciones \'utiles}\begin{lstlisting}[style=RScript]# Verificar valores faltantesdatos <- c(10, NA, 30, NA, 50)is.na(datos)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE TRUE FALSE TRUE FALSE\end{lstlisting}\begin{lstlisting}[style=RScript]# Verificar pertenencia ( %in% )provincias <- c("Santa Fe", "Buenos Aires", "Córdoba")"Santa Fe" %in% provincias"Mendoza"  %in% provincias"Cordoba"  %in% provincias\end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE[1] FALSE[1] FALSE\end{lstlisting}\begin{lstlisting}[style=RScript]# Verificar múltiples condicionesvalores <- c(5, 15, 25, 35)(valores > 10) & (valores < 30) # TRUE solo para 15 y 25\end{lstlisting}\end{frame}\begin{frame}[fragile]{Tipos principales: Num\'ericos}	Números enteros o racionales.		\titleitem{Ejemplos de variables estadísticas}	\begin{itemize}		\item Edad (años)		\item Ingreso mensual (pesos)		\item Cantidad de hijos		\item Temperatura (°C)		\item Precio de un producto		\item Peso (kg)		\item Calificación de un examen (0-100)		\item  Años de educación		\item Tasa de desempleo (\%), PIB per cápita.	\end{itemize}	\begin{lstlisting}[style=RScript]mi_edad <- 30alturas <- c(1.75, 1.80, 1.65)edades  <- c(25, 30, 22)\end{lstlisting}\end{frame}\begin{frame}[fragile]{Tipos principales: Caracteres}	Texto. Siempre van entre comillas.		\titleitem{Ejemplos de variables estadísticas}	\begin{itemize}		\item Nombre de una persona, 		\item Provincia de residencia (aunque pueden considerarse factores), 		\item Código postal, 		\item Ocupación laboral, 		\item Marca de un producto (también factor), 		\item Dirección de email, 		\item Respuesta a pregunta abierta, 		\item DNI o CUIT (aunque sean números, se tratan como texto porque no tiene sentido sumarlos).	\end{itemize}	\begin{lstlisting}[style=RScript]nombre_del_curso <- "Curso de R"nombres					 <- c("Ana", "Juan", "Pedro")actividad 			 <- "curso de R"encargado 			 <- "Jonatán Perren"paste("El encargado del", actividad, "es", encargado) #!\end{lstlisting}\end{frame}\begin{frame}[fragile]	\begin{block}{}		?`Para que sirve \rscript{paste()}? ?`Qu\'e diferencia hay con \rscript{paste0()}?	\end{block}\end{frame}\begin{frame}[fragile]	Será importante más adelante poder identificar el tipo de dato que recibimos y el que tenemos para evitar algunos errores.	\begin{lstlisting}[style=RScript]`num1` <- 5`num2` <- "8"`num1` + `num2` #Note que num2 no es de tipo numérico\end{lstlisting}\begin{lstlisting}[style=RConsole]Error en num1 + num2: argumento no-numérico para operador binario\end{lstlisting}\end{frame}\begin{frame}[fragile]	Aunque algunos posibles problemas se solucionan por coerción. La coerción ocurre cuando un tipo de dato se convierte en otro para complacer a una función. La conversión ocurre en este orden:	\begin{center}		\rscript{logical -> integer -> numeric -> character}	\end{center}	Por ejemplo, supongamos que tenemos \rscript{`b1` <- TRUE}, \rscript{`b2` <- TRUE} y \rscript{`b3` <- FALSE}. La operación suma (bajo el operador \rscript{+}) no está definida para datos lógicos. Aun así, observe el siguiente bloque\begin{lstlisting}[style=RScript]`b1` <- TRUE; `b2` <- TRUE; `b3` <- FALSE`b1` + `b2` + `b3`\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 2\end{lstlisting}\end{frame}\begin{frame}[fragile]	Lo que ocurre es que la coerción convierte los datos en enteros (\rscript{integer}) y aplica la suma. Por defecto, \rscript{TRUE} se convierte en \rscript{1} y \rscript{FALSE} se convierte en \rscript{0}.\end{frame}\begin{frame}[fragile]	Sabiendo que la función \rscript{paste()} recibe cadenas y las concatena. Observe el siguiente bloque\begin{lstlisting}[style=RScript]entero <- 30cadena <- "Mi edad es"paste(cadena, entero)\end{lstlisting}\begin{lstlisting}[style=RConsole][1] "Mi edad es 30"\end{lstlisting}En este caso, \rscript{entero} se convierte por coersión en \rscript{character} y se concatena.\end{frame}\begin{frame}[fragile]	Tambi\'en vimos a la coersi\'on en acci\'on en un ejemplo anterior cuando construimos un vector con datos de tipo distinto.\begin{lstlisting}[style=RScript]mixto		<- c("1", "2", 3, 4) #!!!mixto\end{lstlisting}\begin{lstlisting}[style=RConsole][1] "1" "2" "3" "4"\end{lstlisting}Not\'a como se han convertido todos en caracteres. Realmente no tiene nada de \rscript{mixto}.\end{frame}\begin{frame}[fragile]	Es posible convertir generalmente datos de un tipo a otro con funciones como \rscript{as.logical()}, \rscript{as.integer()}, \rscript{as.numeric()} y \rscript{as.character()}, entre otros que veremos más adelante. Si volvemos al ejemplo que fallaba antes\begin{lstlisting}[style=RScript]`num1` <- 5`num2` <- "8"`num2` <- as.integer(`num2`) #Ahora num2 es entero.`num1` + `num2`\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 13\end{lstlisting}Estas funciones serán de suma utilidad cuando tengamos que limpiar marcos de datos.?`Cu\'al cre\'es que ser\'an los resultados en los siguientes dos vectores?\begin{lstlisting}[style=RScript]`v1` <- c(1, 2, TRUE, 0)`v2` <- c(1, 2, "TRUE", 0)`v3` <- c(1, 2, TRUE, "0")\end{lstlisting}\end{frame}\begin{frame}[fragile]{Formas de crear vectores}	\titleitem{Por extensión}	Enumerar elementos explícitamente. Se utiliza la función \rscript{c()}\begin{lstlisting}[style=RScript]mis_numeros <- c(1, 5, 10)mis_numeros\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 1 5 10\end{lstlisting}\titleitem{Por secuencia}Rangos de enteros consecutivos. Se carga mediante \rscript{:} entre el entero inferior y el entero superior.\begin{lstlisting}[style=RScript]uno_al_diez				 <- 1:10dos_al_menos_siete <- 2:-7uno_al_diezdos_al_menos_siete\end{lstlisting}\begin{lstlisting}[style=RConsole][1]  1  2  3  4  5  6  7  8  9 10[1]  2  1  0 -1 -2 -3 -4 -5 -6 -7\end{lstlisting}\end{frame}\begin{frame}[fragile]{Formas de crear vectores}	\titleitem{Por progresión}	Como el anterior, pero con un paso definido. Se carga mediante la función \rscript{seq()}.\begin{lstlisting}[style=RScript]lista <- seq(from = -3, to = 10, `:ky:by` = 2)lista #De -3 hasta 10 de 2 en 2.\end{lstlisting}\begin{lstlisting}[style=RConsole][1] -3 -1  1  3  5  7  9\end{lstlisting}\begin{lstlisting}[style=RScript]lista <- seq(from = 0, to = 1, `:ky:length.out` = 21)lista #21 elementos uniformemente distribuidos entre 0 y 1\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 0.00 0.05 0.10 0.15 0.20 0.25 0.30[8] 0.35 0.40 0.45 0.50 0.55 0.60 0.65[15] 0.70 0.75 0.80 0.85 0.90 0.95 1.00\end{lstlisting}\end{frame}\begin{frame}[fragile]{Formas de crear vectores}		\titleitem{Por repetición}	Repite elementos un número de veces. Se carga mediante la función \rscript{rep()}\begin{lstlisting}[style=RScript]lista <- rep(5, times = 3)lista #Repite 5 tres veces.\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 5 5 5\end{lstlisting}\begin{lstlisting}[style=RScript]lista <- rep(0:2, `:ky:length.out` = 5)lista\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 0 1 2 0 1\end{lstlisting}\begin{lstlisting}[style=RScript]lista <- rep(0:2, each = 2)lista\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 0 0 1 1 2 2\end{lstlisting}\end{frame}\begin{frame}[fragile]{Formas de crear vectores}		\titleitem{Por distribución de probabilidad}		Por muestreo aleatorio. Varias funciones en R que tienen el prefijo \rscript{r*} devuelven un vector de datos. Tambien se pueden tomar muestras aleatorias de un vector mediante la función \rscript{sample()}.\begin{lstlisting}[style=RScript]lista <- 1:100muestra <- sample(lista, size = 10)muestra #Muestra de tamaño 10 sin repetición\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 81 80 44 57 28 96 30 84 65 50\end{lstlisting}\begin{lstlisting}[style=RScript]booleanos <- c(TRUE, FALSE)muestra <- sample(booleanos, size = 10, `:ky:replace` = TRUE)muestra #Muestra de tamaño 10 con repetición\end{lstlisting}\begin{lstlisting}[style=RConsole][1] FALSE FALSE  TRUE FALSE FALSE[6] FALSE FALSE  TRUE FALSE  TRUE\end{lstlisting}\end{frame}\begin{frame}{Formas de crear vectores}	\begin{block}{}		Averig\"u\'a cu\'ales son las funciones que trae R por defecto para tomar muestras de distribuciones de probabilidad conocidas.	\end{block}\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\titleitem{Operadores Lógicos y Relacionales}	Podemos hacer preguntas a nuestros datos. El resultado siempre será un vector lógico (\rscript{TRUE} o \rscript{FALSE}).	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{3,4,5} = {cmd = \rscript}			}			Tipo & Operación & Operador & Ejemplo de Uso & Resultado \\			\SetCell[r=4]{l} Unario & Negación (NOT) & ! & !TRUE & FALSE \\			& & ! & !(c(TRUE, FALSE)) & c(FALSE, TRUE) \\						& Val. faltantes & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\			& & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\		\end{tblr}	\end{table}	\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{3-5} = {cmd = \rscript}			}			Tipo & Operación & Op. & Ejemplo de Uso & Resultado \\			\SetCell[r=12]{l} Relaci\'on & Igual a & == & 5 == 5 & TRUE \\			& & == & c(1, 2, 3) == 2 & c(FALSE, TRUE, FALSE) \\			& Distinto de & != & 5 != 3 & TRUE \\			& & != & c(1, 2, 3) != 2 & c(TRUE, FALSE, TRUE) \\			& Mayor que & > & 5 > 3 & TRUE \\			& & > & c(1, 5, 3) > 2 & c(FALSE, TRUE, TRUE) \\			& Menor que & < & 3 < 5 & TRUE \\			& & < & c(1, 5, 3) < 4 & c(TRUE, FALSE, TRUE) \\			& Mayor o igual & >= & 5 >= 5 & TRUE \\			& & >= & c(4, 5, 6) >= 5 & c(FALSE, TRUE, TRUE) \\			& Menor o igual & <= & 3 <= 5 & TRUE \\			& & <= & c(4, 5, 6) <= 5 & c(TRUE, TRUE, FALSE) \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{3-5} = {cmd = \rscript}			}			Tipo & Operación & Op. & Ejemplo de Uso & Resultado \\			\SetCell[r=4]{l} Lógico & AND (Y) & \& & TRUE \& FALSE & FALSE \\			& & \& & (c(T, T, F) \& c(T, F, T)) & c(T, F, F) \\			& OR (O) & | & TRUE | FALSE & TRUE \\			& & | & (c(T, T, F) | c(F, F, T)) & c(T, T, T) \\			\SetCell[r=2]{l} Otros & Pertenencia & \%in\% & "a" \%in\% c("a", "b") & TRUE \\			& & \%in\% & c(1, 3) \%in\% c(1, 2) & c(T, F) \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\titleitem{Operadores num\'ericos}	R funciona como una calculadora científica vitaminada. Además de las operaciones básicas, tenemos funciones para casi todo.	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{2-4} = {cmd = \rscript}			}			Operación & Operador/Función & Ejemplo de Uso & Resultado \\			Suma & + & c(4, 9) + 2 & c(6, 11) \\			Resta & - & c(10, 5) - 3 & c(7, 2) \\			Multiplicación & * & c(3, 5) * 2 & c(6, 10) \\			División & / & c(10, 20) / 5 & c(2, 4) \\			Potencia & ^ & c(2, 3) ^ 2 & c(4, 9) \\			Raíz cuadrada & sqrt() & sqrt(c(4, 9, 16)) & c(2, 3, 4) \\			División entera & \%/\% & 10 \%/\% 3 & 3 \\			Resto (módulo) & \%\% & 10 \%\% 3 & 1 \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{2-4} = {cmd = \rscript}			}			Operación & Op./Función & Ejemplo de Uso & Resultado \\			Logaritmo nat. & log() & log(c(1, `:nm:2.718`)) & c(0, 1) \\			Exponencial & exp() & exp(c(0, 1)) & c(1, `:nm:2.718`...) \\			Valor absoluto & abs() & abs(c(-5, 3)) & c(5, 3) \\			Redondeo & round() & round(`:nm:3.14159`, 2) & 3.14 \\			Redondeo arriba & ceiling() & ceiling(`:nm:3.14`) & 4 \\			Redondeo abajo & floor() & floor(`:nm:3.99`) & 3 \\			Máximo & max() & max(c(1, 5, 3)) & 5 \\			Mínimo & min() & min(c(1, 5, 3)) & 1 \\			Suma total & sum() & sum(c(1, 2, 3)) & 6 \\			Promedio & mean() & mean(c(2, 4, 6)) & 4 \\			Mediana & median() & median(c(1, 2, 10)) & 2 \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Operadores y operaciones más frecuentes}	\titleitem{Operadores para caracteres}	El texto en R se manipula con funciones específicas.	\begin{table}[h]		\centering		\begin{tblr}{				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 				hlines,				vlines,				row{1} = {bg=gray!20, font=\bfseries}, 				cells = {valign=m},				cell{2-Z}{2-4} = {cmd = \rscript}			}			Operación & Función & Ejemplo de Uso & Resultado \\			Concatenar & paste() & paste("Curso", "de", "R") & "Curso de R" \\			Concatenar & paste0() & paste0("Curso", "de", "R") & "CursodeR" \\			Contar car. & nchar() & nchar(c("Hola", "Mundo")) & c(4, 5) \\			Mayúsculas & toupper() & toupper("hola") & "HOLA" \\			Minúsculas & tolower() & tolower("MUNDO") & "mundo" \\			Subcadena & substr() & substr("Viernes", 1, 4) & "Vier" \\			Reemplazar & gsub() & gsub("a", "o", "casa") & "coso" \\			Dividir cad. & strsplit() & strsplit("a-b", "-") & list(c("a", "b")) \\			Eliminar esp. & trimws() & trimws(" texto ") & "texto" \\		\end{tblr}	\end{table}\end{frame}\begin{frame}[fragile]{Aritmética vectorizada: Operaciones elementales sin bucles}	Esta es una de las características más potentes de R y lo diferencia de lenguajes como C o Python clásico. R está diseñado para operar sobre vectores completos de una sola vez (similar al concepto SIMD - Single Instruction, Multiple Data).		\titleitem{¿Por qué es importante?}	\begin{enumerate}		\item Claridad: El código se lee como una operación matemática (\guillemetleft precio por cantidad\guillemetright ), no como una instrucción informática (\guillemetleft toma el elemento i, multiplícalo, guárdalo, repite\guillemetright ).		\item Eficiencia: Las operaciones vectorizadas están optimizadas en C, siendo mucho más rápidas que un bucle explícito escrito en R.	\end{enumerate}	\begin{lstlisting}[style=RScript]# Rprecios <- c(100, 200, 300)precios_con_iva <- precios * `:nm:1.21`\end{lstlisting}\begin{lstlisting}[style=JuliaScript]# Juliaprecios = [100, 200, 300]precios_con_iva = precios .* 1.21\end{lstlisting}\begin{lstlisting}[style=PythonScript]# Pythonprecios = [100, 200, 300]precios_con_iva = [p * 1.21 for p in precios]\end{lstlisting}\end{frame}\begin{frame}[fragile]	En R, también pod\'es operar dos vectores entre sí. La operación se hace posición a posición (el 1ro con el 1ro, el 2do con el 2do, etc.).\begin{lstlisting}[style=RScript]ingreso  <- c(100, 200, 300)costo		 <- c(75, 125, 280)utilidad <- ingreso - costo\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 25 75 20\end{lstlisting}\end{frame}\begin{frame}[fragile]{Matrices}	Las matrices son extensiones de los vectores a dos dimensiones (filas y columnas). Al igual que los vectores, todos sus elementos deben ser del mismo tipo (todos números, todos caracteres, etc.).\end{frame}\begin{frame}[fragile]{Creación de matrices}Usamos la función \rscript{matrix()}, especificando los datos y las dimensiones.\begin{lstlisting}[style=RScript]# Crear una matriz de 3 filas y 2 columnas con números del 1 al 6mi_matriz <- matrix(`:ky:data` = 1:6, `:ky:nrow` = 3, `:ky:ncol` = 2)mi_matriz\end{lstlisting}\begin{lstlisting}[style=RConsole]     [,1] [,2][1,]    1    4[2,]    2    5[3,]    3    6	\end{lstlisting}\begin{lstlisting}[style=RScript]# Por defecto llena por columnas. Para llenar por filas:matriz_filas <- matrix(1:6, `:ky:nrow` = 3, byrow = TRUE)	\end{lstlisting}\end{frame}\begin{frame}[fragile]{Propiedades y acceso}	Podemos consultar sus dimensiones y acceder a elementos específicos usando corchetes \rscript{[fila, columna]}.\begin{lstlisting}[style=RScript]dim(mi_matriz)      # Devuelve c(3, 2) -> cantidad de filas y de columnasnrow(mi_matriz)     # Número de filasncol(mi_matriz)     # Número de columnas# Indexación (Slicing)mi_matriz[1, 2]     # Elemento en fila 1, columna 2mi_matriz[2,  ]     # Toda la fila 2mi_matriz[ , 1]     # Toda la columna 1# O varias selecciones a la vezmi_matriz[ , c(1, 5)]     # Columna 1 y 5\end{lstlisting}\end{frame}\begin{frame}[fragile]{Operaciones básicas}	Al igual que con los vectores, las operaciones matemáticas son elemento a elemento. También existen funciones específicas para matrices.\begin{lstlisting}[style=RScript]mi_matriz * 2       # Multiplica cada elemento por 2t(mi_matriz)        # Transpuesta (cambia filas por columnas)rowSums(mi_matriz)  # Suma de cada filacolMeans(mi_matriz) # Promedio de cada columna	\end{lstlisting}\end{frame}\begin{frame}[fragile]{Acceso a elementos de un vector (indexación)}	Una vez que tenemos datos en un vector, a menudo necesitamos seleccionar partes específicas de él. Para esto usamos los corchetes \rscript{[]}.\end{frame}\begin{frame}[fragile]{Indexación por posición (enteros positivos)}	Indicamos la posición del elemento que queremos recuperar.\begin{lstlisting}[style=RScript]letras <- c("A", "B", "C", "D", "E")letras[1]       # El primer elemento ("A")letras[3]       # El tercer elemento ("C")# Podemos pedir varios a la vez pasando un vector de posicionesletras[c(1, 5)] # El primero y el quinto ("A", "E")\end{lstlisting}\end{frame}\begin{frame}[fragile]{Indexación por exclusión (enteros negativos)}	Si usamos números negativos, R devuelve \textbf{todo menos} lo que indicamos.\begin{lstlisting}[style=RScript]letras <- c("A", "B", "C", "D", "E")letras[-1]       # Todo menos el primeroletras[-c(4, 5)] # Todo menos el cuarto y el quinto\end{lstlisting}\end{frame}\begin{frame}[fragile]{Indexación lógica (filtrado)}	Esta es quizás la forma más potente. Usamos un vector de \rscript{TRUE} y \rscript{FALSE} (usualmente resultado de una condición) para quedarnos solo con los elementos que cumplen la condición (\rscript{TRUE}).\begin{lstlisting}[style=RScript]valores <- c(10, 5, 20, 2)# Paso 1: Crear la condición (vector lógico)condicion <- valores > 5condicion \end{lstlisting}\begin{lstlisting}[style=RConsole][1] TRUE FALSE TRUE FALSE	\end{lstlisting}\begin{lstlisting}[style=RScript]# Paso 2: Usar la condición para filtrarvalores[condicion]\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 10 20\end{lstlisting}\begin{lstlisting}[style=RScript]# Todo en una sola línea (lo más común):valores[valores > 5]\end{lstlisting}\begin{lstlisting}[style=RConsole][1] 10 20	\end{lstlisting}\end{frame}\begin{frame}[fragile]	Incluso se  puede hacer filtrados m\'as complejos	\begin{lstlisting}[style=RScript]nombres <- c("Camila", "Pedro", "Lucía", "Juan", "Esteban")notas <- c(10, 5, 3, 7, 8)aprobo <- notas >= 6 #Vector lógico de aprobados/asnombres[aprobo] #Filtrado por aprobados/as\end{lstlisting}\begin{lstlisting}[style=RConsole][1] "Camila"  "Juan"    "Esteban"\end{lstlisting}Poder entender el funcionamiento de este mecanismo \textbf{es fundamental}!\end{frame}\begin{frame}[fragile]{Ejercicios}	Intenta resolverlos paso a paso en un \'unico script.		\begin{enumerate}		\item Crea un objeto con tu año de nacimiento y otro con el año actual (como número). Calcula tu edad aproximada restando ambos objetos y guárdala en una nueva variable.		\item Crea un vector con las temperaturas máximas de la semana: 24, 28, 31, 25, 22. Convierte todo el vector a grados Fahrenheit ($F = C \times 1.8 + 32$) en una sola línea.		\item Genera una secuencia de números que vaya del 100 al 10 bajando de 5 en 5. Guarda el resultado y calcula la suma de todos esos números.		\item Tienes un vector de precios: \rscript{c(100, 500, 200, 1500)}. Aplica un descuento del 10\% a todos, pero luego súmales un costo fijo de envío de 50 pesos a cada uno.		\item Crea un vector con los nombres de 4 ciudades y otro con sus respectivas poblaciones (en millones). Usa \rscript{paste()} para crear frases tipo \guillemetleft La ciudad X tiene Y millones de habitantes\guillemetright .		\item Dado el vector \rscript{x <- c(4, 9, 16, 25)}, calcula la raíz cuadrada de todos los elementos y luego calcula el promedio de esos resultados.		\item Crea un vector lógico que indique qué números del 1 al 20 son divisibles por 3. (Pista: usa el operador módulo \lstinline[style=RScript, basicstyle=\normalsize]`%%` y compara con 0).		\item Tienes dos vectores: \rscript{a <- c(TRUE, FALSE, TRUE)} y \rscript{b <- c(FALSE, TRUE, TRUE)}. Predice el resultado de \rscript{a & b} y \rscript{a | b} antes de ejecutarlo.	\end{enumerate}\end{frame}\begin{frame}[fragile]{Ejercicios}		\begin{enumerate}[start = 9]		\item Crea una matriz de 4 filas y 3 columnas con los números del 1 al 12. Calcula la suma de cada columna y guarda el resultado en un vector.		\item De la matriz anterior, extrae solamente la tercera fila y multiplícala por 10.		\item Crea un vector con 5 palabras en minúscula. Conviértelas todas a mayúsculas y luego cuenta cuántos caracteres tiene cada una.		\item Simula las notas de un examen para 6 alumnos con un vector numérico. Crea un vector lógico que sea \rscript{TRUE} para quienes aprobaron (nota >= 6) y \rscript{FALSE} para los que no.		\item Usa el vector lógico del ejercicio anterior para contar cuántos alumnos aprobaron (Pista: en R, \rscript{TRUE} vale 1 y \rscript{FALSE} vale 0, así que puedes sumar el vector lógico).		\item Crea dos vectores de longitud 3: \rscript{base} y \rscript{altura}. Calcula el área de 3 triángulos simultáneamente.		\item Tienes un vector de edades: \rscript{c(15, 22, 35, 12, 45, 17)}. Filtra y muestra solo las edades que son mayores de edad y menores de 40.		\item Crea una matriz de 2x2 con valores aleatorios (puedes inventarlos). Calcula su transpuesta y verifíca si la suma de la matriz original más la transpuesta da una matriz simétrica.		\item Intenta sumar un vector de longitud 2 a un vector de longitud 5. Observa el resultado y la advertencia de R. ¿Cómo se aplicó el reciclaje?	\end{enumerate}\end{frame}\begin{frame}[fragile]{Ejercicios}		\begin{enumerate}[start  = 18]		\item Crea un vector de textos con fechas en formato \guillemetleft DD-MM-AAAA\guillemetright  (ej: "01-01-2023"). Usa \rscript{substr()} para extraer solo los años de cada fecha.		\item Genera una secuencia del 1 al 50. Crea un vector lógico que identifique los números que NO son divisibles por 5 (usando negación \rscript{!}).		\item Crea una matriz de 3x3 donde todos los elementos sean 0. Luego, modifica manualmente el elemento central (fila 2, columna 2) para que valga 1.		\item Ten\'es un vector de nombres \rscript{c("Juan", "Ana", "Pedro")} y un vector de apellidos \rscript{c("Pérez", "Gómez")}. Úsalos en \rscript{paste()}. ¿Qué sucede debido a la regla de reciclaje?		\item Calcula el logaritmo natural de los números 10, 100 y 1000. Luego redondea los resultados a 2 decimales.		\item Crea una matriz de 5 filas y 2 columnas. La primera columna debe tener los números del 1 al 5, y la segunda columna sus cuadrados. Asigna nombres a las columnas ("Numero", "Cuadrado") usando \rscript{colnames()}.	\end{enumerate}\end{frame}\end{document}
+\documentclass[8pt]{beamer}
+\usepackage{../config}
+
+
+
+
+
+
+
+\begin{document}
+	\subtitle{1er encuentro: Instalaci\'on y primeros pasos}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+
+
+
+	\begin{frame}{Instalación y configuración del entorno (R y RStudio)}
+		Para trabajar con R, necesitamos instalar tres programas:
+		\begin{enumerate}
+			\item  R: Es el lenguaje de programación y el motor de cálculo. Se descarga desde CRAN (The Comprehensive R Archive Network).
+			\url{http://mirror.fcaglp.unlp.edu.ar/CRAN/}
+			
+			\item RStudio: Es un Entorno de Desarrollo Integrado (IDE). Es una interfaz amigable que nos facilita escribir código, ver gráficos y gestionar archivos.
+			\url{https://posit.co/download/rstudio-desktop}
+			
+			\item Rtools (Solo Windows): Es un conjunto de herramientas necesarias para compilar paquetes desde su código fuente. Aunque al principio no lo notes, es fundamental tenerlo instalado para evitar errores futuros.
+			\url{https://cran.r-project.org/bin/windows/Rtools/}
+		\end{enumerate}
+	\end{frame}
+
+
+
+
+
+
+
+
+	\begin{frame}{Instalación y configuración del entorno (R y RStudio)}
+		\begin{alertblock}{}
+			El orden es clave. Primero instala R, luego Rtools (si usas Windows) y finalmente RStudio.
+		\end{alertblock}
+		
+		
+		Pod\'es encontrar m\'as informaci\'on sobre c\'omo en la pesta\~na \href{https://servicios.unl.edu.ar/aulavirtual/fce/course/view.php?id=575}{\textbf{Software para el curso} del aula}.
+	\end{frame}
+
+
+
+	
+	
+	
+	
+	\begin{frame}[fragile]{Introducción al entorno RStudio}
+		Al abrir RStudio, verás la pantalla dividida en paneles:
+		\begin{enumerate}
+			\item Consola (Console): Es donde R ejecuta las instrucciones y muestra los resultados inmediatos. Si escribes \rscript{2 + 2} y das \verb|Enter|, verás \rscript{4}.
+			
+			\item Editor de Código (Source/Script): Aquí escribimos nuestros programas (scripts). Es como un bloc de notas inteligente. El código aquí no se ejecuta hasta que tú lo ordenas (usualmente con \verb|Ctrl + Enter| para ejecutar un chunk).
+			
+			\item Entorno (Environment): Muestra todos los objetos (variables, datos) que has creado y están disponibles en la memoria.
+			
+			\item Archivos/Gráficos/Ayuda (Files/Plots/Help): Un panel multifunción para navegar carpetas, ver visualizaciones y consultar documentación.
+		\end{enumerate}
+	\end{frame}
+	
+
+
+
+
+	
+	
+	\begin{frame}{Introducción al entorno RStudio}
+		Puedes acceder a un \textit{cheatsheet} de RStudio desde aquí: \url{https://rstudio.github.io/cheatsheets/html/rstudio-ide.html}
+		
+		\begin{figure}[h!]
+			\includegraphics[width = 0.7\linewidth]{img/rstudio-cheatsheet.png}
+		\end{figure}
+		
+		Una versi\'on en espa\~nol est\'a en la pesta\~na \textbf{Material de consulta r\'apida}  en el aula virtual.
+	\end{frame}
+
+
+
+
+
+
+
+	\begin{frame}[fragile]{Buenas prácticas: Organización del Script}
+		Un \textit{script} es un fichero de texto en el que organizaremos el código. En ocasiones, un proyecto puede tener varios scripts involucrados.
+		
+		Para crear un nuevo script iremos a \verb|File > New file > R Script|.
+		
+		Un \textit{script} ordenado es un \text{script} feliz (y reproducible). Segu\'i estas reglas de oro:
+		\begin{enumerate}
+			\item Encabezado: Comienza siempre cargando todos los paquetes necesarios (\rscript{library(...)}) en las primeras líneas.
+			\item Comentarios: Usa \rscript{#} para explicar el \textit{por qué} de tu código, no el \text{qué} (el código ya dice qué hace).
+		\end{enumerate}
+		
+		\begin{lstlisting}[style=RScript]
+# install.packages("dplyr")
+library(dplyr) # Para poder usar lag.
+
+datos <- c(150, 100, 50, 15, 150)
+
+#   Variación relativa de un vector <- Esto dice "qué". Evitar a menos
+# que sea una definición extensa y requiera explicación detallada en
+# cada paso.
+variacion_relativa = function(x) {
+	return ((x - lag(x)) / lag(x))
+}
+
+`:fn:variacion_relativa`(datos)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]         NA -0.3333333 -0.5000000 -0.7000000  9.0000000
+\end{lstlisting}
+	\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Buenas prácticas: Organización del Script}
+	También se puede implementar el típico \emph{docstring} para documentar extensamente una aplicaci\'on. Pero, como estamos aprendiendo, no es necesario tanto rigor. Esto es fundamentalmente \'util cuando se trabaja con proyectos muy extensos, colaborativos o paquetes.
+	
+\begin{lstlisting}[style=RScript]
+#' Calcular el doble de un número n
+#' Toma un argumento numérico y devuelve el doble.
+#' @param n El número a doblar
+#' @return El doble de n
+#' @examples
+#' doble_de(15)
+doble_de <- function(n) return(2 * n)
+
+`:fn:doble_de`(10)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 20
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Buenas prácticas en general}
+	Asegúrate siempre de guardar tu trabajo en un fichero y de fijar tu directorio de trabajo donde este esté. Para conocer tu directorio de trabajo ejecuta
+\begin{lstlisting}[style=RScript]
+getwd() #get working directory
+\end{lstlisting}
+
+Para configurar el directorio de trabajo se puede ejecutar
+\begin{lstlisting}[style=RScript]
+setwd("C:...") #set working directory
+\end{lstlisting}
+con tu direcci\'on deseada, o en RStudio desde la pestaña\\
+\verb|Session > Set Working Directory > To Source File Location|
+
+Cuando se selecciona esa opción se puede apreciar en la consola que se ha ejecutado el comando antes mencionado en la dirección del fichero de trabajo.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{¿Por qué ajustar el directorio de trabajo?}
+	El motivo por el cual se ajusta el directorio de trabajo es que R sepa cuál es el directorio raíz desde donde se cargan o dónde debe exportar los archivos.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Objetos básicos y asignación de variables}
+	Podemos usar R como una calculadora. La consola de R actúa como un entorno interactivo donde podemos evaluar expresiones matemáticas inmediatamente. Es el uso más básico del lenguaje.
+	
+	Los operadores aritméticos estándar funcionan como se espera:
+	\begin{itemize}
+	 \item Suma: \rscript{+}
+	 \item Resta: \rscript{-}
+	 \item Multiplicación: \rscript{*}
+	 \item División: \rscript{/}
+	 \item Potenciación: \rscript{^}
+	 \end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+5 + 5	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 10
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+5 * 5
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 25	
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+5 / 5	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 1
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+5 ^ 5	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 3125	
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	También disponemos de funciones matemáticas predefinidas. Una función se llama por su nombre seguido de paréntesis \rscript{`:fn:nombre_funcion`(argumento)}.
+	
+\begin{lstlisting}[style=RScript]
+sqrt(9) #raíz cuadrada
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 3
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+abs(-5) #valor absoluto
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 5
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+log(10) #logaritmo natural
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 2.302585
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+factorial(4) #factorial
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 24
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Consultar definiciones}
+	Para consultar la definición y el comportamiento de una función, el contenido o variables de un marco de datos, podemos usar el prefijo \rscript{?} antes del elemento.
+ 
+	
+	Se puede convertir en tu mejor compañero en R \asky
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	También se pueden hacer comparaciones. Se pueden usar operadores como \texttt{>}, \texttt{<}, \texttt{>}= (\rscript{>=}), \texttt{<}= (\rscript{<=}) entre otros. Quizá te sorprenda que las comparaciones de igualdad se hacen con == (y no con =) y las de desigualdad con != (\rscript{!=}). El operador de conjunci\'on es \rscript{&} y el de disyunci\'on es  \rscript{|}. 
+	
+\begin{lstlisting}[style=RScript]
+3 < 5
+3 < 3
+3 <= 3
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+[1] FALSE
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+edad <- 30; edad == 30
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+TRUE & FALSE	
+TRUE | FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE
+[1] TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	Podemos combinar operaciones respetando la precedencia matemática o usando paréntesis para agrupar.
+	
+\begin{lstlisting}[style=RScript]
+(5 + 5) * 2
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 20
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+5 + 5 * 2
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 15
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+sqrt(sqrt(9) + 3 * 2)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 3.0
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+n <- 10
+(n != 10) | ((n >= 10) & (n <= 20))
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+[1] TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+	\begin{frame}[fragile]{Parada t\'ecnica}
+	En una diapositiva anterior ten\'iamos	
+	
+\begin{lstlisting}[style=RScript]
+# install.packages("dplyr")
+library(dplyr)
+
+datos <- c(150, 100, 50, 15, 150)
+
+variacion_relativa = function(x) {
+	return ((x - lag(x)) / lag(x))
+}
+
+`:fn:variacion_relativa`(datos)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]         NA -0.3333333 -0.5000000 -0.7000000  9.0000000
+\end{lstlisting}
+	
+	Intenta averiguar:
+	\begin{enumerate}
+		\item ?`Por qu\'e es necesario definir funciones en ocasiones?
+		\item ?`C\'omo funciona el mecanismo para la definici\'on de nuevas funciones?
+		\item Licenciados y licenciadas en econom\'ia... Averig\"uen qu\'e hace \rscript{lag()}\\?`Viene incluido en R? ?`C\'omo es que lo estoy usando?
+	\end{enumerate}
+	
+	Intenten esquematizar el comportamiento de esta función. ?`Qu\'e dato recibe? ?`C\'omo lo procesa?
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Asignación en variables}
+	En R, guardamos valores dentro de objetos (variables) para usarlos después. La ventaja de esto es que se puede reutilizar la cantidad de veces que uno quiera y, si necesita cambiarla, lo hace desde un solo lugar. Para esto usamos el operador de asignación \verb|<-| (Mi typeface tiene las ligaduras activadas, por lo que en lugar de ver \verb|<-| ver\'as \rscript{<-}).
+	
+\begin{lstlisting}[style=RScript]
+valor <- 7
+valor + 8
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 15
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+valor ^ valor	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 823543
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+valor <- 5 #Si volvemos a cambia la primera linea
+valor + 8	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 13
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+	Aunque el signo igual \rscript{=} también funciona, por convención y buenas prácticas en R se prefiere \rscript{<-}.
+\begin{lstlisting}[style=RScript]
+# Asignamos el valor 10 al objeto 'x'
+x <- 10
+
+# Ahora podemos usar 'x' en operaciones
+x * 2
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 20
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+x = 10 #Funciona, pero NO se recomienda
+x * 2
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 20
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+10 -> x #Funciona, pero NO se recomienda
+x * 2
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 20
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Nombre de los objetos}
+	R es muy flexible, pero seguir convenciones hace que tu código sea legible para tu \guillemetleft yo\guillemetright\ del futuro (\shaky{y para tu profe que te va a tener que corregir} \emoji{upside-down-face}).
+	
+	\titleitem{Reglas duras (condiciones necesarias)}
+	\begin{itemize}
+		\item Deben comenzar con una letra.
+		\item No pueden contener espacios (usa guion bajo \rscript{_}).
+		\item R distingue mayúsculas de minúsculas (\rscript{Dato} es distinto de \rscript{dato}).
+	\end{itemize}
+	
+	\titleitem{Convenciones de estilo (condiciones recomendadas)}
+	\begin{itemize}
+		\item snake\_case (recomendado por tidyverse): \rscript{mi_variable}, \rscript{promedio_edad}. Es fácil de leer.
+		\item camelCase: \rscript{miVariable}, \rscript{promedioEdad}. Común en \textbf{otros} lenguajes.
+		\item dot.case: \rscript{`mi.variable`}. Histórico en R, pero a veces confunde con métodos de objetos o con variables ocultas.
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l X},
+				hlines,
+				vlines,
+				row{1} = {bg=gray9, font=\bfseries},
+				column{2} = {font=\ttfamily}, % Esto hace que todo en la col 2 sea monoespaciado automáticamente
+				cells = {valign=m},
+			}
+			Estado & Variable & Razón \\
+			Recomendado & ingreso\_total & Descriptivo y usa \textit{sc}. \\
+			Correcto & IngresoTotal & Estilo \textit{UpperCamelCase}. \\
+			Correcto & ingresoTotal & Estilo \textit{LowerCamelCase}. \\
+			Correcto & ingreso.total & Estilo antiguo. \\
+			Incorrecto & 1ingreso & Empieza con número. \\
+			Incorrecto & ingreso total & Contiene espacios. \\
+			Incorrecto & ingreso-total & El guion \texttt{-} es un operador.\\
+			Evitar & c, t, df & Nombres de funciones del sistema o muy ambiguos. \\
+			Evitar & x, cosa & No describe el contenido del objeto. \\
+			Evitar & prom\_edad\_2023 & Muy largo; se prefiere un equilibrio como \texttt{promedio\_edad}. \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Vectores y tipos de datos (numéricos, caracteres, lógicos)}
+	Comprender los tipos de datos es fundamental cuando trabajamos en R, especialmente porque más adelante estaremos procesando data frames (marco de datos) que contienen múltiples variables. Cada variable en un data frame tiene un tipo específico (números, texto, categorías, etc.), y conocer estos tipos nos permitirá aplicar las operaciones correctas y evitar errores al procesarlos.
+	
+	Del mismo modo, es esencial entender los vectores, ya que la información en R está alojada en esta estructura: cada columna de un dataframe es un vector, y las operaciones que apliquemos sobre ellos determinarán el análisis que podamos realizar.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	Ac\'a podemos ver c\'omo es que teniendo el tipo de dato correcto (\rscript{Date}) podemos extraer informaci\'on \'util.
+	
+\begin{lstlisting}[style=RScript]
+# install.packages("lubridate")
+library(lubridate) #Para manejar fechas
+
+fechas <- c("2023-01-01", "2025-03-02",
+						"2023-08-07", "2023-11-10")
+
+class(fechas)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "character"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+fechas <- as_date(fechas) #Cambiamos el tipo de datos a fecha.
+
+class(fechas)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Date"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+year(fechas)  #Obtener años
+month(fechas) #Obtener meses
+day(fechas)   #Obtener días
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 2023 2025 2023 2023
+[1]  1  3  8 11
+[1]  1  2  7 10
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	El vector es la estructura de datos fundamental en R. Un vector es una colección ordenada de elementos \textbf{del mismo tipo} (Recod\'a esto para mas adelante). Para cargar un vector por extensión, se utiliza la instrucción \rscript{c(`item1`, `item2`, ...)}.
+	
+\begin{lstlisting}[style=RScript]
+texto		<- c("A", "b", "C", "5")
+enteros <- c(1, 5, 6, 8)
+mixto		<- c("1", "2", 3, 4) #!!!
+
+#   Esto último NO devuelve error, pero tampoco almacena los datos
+# como se los cargamos. ¿Qué es lo que está haciendo?
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Tipos principales}
+	En R existen varios tipos de datos, incluyendo factores (categóricos), fechas (Date/POSIXct), complejos (números complejos) y otros tipos especializados que veremos más adelante en el curso. Incluso, cuando aprendas a usar listas, podr\'ias crear tus propios tipos de datos.
+	
+	Por ahora, comenzaremos con los tres tipos más frecuentes en análisis de datos:
+	
+	\begin{enumerate}
+		\item L\'ogicos
+		\item Num\'ericos
+		\item Cadena de texto
+	\end{enumerate}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Tipos principales: Lógicos}
+	Solo toman valores \rscript{TRUE} o \rscript{T} (Verdadero) o \rscript{FALSE} o \rscript{F} (Falso).
+	
+	\titleitem{Ejemplos de variables estadísticas}
+	\begin{itemize}
+		\item Aprobó/Desaprobó un examen. 
+		\item Tiene empleo/No tiene empleo. 
+		\item Posee vivienda propia (Sí/No). 
+		\item Está inscripto en un programa social. 
+		\item Respondió a una encuesta.
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+es_mayor_de_edad = TRUE
+es_mayor_de_edad
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+aprobado <- c(TRUE, FALSE, TRUE, TRUE) #Vector de aprobados
+aprobado
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE  TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Otras formas de generar valores lógicos}
+Además de asignar directamente \rscript{TRUE} o \rscript{FALSE}, los valores lógicos se generan frecuentemente como resultado de operaciones
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{}
+	\titleitem{Operadores de comparación}
+	Comparan valores y devuelven \rscript{TRUE} o \rscript{FALSE}. 
+\begin{lstlisting}[style=RScript]
+# Comparaciones numéricas
+edad <- 25
+edad >= 18           # ¿Es mayor o igual a 18?
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}	
+\begin{lstlisting}[style=RScript]
+edad == 30           # ¿Es igual a 30? (notá que es == y no =)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE	
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Comparaciones con vectores (elemento a elemento)
+notas  <- c(8, 5, 7, 4, 9)
+aprobo <- notas >= 6  # Vector lógico indicando quiénes aprobaron	
+aprobo
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE FALSE TRUE FALSE TRUE
+\end{lstlisting}
+
+La lógica detrás de por qu\'e funciona este último ejemplo la veremos luego.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\titleitem{Funciones is.*}
+	Verifican el tipo de un objeto.
+\begin{lstlisting}[style=RScript]
+x <- 42
+is.numeric(x)        # ¿Es numérico?
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+is.character(x)      # ¿Es texto?	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+is.logical(x)      # ¿Es lógico?	
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+y <- "Hola"
+is.character(y)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\titleitem{Otras funciones \'utiles}
+\begin{lstlisting}[style=RScript]
+# Verificar valores faltantes
+datos <- c(10, NA, 30, NA, 50)
+
+is.na(datos)
+\end{lstlisting}
+
+\begin{lstlisting}[style=RConsole]
+[1] FALSE TRUE FALSE TRUE FALSE
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Verificar pertenencia ( %in% )
+provincias <- c("Santa Fe", "Buenos Aires", "Córdoba")
+
+"Santa Fe" %in% provincias
+"Mendoza"  %in% provincias
+"Cordoba"  %in% provincias
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+[1] FALSE
+[1] FALSE
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Verificar múltiples condiciones
+valores <- c(5, 15, 25, 35)
+
+(valores > 10) & (valores < 30) # TRUE solo para 15 y 25
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Tipos principales: Num\'ericos}
+	Números enteros o racionales.
+	
+	\titleitem{Ejemplos de variables estadísticas}
+	\begin{itemize}
+		\item Edad (años)
+		\item Ingreso mensual (pesos)
+		\item Cantidad de hijos
+		\item Temperatura (°C)
+		\item Precio de un producto
+		\item Peso (kg)
+		\item Calificación de un examen (0-100)
+		\item  Años de educación
+		\item Tasa de desempleo (\%), PIB per cápita.
+	\end{itemize}
+	
+\begin{lstlisting}[style=RScript]
+mi_edad <- 30
+alturas <- c(1.75, 1.80, 1.65)
+edades  <- c(25, 30, 22)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Tipos principales: Caracteres}
+	Texto. Siempre van entre comillas.
+	
+	\titleitem{Ejemplos de variables estadísticas}
+	\begin{itemize}
+		\item Nombre de una persona, 
+		\item Provincia de residencia (aunque pueden considerarse factores), 
+		\item Código postal, 
+		\item Ocupación laboral, 
+		\item Marca de un producto (también factor), 
+		\item Dirección de email, 
+		\item Respuesta a pregunta abierta, 
+		\item DNI o CUIT (aunque sean números, se tratan como texto porque no tiene sentido sumarlos).
+	\end{itemize}
+	
+\begin{lstlisting}[style=RScript]
+nombre_del_curso <- "Curso de R"
+nombres					 <- c("Ana", "Juan", "Pedro")
+actividad 			 <- "curso de R"
+encargado 			 <- "Jonatán Perren"
+
+paste("El encargado del", actividad, "es", encargado) #!
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+	\begin{block}{}
+		?`Para que sirve \rscript{paste()}? ?`Qu\'e diferencia hay con \rscript{paste0()}?
+	\end{block}
+\end{frame}
+
+
+\begin{frame}[fragile]
+	Será importante más adelante poder identificar el tipo de dato que recibimos y el que tenemos para evitar algunos errores.
+	
+\begin{lstlisting}[style=RScript]
+`num1` <- 5
+`num2` <- "8"
+`num1` + `num2` #Note que num2 no es de tipo numérico
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Error en num1 + num2: argumento no-numérico para operador binario
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+	Aunque algunos posibles problemas se solucionan por coerción. La coerción ocurre cuando un tipo de dato se convierte en otro para complacer a una función. La conversión ocurre en este orden:
+	\begin{center}
+		\rscript{logical -> integer -> numeric -> character}
+	\end{center}
+	Por ejemplo, supongamos que tenemos \rscript{`b1` <- TRUE}, \rscript{`b2` <- TRUE} y \rscript{`b3` <- FALSE}. La operación suma (bajo el operador \rscript{+}) no está definida para datos lógicos. Aun así, observe el siguiente bloque
+\begin{lstlisting}[style=RScript]
+`b1` <- TRUE; `b2` <- TRUE; `b3` <- FALSE
+
+`b1` + `b2` + `b3`
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 2
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+	Lo que ocurre es que la coerción convierte los datos en enteros (\rscript{integer}) y aplica la suma. Por defecto, \rscript{TRUE} se convierte en \rscript{1} y \rscript{FALSE} se convierte en \rscript{0}.
+\end{frame}
+
+
+\begin{frame}[fragile]
+	Sabiendo que la función \rscript{paste()} recibe cadenas y las concatena. Observe el siguiente bloque
+\begin{lstlisting}[style=RScript]
+entero <- 30
+cadena <- "Mi edad es"
+paste(cadena, entero)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Mi edad es 30"
+\end{lstlisting}
+
+En este caso, \rscript{entero} se convierte por coersión en \rscript{character} y se concatena.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	Tambi\'en vimos a la coersi\'on en acci\'on en un ejemplo anterior cuando construimos un vector con datos de tipo distinto.
+\begin{lstlisting}[style=RScript]
+mixto		<- c("1", "2", 3, 4) #!!!
+
+mixto
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "1" "2" "3" "4"
+\end{lstlisting}
+
+Not\'a como se han convertido todos en caracteres. Realmente no tiene nada de \rscript{mixto}.
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	Es posible convertir generalmente datos de un tipo a otro con funciones como \rscript{as.logical()}, \rscript{as.integer()}, \rscript{as.numeric()} y \rscript{as.character()}, entre otros que veremos más adelante. Si volvemos al ejemplo que fallaba antes
+\begin{lstlisting}[style=RScript]
+`num1` <- 5
+`num2` <- "8"
+`num2` <- as.integer(`num2`) #Ahora num2 es entero.
+`num1` + `num2`
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 13
+\end{lstlisting}
+
+Estas funciones serán de suma utilidad cuando tengamos que limpiar marcos de datos.
+
+?`Cu\'al cre\'es que ser\'an los resultados en los siguientes dos vectores?
+
+\begin{lstlisting}[style=RScript]
+`v1` <- c(1, 2, TRUE, 0)
+`v2` <- c(1, 2, "TRUE", 0)
+`v3` <- c(1, 2, TRUE, "0")
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Formas de crear vectores}
+	\titleitem{Por extensión}
+	Enumerar elementos explícitamente. Se utiliza la función \rscript{c()}
+\begin{lstlisting}[style=RScript]
+mis_numeros <- c(1, 5, 10)
+mis_numeros
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 1 5 10
+\end{lstlisting}
+
+\titleitem{Por secuencia}
+Rangos de enteros consecutivos. Se carga mediante \rscript{:} entre el entero inferior y el entero superior.
+\begin{lstlisting}[style=RScript]
+uno_al_diez				 <- 1:10
+dos_al_menos_siete <- 2:-7
+uno_al_diez
+dos_al_menos_siete
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  1  2  3  4  5  6  7  8  9 10
+[1]  2  1  0 -1 -2 -3 -4 -5 -6 -7
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Formas de crear vectores}
+	\titleitem{Por progresión}
+	Como el anterior, pero con un paso definido. Se carga mediante la función \rscript{seq()}.
+\begin{lstlisting}[style=RScript]
+lista <- seq(from = -3, to = 10, `:ky:by` = 2)
+lista #De -3 hasta 10 de 2 en 2.
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] -3 -1  1  3  5  7  9
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+lista <- seq(from = 0, to = 1, `:ky:length.out` = 21)
+lista #21 elementos uniformemente distribuidos entre 0 y 1
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 0.00 0.05 0.10 0.15 0.20 0.25 0.30
+[8] 0.35 0.40 0.45 0.50 0.55 0.60 0.65
+[15] 0.70 0.75 0.80 0.85 0.90 0.95 1.00
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Formas de crear vectores}
+		\titleitem{Por repetición}
+	Repite elementos un número de veces. Se carga mediante la función \rscript{rep()}
+\begin{lstlisting}[style=RScript]
+lista <- rep(5, times = 3)
+lista #Repite 5 tres veces.
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 5 5 5
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+lista <- rep(0:2, `:ky:length.out` = 5)
+lista
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 0 1 2 0 1
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+lista <- rep(0:2, each = 2)
+lista
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 0 0 1 1 2 2
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Formas de crear vectores}
+		\titleitem{Por distribución de probabilidad}
+		Por muestreo aleatorio. Varias funciones en R que tienen el prefijo \rscript{r*} devuelven un vector de datos. Tambien se pueden tomar muestras aleatorias de un vector mediante la función \rscript{sample()}.
+\begin{lstlisting}[style=RScript]
+lista <- 1:100
+muestra <- sample(lista, size = 10)
+muestra #Muestra de tamaño 10 sin repetición
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 81 80 44 57 28 96 30 84 65 50
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+booleanos <- c(TRUE, FALSE)
+muestra <- sample(booleanos, size = 10, `:ky:replace` = TRUE)
+muestra #Muestra de tamaño 10 con repetición
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE FALSE  TRUE FALSE FALSE
+[6] FALSE FALSE  TRUE FALSE  TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}{Formas de crear vectores}
+	\begin{block}{}
+		Averig\"u\'a cu\'ales son las funciones que trae R por defecto para tomar muestras de distribuciones de probabilidad conocidas.
+	\end{block}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\titleitem{Operadores Lógicos y Relacionales}
+	Podemos hacer preguntas a nuestros datos. El resultado siempre será un vector lógico (\rscript{TRUE} o \rscript{FALSE}).
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3,4,5} = {cmd = \rscript}
+			}
+			Tipo & Operación & Operador & Ejemplo de Uso & Resultado \\
+			\SetCell[r=4]{l} Unario & Negación (NOT) & ! & !TRUE & FALSE \\
+			& & ! & !(c(TRUE, FALSE)) & c(FALSE, TRUE) \\
+						& Val. faltantes & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\
+			& & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\
+		\end{tblr}
+	\end{table}
+	
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3-5} = {cmd = \rscript}
+			}
+			Tipo & Operación & Op. & Ejemplo de Uso & Resultado \\
+			\SetCell[r=12]{l} Relaci\'on & Igual a & == & 5 == 5 & TRUE \\
+			& & == & c(1, 2, 3) == 2 & c(FALSE, TRUE, FALSE) \\
+			& Distinto de & != & 5 != 3 & TRUE \\
+			& & != & c(1, 2, 3) != 2 & c(TRUE, FALSE, TRUE) \\
+			& Mayor que & > & 5 > 3 & TRUE \\
+			& & > & c(1, 5, 3) > 2 & c(FALSE, TRUE, TRUE) \\
+			& Menor que & < & 3 < 5 & TRUE \\
+			& & < & c(1, 5, 3) < 4 & c(TRUE, FALSE, TRUE) \\
+			& Mayor o igual & >= & 5 >= 5 & TRUE \\
+			& & >= & c(4, 5, 6) >= 5 & c(FALSE, TRUE, TRUE) \\
+			& Menor o igual & <= & 3 <= 5 & TRUE \\
+			& & <= & c(4, 5, 6) <= 5 & c(TRUE, TRUE, FALSE) \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3-5} = {cmd = \rscript}
+			}
+			Tipo & Operación & Op. & Ejemplo de Uso & Resultado \\
+			\SetCell[r=4]{l} Lógico & AND (Y) & \& & TRUE \& FALSE & FALSE \\
+			& & \& & (c(T, T, F) \& c(T, F, T)) & c(T, F, F) \\
+			& OR (O) & | & TRUE | FALSE & TRUE \\
+			& & | & (c(T, T, F) | c(F, F, T)) & c(T, T, T) \\
+			\SetCell[r=2]{l} Otros & Pertenencia & \%in\% & "a" \%in\% c("a", "b") & TRUE \\
+			& & \%in\% & c(1, 3) \%in\% c(1, 2) & c(T, F) \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\titleitem{Operadores num\'ericos}
+	R funciona como una calculadora científica vitaminada. Además de las operaciones básicas, tenemos funciones para casi todo.
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación & Operador/Función & Ejemplo de Uso & Resultado \\
+			Suma & + & c(4, 9) + 2 & c(6, 11) \\
+			Resta & - & c(10, 5) - 3 & c(7, 2) \\
+			Multiplicación & * & c(3, 5) * 2 & c(6, 10) \\
+			División & / & c(10, 20) / 5 & c(2, 4) \\
+			Potencia & ^ & c(2, 3) ^ 2 & c(4, 9) \\
+			Raíz cuadrada & sqrt() & sqrt(c(4, 9, 16)) & c(2, 3, 4) \\
+			División entera & \%/\% & 10 \%/\% 3 & 3 \\
+			Resto (módulo) & \%\% & 10 \%\% 3 & 1 \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación & Op./Función & Ejemplo de Uso & Resultado \\
+			Logaritmo nat. & log() & log(c(1, `:nm:2.718`)) & c(0, 1) \\
+			Exponencial & exp() & exp(c(0, 1)) & c(1, `:nm:2.718`...) \\
+			Valor absoluto & abs() & abs(c(-5, 3)) & c(5, 3) \\
+			Redondeo & round() & round(`:nm:3.14159`, 2) & 3.14 \\
+			Redondeo arriba & ceiling() & ceiling(`:nm:3.14`) & 4 \\
+			Redondeo abajo & floor() & floor(`:nm:3.99`) & 3 \\
+			Máximo & max() & max(c(1, 5, 3)) & 5 \\
+			Mínimo & min() & min(c(1, 5, 3)) & 1 \\
+			Suma total & sum() & sum(c(1, 2, 3)) & 6 \\
+			Promedio & mean() & mean(c(2, 4, 6)) & 4 \\
+			Mediana & median() & median(c(1, 2, 10)) & 2 \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\titleitem{Operadores para caracteres}
+	El texto en R se manipula con funciones específicas.
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación & Función & Ejemplo de Uso & Resultado \\
+			Concatenar & paste() & paste("Curso", "de", "R") & "Curso de R" \\
+			Concatenar & paste0() & paste0("Curso", "de", "R") & "CursodeR" \\
+			Contar car. & nchar() & nchar(c("Hola", "Mundo")) & c(4, 5) \\
+			Mayúsculas & toupper() & toupper("hola") & "HOLA" \\
+			Minúsculas & tolower() & tolower("MUNDO") & "mundo" \\
+			Subcadena & substr() & substr("Viernes", 1, 4) & "Vier" \\
+			Reemplazar & gsub() & gsub("a", "o", "casa") & "coso" \\
+			Dividir cad. & strsplit() & strsplit("a-b", "-") & list(c("a", "b")) \\
+			Eliminar esp. & trimws() & trimws(" texto ") & "texto" \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Aritmética vectorizada: Operaciones elementales sin bucles}
+	Esta es una de las características más potentes de R y lo diferencia de lenguajes como C o Python clásico. R está diseñado para operar sobre vectores completos de una sola vez (similar al concepto SIMD - Single Instruction, Multiple Data).
+	
+	\titleitem{¿Por qué es importante?}
+	\begin{enumerate}
+		\item Claridad: El código se lee como una operación matemática (\guillemetleft precio por cantidad\guillemetright ), no como una instrucción informática (\guillemetleft toma el elemento i, multiplícalo, guárdalo, repite\guillemetright ).
+		\item Eficiencia: Las operaciones vectorizadas están optimizadas en C, siendo mucho más rápidas que un bucle explícito escrito en R.
+	\end{enumerate}
+	
+\begin{lstlisting}[style=RScript]
+# R
+precios <- c(100, 200, 300)
+precios_con_iva <- precios * `:nm:1.21`
+\end{lstlisting}
+
+\begin{lstlisting}[style=JuliaScript]
+# Julia
+precios = [100, 200, 300]
+precios_con_iva = precios .* 1.21
+\end{lstlisting}
+
+\begin{lstlisting}[style=PythonScript]
+# Python
+precios = [100, 200, 300]
+precios_con_iva = [p * 1.21 for p in precios]
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+	En R, también pod\'es operar dos vectores entre sí. La operación se hace posición a posición (el 1ro con el 1ro, el 2do con el 2do, etc.).
+\begin{lstlisting}[style=RScript]
+ingreso  <- c(100, 200, 300)
+costo		 <- c(75, 125, 280)
+utilidad <- ingreso - costo
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 25 75 20
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Matrices}
+	Las matrices son extensiones de los vectores a dos dimensiones (filas y columnas). Al igual que los vectores, todos sus elementos deben ser del mismo tipo (todos números, todos caracteres, etc.).
+\end{frame}
+
+
+\begin{frame}[fragile]{Creación de matrices}
+Usamos la función \rscript{matrix()}, especificando los datos y las dimensiones.
+\begin{lstlisting}[style=RScript]
+# Crear una matriz de 3 filas y 2 columnas con números del 1 al 6
+mi_matriz <- matrix(`:ky:data` = 1:6, `:ky:nrow` = 3, `:ky:ncol` = 2)
+mi_matriz
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1] [,2]
+[1,]    1    4
+[2,]    2    5
+[3,]    3    6	
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Por defecto llena por columnas. Para llenar por filas:
+matriz_filas <- matrix(1:6, `:ky:nrow` = 3, byrow = TRUE)	
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Propiedades y acceso}
+	Podemos consultar sus dimensiones y acceder a elementos específicos usando corchetes \rscript{[fila, columna]}.
+\begin{lstlisting}[style=RScript]
+dim(mi_matriz)      # Devuelve c(3, 2) -> cantidad de filas y de columnas
+nrow(mi_matriz)     # Número de filas
+ncol(mi_matriz)     # Número de columnas
+
+# Indexación (Slicing)
+mi_matriz[1, 2]     # Elemento en fila 1, columna 2
+mi_matriz[2,  ]     # Toda la fila 2
+mi_matriz[ , 1]     # Toda la columna 1
+
+# O varias selecciones a la vez
+mi_matriz[ , c(1, 5)]     # Columna 1 y 5
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operaciones básicas}
+	Al igual que con los vectores, las operaciones matemáticas son elemento a elemento. También existen funciones específicas para matrices.
+\begin{lstlisting}[style=RScript]
+mi_matriz * 2       # Multiplica cada elemento por 2
+t(mi_matriz)        # Transpuesta (cambia filas por columnas)
+rowSums(mi_matriz)  # Suma de cada fila
+colMeans(mi_matriz) # Promedio de cada columna	
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Acceso a elementos de un vector (indexación)}
+	Una vez que tenemos datos en un vector, a menudo necesitamos seleccionar partes específicas de él. Para esto usamos los corchetes \rscript{[]}.
+\end{frame}
+
+
+\begin{frame}[fragile]{Indexación por posición (enteros positivos)}
+	Indicamos la posición del elemento que queremos recuperar.
+\begin{lstlisting}[style=RScript]
+letras <- c("A", "B", "C", "D", "E")
+
+letras[1]       # El primer elemento ("A")
+letras[3]       # El tercer elemento ("C")
+
+# Podemos pedir varios a la vez pasando un vector de posiciones
+letras[c(1, 5)] # El primero y el quinto ("A", "E")
+\end{lstlisting}
+\end{frame}
+
+
+\begin{frame}[fragile]{Indexación por exclusión (enteros negativos)}
+	Si usamos números negativos, R devuelve \textbf{todo menos} lo que indicamos.
+\begin{lstlisting}[style=RScript]
+letras <- c("A", "B", "C", "D", "E")
+
+letras[-1]       # Todo menos el primero
+letras[-c(4, 5)] # Todo menos el cuarto y el quinto
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Indexación lógica (filtrado)}
+	Esta es quizás la forma más potente. Usamos un vector de \rscript{TRUE} y \rscript{FALSE} (usualmente resultado de una condición) para quedarnos solo con los elementos que cumplen la condición (\rscript{TRUE}).
+\begin{lstlisting}[style=RScript]
+valores <- c(10, 5, 20, 2)
+
+# Paso 1: Crear la condición (vector lógico)
+condicion <- valores > 5
+condicion 
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE FALSE TRUE FALSE	
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Paso 2: Usar la condición para filtrar
+valores[condicion]
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 10 20
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Todo en una sola línea (lo más común):
+valores[valores > 5]
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 10 20	
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+	Incluso se  puede hacer filtrados m\'as complejos
+	
+\begin{lstlisting}[style=RScript]
+nombres <- c("Camila", "Pedro", "Lucía", "Juan", "Esteban")
+notas <- c(10, 5, 3, 7, 8)
+
+aprobo <- notas >= 6 #Vector lógico de aprobados/as
+
+nombres[aprobo] #Filtrado por aprobados/as
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Camila"  "Juan"    "Esteban"
+\end{lstlisting}
+
+Poder entender el funcionamiento de este mecanismo \textbf{es fundamental}!
+\end{frame}
+
+
+\begin{frame}[fragile]{Ejercicios}
+	Intenta resolverlos paso a paso en un \'unico script.
+	
+	\begin{enumerate}
+		\item Crea un objeto con tu año de nacimiento y otro con el año actual (como número). Calcula tu edad aproximada restando ambos objetos y guárdala en una nueva variable.
+		\item Crea un vector con las temperaturas máximas de la semana: 24, 28, 31, 25, 22. Convierte todo el vector a grados Fahrenheit ($F = C \times 1.8 + 32$) en una sola línea.
+		\item Genera una secuencia de números que vaya del 100 al 10 bajando de 5 en 5. Guarda el resultado y calcula la suma de todos esos números.
+		\item Tienes un vector de precios: \rscript{c(100, 500, 200, 1500)}. Aplica un descuento del 10\% a todos, pero luego súmales un costo fijo de envío de 50 pesos a cada uno.
+		\item Crea un vector con los nombres de 4 ciudades y otro con sus respectivas poblaciones (en millones). Usa \rscript{paste()} para crear frases tipo \guillemetleft La ciudad X tiene Y millones de habitantes\guillemetright .
+		\item Dado el vector \rscript{x <- c(4, 9, 16, 25)}, calcula la raíz cuadrada de todos los elementos y luego calcula el promedio de esos resultados.
+		\item Crea un vector lógico que indique qué números del 1 al 20 son divisibles por 3. (Pista: usa el operador módulo \lstinline[style=RScript, basicstyle=\normalsize]`%%` y compara con 0).
+		\item Tienes dos vectores: \rscript{a <- c(TRUE, FALSE, TRUE)} y \rscript{b <- c(FALSE, TRUE, TRUE)}. Predice el resultado de \rscript{a & b} y \rscript{a | b} antes de ejecutarlo.
+	\end{enumerate}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ejercicios}	
+	\begin{enumerate}[start = 9]
+		\item Crea una matriz de 4 filas y 3 columnas con los números del 1 al 12. Calcula la suma de cada columna y guarda el resultado en un vector.
+		\item De la matriz anterior, extrae solamente la tercera fila y multiplícala por 10.
+		\item Crea un vector con 5 palabras en minúscula. Conviértelas todas a mayúsculas y luego cuenta cuántos caracteres tiene cada una.
+		\item Simula las notas de un examen para 6 alumnos con un vector numérico. Crea un vector lógico que sea \rscript{TRUE} para quienes aprobaron (nota >= 6) y \rscript{FALSE} para los que no.
+		\item Usa el vector lógico del ejercicio anterior para contar cuántos alumnos aprobaron (Pista: en R, \rscript{TRUE} vale 1 y \rscript{FALSE} vale 0, así que puedes sumar el vector lógico).
+		\item Crea dos vectores de longitud 3: \rscript{base} y \rscript{altura}. Calcula el área de 3 triángulos simultáneamente.
+		\item Tienes un vector de edades: \rscript{c(15, 22, 35, 12, 45, 17)}. Filtra y muestra solo las edades que son mayores de edad y menores de 40.
+		\item Crea una matriz de 2x2 con valores aleatorios (puedes inventarlos). Calcula su transpuesta y verifíca si la suma de la matriz original más la transpuesta da una matriz simétrica.
+		\item Intenta sumar un vector de longitud 2 a un vector de longitud 5. Observa el resultado y la advertencia de R. ¿Cómo se aplicó el reciclaje?
+	\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Ejercicios}	
+	\begin{enumerate}[start  = 18]
+		\item Crea un vector de textos con fechas en formato \guillemetleft DD-MM-AAAA\guillemetright  (ej: "01-01-2023"). Usa \rscript{substr()} para extraer solo los años de cada fecha.
+		\item Genera una secuencia del 1 al 50. Crea un vector lógico que identifique los números que NO son divisibles por 5 (usando negación \rscript{!}).
+		\item Crea una matriz de 3x3 donde todos los elementos sean 0. Luego, modifica manualmente el elemento central (fila 2, columna 2) para que valga 1.
+		\item Ten\'es un vector de nombres \rscript{c("Juan", "Ana", "Pedro")} y un vector de apellidos \rscript{c("Pérez", "Gómez")}. Úsalos en \rscript{paste()}. ¿Qué sucede debido a la regla de reciclaje?
+		\item Calcula el logaritmo natural de los números 10, 100 y 1000. Luego redondea los resultados a 2 decimales.
+		\item Crea una matriz de 5 filas y 2 columnas. La primera columna debe tener los números del 1 al 5, y la segunda columna sus cuadrados. Asigna nombres a las columnas ("Numero", "Cuadrado") usando \rscript{colnames()}.
+	\end{enumerate}
+\end{frame}
+\end{document}

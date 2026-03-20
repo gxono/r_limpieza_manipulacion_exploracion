@@ -1,1 +1,468 @@
-\documentclass[8pt]{beamer}\usepackage{../config}\usepackage[utf8]{inputenc}\parskip0.5em%---------------TERMINADO\begin{document}	\subtitle{4to encuentro: Manipulación de datos I}	\begin{frame}[plain]		\maketitle	\end{frame}							\begin{frame}[fragile]		Una vez que tenemos nuestros datos cargados en R, comienza lo más divertido: transformar esos datos crudos en información útil. R es excepcionalmente bueno para esto gracias al ecosistema \rscript{tidyverse}, que implementa una \quotation{gramática de manipulación de datos} coherente e intuitiva.				En este encuentro nos centraremos en entender el flujo de trabajo moderno en R y en las operaciones que afectan a las columnas (variables) de nuestros datos: seleccionar las que nos interesan y crear nuevas a partir de las existentes.	\end{frame}	\begin{frame}[fragile]{El operador \quotation{pipe} }		Posiblemente la herramienta más revolucionaria para la legibilidad del código en R. El pipe (tubería) nos permite encadenar operaciones secuencialmente, leyendo el código de izquierda a derecha y de arriba a abajo, tal como leemos un texto.				\begin{figure}[h!]			\includegraphics[width = 0.15\textwidth]{img/magrittr.png}		\end{figure}	\end{frame}							\begin{frame}[fragile]		En términos prácticos, el \quotation{pipe} toma el resultado de la expresión de la izquierda y lo pasa como \quotation{primer argumento} de la función de la derecha. 				Es decir, en lugar de escribir \rscript{f(g(h(x)))}, podemos escribir \rscript{x |> h() |> g() |> f()}. 				Esto no cambia lo que el programa hace, pero sí cambia radicalmente cómo se lee.		\begin{itemize}			\item \rscript{x |> f} es equivalente a \rscript{f(x)}			\item \rscript{x |> f(y)} es equivalente a \rscript{f(x, y)}			\item \rscript{x |> f |> g |> h} es equivalente a \rscript{h(g(f(x)))}		\end{itemize}	\end{frame}	\begin{frame}[fragile]		¿Por qué es necesario? Porque en análisis de datos es común aplicar muchas transformaciones seguidas: filtrar, ordenar, crear variables, agrupar, resumir, etc. Sin *pipe*, el código suele terminar en llamadas anidadas (hay que leer \quotation{desde adentro hacia afuera} ) o en una secuencia de asignaciones intermedias (\rscript{x1}, \rscript{x2}, \rscript{x3}), que fragmenta el flujo lógico y dificulta seguir el proceso.	\end{frame}					\begin{frame}[fragile]		Imagina este proceso en la vida real: \quotation{Tamizar harina, templar el agua, hidratar, mezclar con sal y levadura, amasar, dejar leudar, formar bollos y hornear} . Si quisieramos escribir este proceso como una sucesion de funciones en R deberiamos hacer algo como		\begin{lstlisting}[style=RScript]panes <- `:fn:hornear`(`:fn:formar`(`:fn:leudar`(`:fn:amasar`(`:fn:mezclar`(`:fn:hidratar`(`:fn:tamizar`(harina), agua = `:fn:templar`(agua, 28)), sal = 10, levadura = 3), minutos = 12), minutos = 60, temperatura = 26), forma = "bollos"), minutos = 25, temperatura = 220)\end{lstlisting}u \quotation{organizando mejor el código} \begin{lstlisting}[style=RScript]	panes <- `:fn:hornear`(		`:fn:formar`(			`:fn:leudar`(				`:fn:amasar`(					`:fn:mezclar`(						`:fn:hidratar`(							`:fn:tamizar`(harina), agua = `:fn:templar`(agua, 28)						),						sal = 10,						levadura = 3					),					minutos = 12				),				minutos = 60,				temperatura = 26			),			forma = "bollos"		), 		minutos = 25,		temperatura = 220	)\end{lstlisting}	\end{frame}\begin{frame}[fragile]Si optamos por hacer asignaciones en memoria:\begin{lstlisting}[style=RScript]	harina_tamizada		<- `:fn:tamizar`(harina)	agua_templada			<- `:fn:templar`(agua, 28)		harina_hidratada	<- `:fn:hidratar`(harina_tamizada, agua = agua_templada)	mezcla 						<- `:fn:mezclar`(harina_hidratada, sal = 10, levadura = 3)	masa 							<- `:fn:amasar`(mezcla, minutos = 12)	masa_leudada 			<- `:fn:leudar`(masa, minutos = 60, temperatura = 26)	bollos						<- `:fn:formar`(masa_leudada, forma = "bollos")	panes							<- `:fn:hornear`(bollos, minutos = 25, temperatura = 220)	\end{lstlisting}\end{frame}\begin{frame}[fragile]	Pero si usamos el \quotation{pipe} tenemos\begin{lstlisting}[style=RScript]panes <- harina |>	`:fn:tamizar`() |>	`:fn:hidratar`(agua = agua |> `:fn:templar`(28)) |>	`:fn:mezclar`(sal = 10, levadura = 3) |>	`:fn:amasar`(minutos = 12) |>	`:fn:leudar`(minutos = 60, temperatura = 26) |>	`:fn:formar`(forma = "bollos") |>	`:fn:hornear`(minutos = 25, temperatura = 220)	\end{lstlisting}\end{frame}\begin{frame}[fragile]	El pipe soluciona eso al permitir escribir el código como un pipeline: una receta donde cada línea es un paso. Esto mejora:		\begin{itemize}		\item Legibilidad: el orden del código coincide con el orden mental del procedimiento.		\item Mantenibilidad: es fácil insertar, quitar o reordenar pasos sin reescribir todo.		\item Depuración: se pueden inspeccionar resultados intermedios agregando una línea extra (por ejemplo, para imprimir o visualizar un objeto) sin romper la estructura.\begin{lstlisting}[style=RScript]ventas |> view() #tibble::view()# o tambiénventas %>% view	\end{lstlisting}	\end{itemize}\end{frame}\begin{frame}[fragile]{Pipe nativo}Introducido en la versión 4.1.0 de R (2021), es el pipe que viene integrado en el lenguaje base, sin necesidad de instalar nada.\begin{itemize}	\item Sintaxis: \rscript{|>}	\item Ventaja: Más rápido y ligero. No depende de paquetes externos.	\item Uso: Pasa el resultado de la izquierda como primer argumento de la función de la derecha.\end{itemize}\begin{lstlisting}[style=RScript]# Ejemplo: Calcular la media de un vectorc(1, 2, 3, 4, 5) |> mean()# Es exactamente lo mismo que:mean(c(1, 2, 3, 4, 5))	\end{lstlisting}\end{frame}\begin{frame}[fragile]{Pipe \texttt{magrittr}}	Es el pipe clásico que popularizó el paquete \rscript{dplyr} y \rscript{tidyverse}. Durante años fue el único estándar.		\begin{itemize}		\item Sintaxis: \lstinline[style=RScript, basicstyle = \normalfont]`%>%`		\item Ventaja: Más flexible (permite usar el punto \rscript{.} para referenciar el dato en lugares que no sean el primer argumento), aunque un poco más lento.		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, .)` es equivalente a \rscript{f(y, x)}		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, z = .)` es equivalente a \rscript{f(y, z = x)}		\item Requerimiento: Necesitas cargar \rscript{library(tidyverse)} o \rscript{library(magrittr)}.	\end{itemize}		En este curso, y para el 99\% de las tareas de análisis de datos, son intercambiables. 		Vas a ver mucha documentación antigua usando \lstinline[style=RScript, basicstyle = \normalfont]`%>%` y mucha nueva usando \rscript{|>}. ¡Acostúmbrate a ambos!\end{frame}\begin{frame}[fragile]{El paquete dplyr y los verbos para la gramática de datos}	\rscript{dplyr} es el paquete central del tidyverse para manipulación de datos. Su filosofía se basa en funciones que hacen una sola cosa bien y tienen nombres de verbos en inglés.		Te recomiendo que tengas el cheatsheet siempre a mano. Hay una copia \href{https://servicios.unl.edu.ar/aulavirtual/fce/mod/resource/view.php?id=67152&redirect=1}{\textbf{ac\'a en el aula virtual}}.		Todas las funciones de \rscript{dplyr} comparten la misma estructura:	\begin{enumerate}		\item Primer argumento: Un data frame (o tibble).		\item Argumentos siguientes: Qué hacer con ese data frame (nombres de columnas, fórmulas, etc.).		\item Resultado: Siempre devuelve un nuevo data frame.	\end{enumerate}\end{frame}\begin{frame}[fragile]{Los verbos m\'as importantes}	Existen 5 verbos fundamentales que cubren la gran mayoría de tus necesidades:	\begin{enumerate}		\item \rscript{select()}: Selecciona columnas (variables).		\item \rscript{filter()}: Filtra filas (observaciones).		\item \rscript{arrange()}: Ordena filas.		\item \rscript{mutate()}: Crea o modifica columnas.		\item \rscript{summarise()}: Resume valores (colapsa muchas filas en una sola).	\end{enumerate}		Hoy nos centraremos en \rscript{select} y \rscript{mutate}.\end{frame}\begin{frame}[fragile]{El verbo \texttt{select}}	Muchas veces nuestros datasets tienen cientos de columnas, pero solo nos interesan unas pocas. \rscript{select()} nos permite quedarnos con lo importante.\begin{lstlisting}[style=RScript]# Usaremos el dataset mtcars como ejemplo# Seleccionar columnas explícitamentemtcars |> select(`:bn:mpg`, `:bn:cyl`, `:bn:hp`)# Seleccionar un rango de columnas (con :)mtcars |> select(`:bn:mpg`:`:bn:drat`)# Seleccionar todas MENOS algunas (con -)mtcars |> select(-`:bn:am`, -`:bn:gear`, -`:bn:carb`)	\end{lstlisting}\end{frame}\begin{frame}[fragile]{Antes de continuar: helpers}	\titleitem{Funciones de ayuda (Helpers)}	\rscript{dplyr} ofrece funciones geniales para seleccionar columnas basándose en sus nombres, lo cual es muy útil cuando trabajamos con bases de datos grandes. Es con estos helpers que se puede ver la utilidad de tener bien asignados los nombres de las variables.	\begin{itemize}		\item \rscript{starts_with("prefijo")}: selecciona columnas que empiezan con un prefijo.		\item \rscript{ends_with("sufijo")}: selecciona columnas que terminan con un sufijo.		\item \rscript{contains("texto")}: selecciona columnas que contienen una cadena de texto.		\item \rscript{num_range("prefijo", rango)}: selecciona columnas con un prefijo y una secuencia numérica (ej: \rscript{`x1`}, \rscript{`x2`}, \rscript{`x3`}).		\item \rscript{all_of(`vector`)} o tambi\'en \rscript{any_of(`vector`)}: selecciona columnas cuyos nombres están en un vector de texto.		\item \rscript{matches("expresion")}: selecciona columnas que coinciden con una expresión regular.		\item \rscript{everything()}: selecciona todas las columnas restantes.	\end{itemize}\end{frame}\begin{frame}[fragile]{}Veamos un ejemplo más realista simulando una base de datos de ventas mensuales:\begin{lstlisting}[style=RScript]# Creamos un dataset de juguete para demostrarventas <- tibble(	producto_id = 1:3,	producto_nombre = c("Refresco", "Papas", "Galletas"),	`mes_01` = c(100, 200, 150),	`mes_02` = c(110, 210, 160),	`mes_03` = c(120, 220, 170),	zona_norte = c(TRUE, FALSE, TRUE),	zona_sur = c(FALSE, TRUE, FALSE))# 1. Empiezan con "producto"ventas |> select(starts_with("producto"))# 2. Terminan con "id"ventas |> select(ends_with("id"))# 3. Contienen "zona"ventas |> select(contains("zona"))# 4. Rango numérico (para seleccionar mes_01, mes_02, mes_03)ventas |> select(num_range("mes_0", 1:3))# 5. Usando un vector de nombres (tengo una entrada en el blog sobre esto.# Comentarlo en `mutate`)rubros <- colnames(ventas)[4:10]ventas |> select(all_of(rubros))# 6. Reordenar: poner las zonas al principio y luego el restoventas |> select(starts_with("zona"), everything())# 7. Combinar selectores: nombre exacto y patrón (ej. solo nombre y zonas)ventas |> select(producto_nombre, starts_with("zona"))\end{lstlisting}\end{frame}\begin{frame}[fragile]{El verbo \texttt{mutate}}	El análisis de datos casi siempre implica crear nuevas variables: pasar de pesos a dólares, calcular el IMC a partir de altura y peso, o categorizar una variable numérica. \rscript{mutate()} es la herramienta para esto.		Lo importante es recordar que \rscript{mutate()} crea un nuevo data frame y agrega la nueva columna al final del data frame. Si quieres guardar el cambio, debes sobrescribir el objeto.\begin{lstlisting}[style=RScript]# Crear una nueva columna transformando una existentemtcars |> 	mutate(`:bn:kml` = `:bn:mpg` * `:nm:0.425`) |>    # Conversión de millas/galón a km/litro	select(`:bn:mpg`, `:bn:kml`)                # Seleccionamos para ver el resultado	# Crear múltiples columnas a la vezmtcars |> 	mutate(		`:bn:peso_kg`				= `:bn:wt` * 1000 * `:nm:0.453`,  # wt está en miles de libras		`:bn:potencia_peso` = `:bn:hp` / `:bn:peso_kg`	) |> 	select(`:bn:wt`, `:bn:peso_kg`, `:bn:hp`, `:bn:potencia_peso`) |> 	head(5)\end{lstlisting}	\end{frame}\begin{frame}[fragile]	También podemos usar \rscript{mutate} para usar operaciones condicionales usando \rscript{ifelse} o \rscript{case_when} que ya vimos en \quotation{estructuras de control} .\begin{lstlisting}[style=RScript]mtcars |> 	mutate(`:bn:es_fuerte` = ifelse(`:bn:hp` > 100, "Potente", "Normal")) |> 	select(`:bn:hp`, `:bn:es_fuerte`)	\end{lstlisting}\begin{alertblock}{}	Utiliz\'a nombres descriptivos para tus nuevas variables. \rscript{mutate(`:bn:x` = ...)} te ahorrará tiempo al escribir pero te costará horas al leer el código meses después.\end{alertblock}\end{frame}\begin{frame}[fragile]{Ejercicios}	\begin{enumerate}		\item Reescrib\'i la siguiente operación anidada usando el operador \textit{pipe} \rscript{|>}: \rscript{sqrt(mean(c(16, 9, 25)))}. Proponé dos formas distintas usando solo un \textit{pipe} y una usando dos.				\item Explic\'a con tus palabras qué hace el siguiente código y cuál sería su equivalente sin usar el \textit{pipe}: \rscript{mtcars |> head(5)}.				\item Dado el vector \rscript{v <- c(10, 20, 30, 40)}. Us\'a el \textit{pipe} para calcular el logaritmo de cada elemento y luego calcular la suma de esos resultados.				\item Supongamos que quiero sumar los elementos de \rscript{v} del ejercicio anterior. Identific\'a el error en este código: \rscript{v -> sum()}.				\item Reescrib\'i este bloque usando \textit{pipes} para evitar las asignaciones intermedias:\begin{lstlisting}[style=RScript]x <- c(1, 5, 10, NA)y <- mean(x, na.rm = TRUE)z <- round(y, 1)\end{lstlisting}		\item Carg\'a el dataset \rscript{starwars} (viene con \rscript{tidyverse}). Selecciona solo las columnas \rscript{name}, \rscript{height} y \rscript{mass}.				\item Usando \rscript{starwars}, seleccion\'a todas las columnas que \textbf{terminen} con \quotation{color} .				\item Seleccion\'a las columnas de \rscript{mtcars} que van desde \rscript{mpg} hasta \rscript{hp} usando el operador \rscript{:}.				\item Cre\'a un \rscript{`tibble`} reducido de \rscript{starwars} eliminando las columnas de tipo lista (\rscript{films}, \rscript{vehicles}, \rscript{starships}).	\end{enumerate}\end{frame}\begin{frame}[fragile]{}\begin{enumerate}[start = 10]		\item Us\'a \rscript{select()} con \rscript{starts\_with()} para quedarte con todas las variables del dataset \rscript{iris} que tengan que ver con el \quotation{Sepal} .		\item Reorden\'a las columnas de \rscript{mtcars} para que \rscript{`wt`} (peso) aparezca primero, seguida de todo el resto.		\item Intent\'a seleccionar la columna \rscript{hair\_color} de \rscript{starwars} pero renombrándola como \rscript{color\_pelo} al vuelo (dentro del mismo \rscript{select}).		\item ¿Qué pasa si seleccionas una columna que no existe? Intent\'a ejecutar \rscript{mtcars |> select(turbo)}.		\item Usando \rscript{any\_of()}, seleccion\'a las columnas \quotation{farenheit} y \quotation{celcius} de \rscript{airquality}. ¿Qué hace la función si las columnas no existen?		\item Seleccion\'a de \rscript{iris} todas las columnas numéricas (investig\'a \rscript{where(is.numeric)} dentro de \rscript{select} \emoji{wink}).		\item A partir de \rscript{mtcars}, cre\'a una nueva columna llamada \rscript{kml} (kilómetros por litro) utilizando la variable \rscript{mpg} (milla por galón) (claramente, google\'a cu\'al es el factor de conversi\'on).		\item Cre\'a un nuevo dataset a partir de \rscript{starwars} que contenga solo \rscript{name}, \rscript{height} y \rscript{mass}. Agreg\'a la variable \rscript{imc} calculando el Índice de Masa Corporal (\shaky{googleá}).		\item Agreg\'a una columna a \rscript{iris} llamada \rscript{Sepal.Area} que sea la multiplicación de \rscript{Sepal.Length} por \rscript{Sepal.Width}.		\item Convert\'i la columna \rscript{Species} de \rscript{iris} a mayúsculas.\end{enumerate}\end{frame}\begin{frame}[fragile]	\begin{enumerate}[start=20]		\item Sobre \rscript{mtcars}, cre\'a una columna lógica \rscript{es\_eficiente} que sea \rscript{TRUE} si el auto rinde más de 20 mpg, y \rscript{FALSE} si no.		\item En \rscript{starwars}, cre\'a una variable \rscript{es\_droide} que contenga \rscript{TRUE} si la especie (\rscript{species}) es \quotation{Droid} y \rscript{FALSE} en caso contrario. (Ojo con los \rscript{NA}).			\item Usando \rscript{ifelse()} dentro de \rscript{mutate()} en \rscript{mtcars}: cre\'a \rscript{tipo\_consumo} que diga \quotation{Alto} si \rscript{mpg < 15}, y \quotation{Bajo} si es \rscript{>= 15}.				\item Modific\'a el ejercicio anterior para tener 3 categorías: \quotation{Alto} (<15), \quotation{Medio} (15-25), \quotation{Bajo} (>25).				\item En \rscript{starwars}, convert\'i la altura de centímetros a pies (1 cm = 0.0328084 pies). Sobrescrib\'i la columna \rscript{height} con este nuevo valor.				\item Cre\'a una columna que contenga un valor constante (ej: el año actual \rscript{2026}) para todas las filas de \rscript{mtcars}.				\item Tom\'a el dataset \rscript{starwars}, calcul\'a el IMC en una nueva columna, y luego seleccion\'a ÚNICAMENTE las columnas \rscript{name}, \rscript{imc} y \rscript{species}.				\item ¿Qué sucede si us\'as \rscript{mutate} inmediatamente después de \rscript{select} pero referencias una columna que NO seleccionaste? Haz la prueba intentando calcular el IMC pero seleccionando primero solo el nombre.				\item Tom\'a \rscript{iris}, seleccion\'a las 4 columnas numéricas y crea 4 nuevas columnas que sean el logaritmo de las originales.				\item Utilizando \rscript{mtcars}, cre\'a una variable \rscript{potencia\_peso} (\rscript{hp / `wt`}) y luego quedate solo con los autos que tengan un ratio mayor a 50.	\end{enumerate}\end{frame}\begin{frame}[fragile]	\begin{enumerate}[start = 30]		\item Carg\'a \rscript{starwars}. En un solo \textit{pipeline} (cadena de \textit{pipes}):		\begin{itemize}			\item Calcula el IMC.			\item Crea una columna \rscript{`description`} que combine nombre y especie con \rscript{paste()} (ej: \quotation{Luke Skywalker is a Human} ).			\item Quédate solo con las columnas \rscript{`description`} y \rscript{bmi}.			\item Muestra las primeras 10 filas.		\end{itemize}	\end{enumerate}\end{frame}\end{document}
+\documentclass[8pt]{beamer}
+\usepackage{../config}
+\usepackage[utf8]{inputenc}
+\parskip0.5em
+
+
+
+%---------------TERMINADO
+\begin{document}
+	\subtitle{4to encuentro: Manipulación de datos I}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+	
+	
+	
+	
+	
+	
+	\begin{frame}[fragile]
+		Una vez que tenemos nuestros datos cargados en R, comienza lo más divertido: transformar esos datos crudos en información útil. R es excepcionalmente bueno para esto gracias al ecosistema \rscript{tidyverse}, que implementa una \quotation{gramática de manipulación de datos} coherente e intuitiva.
+		
+		En este encuentro nos centraremos en entender el flujo de trabajo moderno en R y en las operaciones que afectan a las columnas (variables) de nuestros datos: seleccionar las que nos interesan y crear nuevas a partir de las existentes.
+	\end{frame}
+
+
+
+
+
+
+	\begin{frame}[fragile]{El operador \quotation{pipe} }
+		Posiblemente la herramienta más revolucionaria para la legibilidad del código en R. El pipe (tubería) nos permite encadenar operaciones secuencialmente, leyendo el código de izquierda a derecha y de arriba a abajo, tal como leemos un texto.
+		
+		\begin{figure}[h!]
+			\includegraphics[width = 0.15\textwidth]{img/magrittr.png}
+		\end{figure}
+	\end{frame}
+	
+	
+	
+	
+	
+	
+	\begin{frame}[fragile]
+		En términos prácticos, el \quotation{pipe} toma el resultado de la expresión de la izquierda y lo pasa como \quotation{primer argumento} de la función de la derecha. 
+		
+		Es decir, en lugar de escribir \rscript{f(g(h(x)))}, podemos escribir \rscript{x |> h() |> g() |> f()}. 
+		
+		Esto no cambia lo que el programa hace, pero sí cambia radicalmente cómo se lee.
+		\begin{itemize}
+			\item \rscript{x |> f} es equivalente a \rscript{f(x)}
+			\item \rscript{x |> f(y)} es equivalente a \rscript{f(x, y)}
+			\item \rscript{x |> f |> g |> h} es equivalente a \rscript{h(g(f(x)))}
+		\end{itemize}
+	\end{frame}
+
+
+
+
+	\begin{frame}[fragile]
+		¿Por qué es necesario? Porque en análisis de datos es común aplicar muchas transformaciones seguidas: filtrar, ordenar, crear variables, agrupar, resumir, etc. Sin *pipe*, el código suele terminar en llamadas anidadas (hay que leer \quotation{desde adentro hacia afuera} ) o en una secuencia de asignaciones intermedias (\rscript{x1}, \rscript{x2}, \rscript{x3}), que fragmenta el flujo lógico y dificulta seguir el proceso.
+	\end{frame}
+	
+	
+	
+	
+	\begin{frame}[fragile]
+		Imagina este proceso en la vida real: \quotation{Tamizar harina, templar el agua, hidratar, mezclar con sal y levadura, amasar, dejar leudar, formar bollos y hornear} . Si quisieramos escribir este proceso como una sucesion de funciones en R deberiamos hacer algo como
+		
+\begin{lstlisting}[style=RScript]
+panes <- `:fn:hornear`(`:fn:formar`(`:fn:leudar`(`:fn:amasar`(`:fn:mezclar`(`:fn:hidratar`(`:fn:tamizar`(harina), agua = `:fn:templar`(agua, 28)), sal = 10, levadura = 3), minutos = 12), minutos = 60, temperatura = 26), forma = "bollos"), minutos = 25, temperatura = 220)
+\end{lstlisting}
+
+u \quotation{organizando mejor el código} 
+\begin{lstlisting}[style=RScript]
+	panes <- `:fn:hornear`(
+		`:fn:formar`(
+			`:fn:leudar`(
+				`:fn:amasar`(
+					`:fn:mezclar`(
+						`:fn:hidratar`(
+							`:fn:tamizar`(harina), agua = `:fn:templar`(agua, 28)
+						),
+						sal = 10,
+						levadura = 3
+					),
+					minutos = 12
+				),
+				minutos = 60,
+				temperatura = 26
+			),
+			forma = "bollos"
+		), 
+		minutos = 25,
+		temperatura = 220
+	)
+\end{lstlisting}
+	\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+Si optamos por hacer asignaciones en memoria:
+\begin{lstlisting}[style=RScript]
+	harina_tamizada		<- `:fn:tamizar`(harina)
+	agua_templada			<- `:fn:templar`(agua, 28)
+	
+	harina_hidratada	<- `:fn:hidratar`(harina_tamizada, agua = agua_templada)
+	mezcla 						<- `:fn:mezclar`(harina_hidratada, sal = 10, levadura = 3)
+	masa 							<- `:fn:amasar`(mezcla, minutos = 12)
+	masa_leudada 			<- `:fn:leudar`(masa, minutos = 60, temperatura = 26)
+	bollos						<- `:fn:formar`(masa_leudada, forma = "bollos")
+	panes							<- `:fn:hornear`(bollos, minutos = 25, temperatura = 220)	
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+	Pero si usamos el \quotation{pipe} tenemos
+\begin{lstlisting}[style=RScript]
+panes <- harina |>
+	`:fn:tamizar`() |>
+	`:fn:hidratar`(agua = agua |> `:fn:templar`(28)) |>
+	`:fn:mezclar`(sal = 10, levadura = 3) |>
+	`:fn:amasar`(minutos = 12) |>
+	`:fn:leudar`(minutos = 60, temperatura = 26) |>
+	`:fn:formar`(forma = "bollos") |>
+	`:fn:hornear`(minutos = 25, temperatura = 220)	
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+	El pipe soluciona eso al permitir escribir el código como un pipeline: una receta donde cada línea es un paso. Esto mejora:
+	
+	\begin{itemize}
+		\item Legibilidad: el orden del código coincide con el orden mental del procedimiento.
+		\item Mantenibilidad: es fácil insertar, quitar o reordenar pasos sin reescribir todo.
+		\item Depuración: se pueden inspeccionar resultados intermedios agregando una línea extra (por ejemplo, para imprimir o visualizar un objeto) sin romper la estructura.
+\begin{lstlisting}[style=RScript]
+ventas |> view() #tibble::view()
+
+# o también
+ventas %>% view	
+\end{lstlisting}
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Pipe nativo}
+Introducido en la versión 4.1.0 de R (2021), es el pipe que viene integrado en el lenguaje base, sin necesidad de instalar nada.
+\begin{itemize}
+	\item Sintaxis: \rscript{|>}
+	\item Ventaja: Más rápido y ligero. No depende de paquetes externos.
+	\item Uso: Pasa el resultado de la izquierda como primer argumento de la función de la derecha.
+\end{itemize}
+
+\begin{lstlisting}[style=RScript]
+# Ejemplo: Calcular la media de un vector
+c(1, 2, 3, 4, 5) |> mean()
+
+# Es exactamente lo mismo que:
+mean(c(1, 2, 3, 4, 5))	
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Pipe \texttt{magrittr}}
+	Es el pipe clásico que popularizó el paquete \rscript{dplyr} y \rscript{tidyverse}. Durante años fue el único estándar.
+
+	
+	\begin{itemize}
+		\item Sintaxis: \lstinline[style=RScript, basicstyle = \normalfont]`%>%`
+		\item Ventaja: Más flexible (permite usar el punto \rscript{.} para referenciar el dato en lugares que no sean el primer argumento), aunque un poco más lento.
+		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, .)` es equivalente a \rscript{f(y, x)}
+		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, z = .)` es equivalente a \rscript{f(y, z = x)}
+		\item Requerimiento: Necesitas cargar \rscript{library(tidyverse)} o \rscript{library(magrittr)}.
+	\end{itemize}
+	
+	En este curso, y para el 99\% de las tareas de análisis de datos, son intercambiables. 
+	
+	Vas a ver mucha documentación antigua usando \lstinline[style=RScript, basicstyle = \normalfont]`%>%` y mucha nueva usando \rscript{|>}. ¡Acostúmbrate a ambos!
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{El paquete dplyr y los verbos para la gramática de datos}
+	\rscript{dplyr} es el paquete central del tidyverse para manipulación de datos. Su filosofía se basa en funciones que hacen una sola cosa bien y tienen nombres de verbos en inglés.
+	
+	Te recomiendo que tengas el cheatsheet siempre a mano. Hay una copia \href{https://servicios.unl.edu.ar/aulavirtual/fce/mod/resource/view.php?id=67152&redirect=1}{\textbf{ac\'a en el aula virtual}}.
+	
+	Todas las funciones de \rscript{dplyr} comparten la misma estructura:
+	\begin{enumerate}
+		\item Primer argumento: Un data frame (o tibble).
+		\item Argumentos siguientes: Qué hacer con ese data frame (nombres de columnas, fórmulas, etc.).
+		\item Resultado: Siempre devuelve un nuevo data frame.
+	\end{enumerate}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Los verbos m\'as importantes}
+	Existen 5 verbos fundamentales que cubren la gran mayoría de tus necesidades:
+	\begin{enumerate}
+		\item \rscript{select()}: Selecciona columnas (variables).
+		\item \rscript{filter()}: Filtra filas (observaciones).
+		\item \rscript{arrange()}: Ordena filas.
+		\item \rscript{mutate()}: Crea o modifica columnas.
+		\item \rscript{summarise()}: Resume valores (colapsa muchas filas en una sola).
+	\end{enumerate}
+	
+	Hoy nos centraremos en \rscript{select} y \rscript{mutate}.
+\end{frame}
+
+
+
+\begin{frame}[fragile]{El verbo \texttt{select}}
+	Muchas veces nuestros datasets tienen cientos de columnas, pero solo nos interesan unas pocas. \rscript{select()} nos permite quedarnos con lo importante.
+\begin{lstlisting}[style=RScript]
+# Usaremos el dataset mtcars como ejemplo
+# Seleccionar columnas explícitamente
+mtcars |> select(`:bn:mpg`, `:bn:cyl`, `:bn:hp`)
+
+# Seleccionar un rango de columnas (con :)
+mtcars |> select(`:bn:mpg`:`:bn:drat`)
+
+# Seleccionar todas MENOS algunas (con -)
+mtcars |> select(-`:bn:am`, -`:bn:gear`, -`:bn:carb`)	
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Antes de continuar: helpers}
+	\titleitem{Funciones de ayuda (Helpers)}
+	\rscript{dplyr} ofrece funciones geniales para seleccionar columnas basándose en sus nombres, lo cual es muy útil cuando trabajamos con bases de datos grandes. Es con estos helpers que se puede ver la utilidad de tener bien asignados los nombres de las variables.
+
+	\begin{itemize}
+		\item \rscript{starts_with("prefijo")}: selecciona columnas que empiezan con un prefijo.
+		\item \rscript{ends_with("sufijo")}: selecciona columnas que terminan con un sufijo.
+		\item \rscript{contains("texto")}: selecciona columnas que contienen una cadena de texto.
+		\item \rscript{num_range("prefijo", rango)}: selecciona columnas con un prefijo y una secuencia numérica (ej: \rscript{`x1`}, \rscript{`x2`}, \rscript{`x3`}).
+		\item \rscript{all_of(`vector`)} o tambi\'en \rscript{any_of(`vector`)}: selecciona columnas cuyos nombres están en un vector de texto.
+		\item \rscript{matches("expresion")}: selecciona columnas que coinciden con una expresión regular.
+		\item \rscript{everything()}: selecciona todas las columnas restantes.
+	\end{itemize}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{}
+Veamos un ejemplo más realista simulando una base de datos de ventas mensuales:
+\begin{lstlisting}[style=RScript]
+# Creamos un dataset de juguete para demostrar
+ventas <- tibble(
+	producto_id = 1:3,
+	producto_nombre = c("Refresco", "Papas", "Galletas"),
+	`mes_01` = c(100, 200, 150),
+	`mes_02` = c(110, 210, 160),
+	`mes_03` = c(120, 220, 170),
+	zona_norte = c(TRUE, FALSE, TRUE),
+	zona_sur = c(FALSE, TRUE, FALSE)
+)
+
+# 1. Empiezan con "producto"
+ventas |> select(starts_with("producto"))
+
+# 2. Terminan con "id"
+ventas |> select(ends_with("id"))
+
+# 3. Contienen "zona"
+ventas |> select(contains("zona"))
+
+# 4. Rango numérico (para seleccionar mes_01, mes_02, mes_03)
+ventas |> select(num_range("mes_0", 1:3))
+
+# 5. Usando un vector de nombres (tengo una entrada en el blog sobre esto.
+# Comentarlo en `mutate`)
+rubros <- colnames(ventas)[4:10]
+ventas |> select(all_of(rubros))
+
+# 6. Reordenar: poner las zonas al principio y luego el resto
+ventas |> select(starts_with("zona"), everything())
+
+# 7. Combinar selectores: nombre exacto y patrón (ej. solo nombre y zonas)
+ventas |> select(producto_nombre, starts_with("zona"))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{El verbo \texttt{mutate}}
+	El análisis de datos casi siempre implica crear nuevas variables: pasar de pesos a dólares, calcular el IMC a partir de altura y peso, o categorizar una variable numérica. \rscript{mutate()} es la herramienta para esto.
+	
+	Lo importante es recordar que \rscript{mutate()} crea un nuevo data frame y agrega la nueva columna al final del data frame. Si quieres guardar el cambio, debes sobrescribir el objeto.
+\begin{lstlisting}[style=RScript]
+# Crear una nueva columna transformando una existente
+mtcars |> 
+	mutate(`:bn:kml` = `:bn:mpg` * `:nm:0.425`) |>    # Conversión de millas/galón a km/litro
+	select(`:bn:mpg`, `:bn:kml`)                # Seleccionamos para ver el resultado
+	
+# Crear múltiples columnas a la vez
+mtcars |> 
+	mutate(
+		`:bn:peso_kg`				= `:bn:wt` * 1000 * `:nm:0.453`,  # wt está en miles de libras
+		`:bn:potencia_peso` = `:bn:hp` / `:bn:peso_kg`
+	) |> 
+	select(`:bn:wt`, `:bn:peso_kg`, `:bn:hp`, `:bn:potencia_peso`) |> 
+	head(5)
+\end{lstlisting}	
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	También podemos usar \rscript{mutate} para usar operaciones condicionales usando \rscript{ifelse} o \rscript{case_when} que ya vimos en \quotation{estructuras de control} .
+\begin{lstlisting}[style=RScript]
+mtcars |> 
+	mutate(`:bn:es_fuerte` = ifelse(`:bn:hp` > 100, "Potente", "Normal")) |> 
+	select(`:bn:hp`, `:bn:es_fuerte`)	
+\end{lstlisting}
+
+\begin{alertblock}{}
+	Utiliz\'a nombres descriptivos para tus nuevas variables. \rscript{mutate(`:bn:x` = ...)} te ahorrará tiempo al escribir pero te costará horas al leer el código meses después.
+\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Ejercicios}
+	\begin{enumerate}
+		\item Reescrib\'i la siguiente operación anidada usando el operador \textit{pipe} \rscript{|>}: \rscript{sqrt(mean(c(16, 9, 25)))}. Proponé dos formas distintas usando solo un \textit{pipe} y una usando dos.
+		
+		\item Explic\'a con tus palabras qué hace el siguiente código y cuál sería su equivalente sin usar el \textit{pipe}: \rscript{mtcars |> head(5)}.
+		
+		\item Dado el vector \rscript{v <- c(10, 20, 30, 40)}. Us\'a el \textit{pipe} para calcular el logaritmo de cada elemento y luego calcular la suma de esos resultados.
+		
+		\item Supongamos que quiero sumar los elementos de \rscript{v} del ejercicio anterior. Identific\'a el error en este código: \rscript{v -> sum()}.
+		
+		\item Reescrib\'i este bloque usando \textit{pipes} para evitar las asignaciones intermedias:
+\begin{lstlisting}[style=RScript]
+x <- c(1, 5, 10, NA)
+y <- mean(x, na.rm = TRUE)
+z <- round(y, 1)
+\end{lstlisting}
+
+		\item Carg\'a el dataset \rscript{starwars} (viene con \rscript{tidyverse}). Selecciona solo las columnas \rscript{name}, \rscript{height} y \rscript{mass}.
+		
+		\item Usando \rscript{starwars}, seleccion\'a todas las columnas que \textbf{terminen} con \quotation{color} .
+		
+		\item Seleccion\'a las columnas de \rscript{mtcars} que van desde \rscript{mpg} hasta \rscript{hp} usando el operador \rscript{:}.
+		
+		\item Cre\'a un \rscript{`tibble`} reducido de \rscript{starwars} eliminando las columnas de tipo lista (\rscript{films}, \rscript{vehicles}, \rscript{starships}).
+	\end{enumerate}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{}
+\begin{enumerate}[start = 10]
+		\item Us\'a \rscript{select()} con \rscript{starts\_with()} para quedarte con todas las variables del dataset \rscript{iris} que tengan que ver con el \quotation{Sepal} .
+	
+	\item Reorden\'a las columnas de \rscript{mtcars} para que \rscript{`wt`} (peso) aparezca primero, seguida de todo el resto.
+	
+	\item Intent\'a seleccionar la columna \rscript{hair\_color} de \rscript{starwars} pero renombrándola como \rscript{color\_pelo} al vuelo (dentro del mismo \rscript{select}).
+	
+	\item ¿Qué pasa si seleccionas una columna que no existe? Intent\'a ejecutar \rscript{mtcars |> select(turbo)}.
+	
+	\item Usando \rscript{any\_of()}, seleccion\'a las columnas \quotation{farenheit} y \quotation{celcius} de \rscript{airquality}. ¿Qué hace la función si las columnas no existen?
+	
+	\item Seleccion\'a de \rscript{iris} todas las columnas numéricas (investig\'a \rscript{where(is.numeric)} dentro de \rscript{select} \emoji{wink}).
+	
+	\item A partir de \rscript{mtcars}, cre\'a una nueva columna llamada \rscript{kml} (kilómetros por litro) utilizando la variable \rscript{mpg} (milla por galón) (claramente, google\'a cu\'al es el factor de conversi\'on).
+	
+	\item Cre\'a un nuevo dataset a partir de \rscript{starwars} que contenga solo \rscript{name}, \rscript{height} y \rscript{mass}. Agreg\'a la variable \rscript{imc} calculando el Índice de Masa Corporal (\shaky{googleá}).
+	
+	\item Agreg\'a una columna a \rscript{iris} llamada \rscript{Sepal.Area} que sea la multiplicación de \rscript{Sepal.Length} por \rscript{Sepal.Width}.
+	
+	\item Convert\'i la columna \rscript{Species} de \rscript{iris} a mayúsculas.
+\end{enumerate}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\begin{enumerate}[start=20]
+		\item Sobre \rscript{mtcars}, cre\'a una columna lógica \rscript{es\_eficiente} que sea \rscript{TRUE} si el auto rinde más de 20 mpg, y \rscript{FALSE} si no.
+		\item En \rscript{starwars}, cre\'a una variable \rscript{es\_droide} que contenga \rscript{TRUE} si la especie (\rscript{species}) es \quotation{Droid} y \rscript{FALSE} en caso contrario. (Ojo con los \rscript{NA}).
+			\item Usando \rscript{ifelse()} dentro de \rscript{mutate()} en \rscript{mtcars}: cre\'a \rscript{tipo\_consumo} que diga \quotation{Alto} si \rscript{mpg < 15}, y \quotation{Bajo} si es \rscript{>= 15}.
+		
+		\item Modific\'a el ejercicio anterior para tener 3 categorías: \quotation{Alto} (<15), \quotation{Medio} (15-25), \quotation{Bajo} (>25).
+		
+		\item En \rscript{starwars}, convert\'i la altura de centímetros a pies (1 cm = 0.0328084 pies). Sobrescrib\'i la columna \rscript{height} con este nuevo valor.
+		
+		\item Cre\'a una columna que contenga un valor constante (ej: el año actual \rscript{2026}) para todas las filas de \rscript{mtcars}.
+		
+		\item Tom\'a el dataset \rscript{starwars}, calcul\'a el IMC en una nueva columna, y luego seleccion\'a ÚNICAMENTE las columnas \rscript{name}, \rscript{imc} y \rscript{species}.
+		
+		\item ¿Qué sucede si us\'as \rscript{mutate} inmediatamente después de \rscript{select} pero referencias una columna que NO seleccionaste? Haz la prueba intentando calcular el IMC pero seleccionando primero solo el nombre.
+		
+		\item Tom\'a \rscript{iris}, seleccion\'a las 4 columnas numéricas y crea 4 nuevas columnas que sean el logaritmo de las originales.
+		
+		\item Utilizando \rscript{mtcars}, cre\'a una variable \rscript{potencia\_peso} (\rscript{hp / `wt`}) y luego quedate solo con los autos que tengan un ratio mayor a 50.
+	\end{enumerate}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\begin{enumerate}[start = 30]
+		\item Carg\'a \rscript{starwars}. En un solo \textit{pipeline} (cadena de \textit{pipes}):
+		\begin{itemize}
+			\item Calcula el IMC.
+			\item Crea una columna \rscript{`description`} que combine nombre y especie con \rscript{paste()} (ej: \quotation{Luke Skywalker is a Human} ).
+			\item Quédate solo con las columnas \rscript{`description`} y \rscript{bmi}.
+			\item Muestra las primeras 10 filas.
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+
+\end{document}
