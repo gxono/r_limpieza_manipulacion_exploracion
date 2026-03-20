@@ -22,7 +22,7 @@
 	\begin{frame}{Instalación y configuración del entorno (R y RStudio)}
 		Para trabajar con R, necesitamos instalar tres programas:
 		\begin{enumerate}
-			\item  R: Es el lenguaje de programación y el motor de cálculo. Se descarga desde CRAN (The Comprehensive R Archive Network).
+			\item R: Es el lenguaje de programación y el motor de cálculo. Se descarga desde CRAN (The Comprehensive R Archive Network).
 			\url{http://mirror.fcaglp.unlp.edu.ar/CRAN/}
 			
 			\item RStudio: Es un Entorno de Desarrollo Integrado (IDE). Es una interfaz amigable que nos facilita escribir código, ver gráficos y gestionar archivos.
@@ -95,10 +95,10 @@
 		
 		Para crear un nuevo script iremos a \verb|File > New file > R Script|.
 		
-		Un \textit{script} ordenado es un \text{script} feliz (y reproducible). Segu\'i estas reglas de oro:
+		Un \textit{script} ordenado es un \textit{script} feliz (y reproducible). Segu\'i estas reglas de oro:
 		\begin{enumerate}
 			\item Encabezado: Comienza siempre cargando todos los paquetes necesarios (\rscript{library(...)}) en las primeras líneas.
-			\item Comentarios: Usa \rscript{#} para explicar el \textit{por qué} de tu código, no el \text{qué} (el código ya dice qué hace).
+			\item Comentarios: Usa \rscript{#} para explicar el \textit{por qué} de tu código, no el \textit{qué} (el código ya dice qué hace).
 		\end{enumerate}
 		
 		\begin{lstlisting}[style=RScript]
@@ -356,7 +356,7 @@ sqrt(sqrt(9) + 3 * 2)
 n <- 10
 (n != 10) | ((n >= 10) & (n <= 20))
 \end{lstlisting}
-\begin{lstlisting}[style=RScript]
+\begin{lstlisting}[style=RConsole]
 [1] TRUE
 \end{lstlisting}
 \end{frame}
@@ -901,7 +901,7 @@ paste(cadena, entero)
 [1] "Mi edad es 30"
 \end{lstlisting}
 
-En este caso, \rscript{entero} se convierte por coersión en \rscript{character} y se concatena.
+En este caso, \rscript{entero} se convierte por coerción en \rscript{character} y se concatena.
 \end{frame}
 
 
@@ -912,7 +912,7 @@ En este caso, \rscript{entero} se convierte por coersión en \rscript{character}
 
 
 \begin{frame}[fragile]
-	Tambi\'en vimos a la coersi\'on en acci\'on en un ejemplo anterior cuando construimos un vector con datos de tipo distinto.
+	Tambi\'en vimos a la coerci\'on en acci\'on en un ejemplo anterior cuando construimos un vector con datos de tipo distinto.
 \begin{lstlisting}[style=RScript]
 mixto		<- c("1", "2", 3, 4) #!!!
 
@@ -1085,10 +1085,9 @@ muestra #Muestra de tamaño 10 con repetición
 				cell{2-Z}{3,4,5} = {cmd = \rscript}
 			}
 			Tipo & Operación & Operador & Ejemplo de Uso & Resultado \\
-			\SetCell[r=4]{l} Unario & Negación (NOT) & ! & !TRUE & FALSE \\
+			\SetCell[r=3]{l} Unario & Negación (NOT) & ! & !TRUE & FALSE \\
 			& & ! & !(c(TRUE, FALSE)) & c(FALSE, TRUE) \\
-						& Val. faltantes & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\
-			& & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\
+			& Val. faltantes & is.na() & is.na(c(1, NA, 3)) & c(F, T, F) \\
 		\end{tblr}
 	\end{table}
 	
@@ -1324,7 +1323,7 @@ mi_matriz[2,  ]     # Toda la fila 2
 mi_matriz[ , 1]     # Toda la columna 1
 
 # O varias selecciones a la vez
-mi_matriz[ , c(1, 5)]     # Columna 1 y 5
+mi_matriz[ , c(1, 5)]     # Error, porque la columna 5 no existe
 \end{lstlisting}
 \end{frame}
 
