@@ -1,0 +1,81 @@
+\documentclass[8pt]{beamer}
+\usepackage{../config}
+
+
+
+
+\begin{document}
+	\subtitle{5to encuentro: Manipulación de datos II}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+	
+	
+	\begin{frame}[fragile]
+		En el encuentro anterior vimos cómo seleccionar columnas (\rscript{select}) y crear nuevas variables (\rscript{mutate}). Hoy completaremos nuestra caja de herramientas de manipulación de datos aprendiendo a trabajar con las filas (filtrarlas y ordenarlas) y, lo más potente de todo: cómo resumir información por grupos.
+		
+		Para este encuentro, usaremos un dataset simulado de ventas más completo que nos permitirá hacer análisis interesantes.
+	\end{frame}
+	
+	
+	
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript, numbers=none]
+library(`:pk:tibble`)
+
+ventas <- tibble(
+	vendedor = c("Ana", "Beto", "Carla", "Ana", "Beto", "Carla",
+							 "Ana", "Beto", "Carla", "Ana"),
+	region = c("Norte", "Sur", "Norte", "Oeste", "Sur", 
+						 "Oeste", "Norte", "Sur", "Oeste", "Este"),
+	producto = c("Laptop", "Tablet", "Celular", "Tablet", "Laptop", 
+							 "Celular", "Laptop", "Tablet", "Celular", "Laptop"),
+	monto = c(1200, 450, 800, 400, 1100, 850, 1250, 480, 820, 1180),
+	cantidad = c(2, 5, 10, 3, 2, 8, 3, 6, 9, 2),
+	satisfaccion = c(4.5, 3.8, 4.2, 4.0, 4.8, 3.5, 4.7, 3.9, 4.1, 4.6)
+)
+
+ventas
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 10 × 6
+vendedor region producto monto cantidad satisfaccion
+	<chr>    <chr>  <chr>    <dbl>    <dbl>        <dbl>
+1 Ana      Norte  Laptop    1200        2          4.5
+2 Beto     Sur    Tablet     450        5          3.8
+3 Carla    Norte  Celular    800       10          4.2
+4 Ana      Oeste  Tablet     400        3          4  
+5 Beto     Sur    Laptop    1100        2          4.8
+6 Carla    Oeste  Celular    850        8          3.5
+7 Ana      Norte  Laptop    1250        3          4.7
+8 Beto     Sur    Tablet     480        6          3.9
+9 Carla    Oeste  Celular    820        9          4.1
+10 Ana      Este   Laptop    1180        2          4.6
+\end{lstlisting}
+	\end{frame}
+	
+	
+	
+	
+	
+\begin{frame}[fragile]{El verbo \texttt{filter}}
+La función \rscript{filter()} nos permite quedarnos solo con las filas (observaciones) que cumplen cierta condición. Es el equivalente a usar \quotation{filtros} en Excel.
+
+Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean VERDADERAS (\rscript{TRUE}) para las filas que queremos mantener.
+
+\titleitem{Operadores de comparaci\'on}
+\begin{itemize}
+	\item \rscript{>}: Mayor que
+	\item \rscript{<}: Menor que
+	\item \rscript{>=}: Mayor o igual que
+	\item \rscript{<=}: Menor o igual que
+	\item \rscript{==}: Igual a 
+	\item \rscript{!=}: Distinto de
+	\item \lstinline[style=RScript, basicstyle=\normalsize\ttfamily]|%in%|: Pertenece al conjunto (muy útil para no escribir muchos O)	
+\end{itemize}
+\end{frame}
+	
+	
+
+\end{document}
