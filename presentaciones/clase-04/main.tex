@@ -1,11 +1,9 @@
 \documentclass[8pt]{beamer}
 \usepackage{../config}
-\usepackage[utf8]{inputenc}
-\parskip0.5em
 
 
 
-%---------------TERMINADO
+
 \begin{document}
 	\subtitle{4to encuentro: Manipulación de datos I}
 
@@ -66,7 +64,7 @@
 	
 	
 	\begin{frame}[fragile]
-		Imagina este proceso en la vida real: \quotation{Tamizar harina, templar el agua, hidratar, mezclar con sal y levadura, amasar, dejar leudar, formar bollos y hornear} . Si quisieramos escribir este proceso como una sucesion de funciones en R deberiamos hacer algo como
+		Imagina este proceso en la vida real: \quotation{Tamizar harina, templar el agua, hidratar, mezclar con sal y levadura, amasar, dejar leudar, formar bollos y hornear} . Si quisi\'eramos escribir este proceso como una sucesi\'on de funciones en R deberiamos hacer algo como
 		
 \begin{lstlisting}[style=RScript]
 panes <- `:fn:hornear`(`:fn:formar`(`:fn:leudar`(`:fn:amasar`(`:fn:mezclar`(`:fn:hidratar`(`:fn:tamizar`(harina), agua = `:fn:templar`(agua, 28)), sal = 10, levadura = 3), minutos = 12), minutos = 60, temperatura = 26), forma = "bollos"), minutos = 25, temperatura = 220)
@@ -146,7 +144,7 @@ panes <- harina |>
 ventas |> view() #tibble::view()
 
 # o también
-ventas %>% view	
+ventas %>% view	 # puede ir sin paréntesis con este pipe
 \end{lstlisting}
 	\end{itemize}
 \end{frame}
@@ -298,9 +296,8 @@ ventas |> select(contains("zona"))
 # 4. Rango numérico (para seleccionar mes_01, mes_02, mes_03)
 ventas |> select(num_range("mes_0", 1:3))
 
-# 5. Usando un vector de nombres (tengo una entrada en el blog sobre esto.
-# Comentarlo en `mutate`)
-rubros <- colnames(ventas)[4:10]
+# 5. Usando un vector de nombres
+rubros <- colnames(ventas)[4:7]
 ventas |> select(all_of(rubros))
 
 # 6. Reordenar: poner las zonas al principio y luego el resto
@@ -345,7 +342,7 @@ mtcars |>
 
 
 \begin{frame}[fragile]
-	También podemos usar \rscript{mutate} para usar operaciones condicionales usando \rscript{ifelse} o \rscript{case_when} que ya vimos en \quotation{estructuras de control} .
+	También podemos usar \rscript{mutate} para usar operaciones condicionales usando \rscript{ifelse} o \rscript{case_when} que ya veremos m\'as adelante en \quotation{estructuras de control} .
 \begin{lstlisting}[style=RScript]
 mtcars |> 
 	mutate(`:bn:es_fuerte` = ifelse(`:bn:hp` > 100, "Potente", "Normal")) |> 
@@ -458,7 +455,7 @@ z <- round(y, 1)
 		\begin{itemize}
 			\item Calcula el IMC.
 			\item Crea una columna \rscript{`description`} que combine nombre y especie con \rscript{paste()} (ej: \quotation{Luke Skywalker is a Human} ).
-			\item Quédate solo con las columnas \rscript{`description`} y \rscript{bmi}.
+			\item Quédate solo con las columnas \rscript{`description`} y \rscript{imc}.
 			\item Muestra las primeras 10 filas.
 		\end{itemize}
 	\end{enumerate}

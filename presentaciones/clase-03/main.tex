@@ -1,7 +1,6 @@
 \documentclass[8pt]{beamer}
 \usepackage{../config}
-\usepackage[utf8]{inputenc}
-\parskip0.5em
+
 
 
 
@@ -18,7 +17,7 @@
 		
 		Abordaremos la lectura de archivos de Excel (formato propietario ampliamente utilizado), archivos de texto delimitado (CSV, TSV) y otros formatos estructurados. 
 		
-		Veremos como gestionar proyectos de RStudio mediante archivos .Rproj, estableciendo flujos de trabajo organizados con rutas relativas que favorecen la reproducibilidad. 
+		Veremos c\'omo gestionar proyectos de RStudio mediante archivos .Rproj, estableciendo flujos de trabajo organizados con rutas relativas que favorecen la reproducibilidad. 
 		
 		Revisaremos algunas buenas prácticas para la inspección inicial de los datos importados, verificando tipos de columnas, dimensiones y detección temprana de problemas de codificación o formato.
 	\end{frame}
@@ -110,7 +109,7 @@ setwd("C:/Usuarios/MiUsuario/Documentos/MiCursoR") # "set working directory"
 		Para instalar un paquete en nuestro sistema ejecutamos \rscript{install.packages()} y le pasamos como cadena de texto (entre comillas) el nombre del paquete.
 		
 \begin{lstlisting}[style=RScript]
-install.packages("pacman", "tidyverse", "janitor")
+install.packages(c("pacman", "tidyverse", "janitor"))
 \end{lstlisting}
 
 	No es necesario que esta instrucci\'on vaya al script. Puede ejecutarse desde la consola.

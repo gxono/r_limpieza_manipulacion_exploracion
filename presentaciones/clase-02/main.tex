@@ -1,6 +1,5 @@
 \documentclass[8pt]{beamer}
 \usepackage{../config}
-\usepackage[utf8]{inputenc}
 
 
 
@@ -34,7 +33,7 @@
 					cell{2-Z}{2,3} = {cmd = \rscript}}
 				Operación & Función & Ejemplo de Uso & Resultado\\
 				Crear factor & factor() & factor(c("A", "B", "A")) & Niveles: A, B\\
-				Ordenado & factor() & factor(c("B", "A"), ordered = T) & A B C\\
+				Ordenado & factor() & factor(c("B", "A"), ordered = T) & A B\\
 				Ver niveles & levels() & levels(mi\_factor) & Nombres de categorías\\
 				Contar & nlevels() & nlevels(mi\_factor) & Cantidad de niveles\\
 				Frecuencias & table() & table(mi\_factor) & Conteo por categoría\\
@@ -363,7 +362,7 @@ datos_alumnos[datos_alumnos$nota > 8, ] # Filtrar alumnos con nota > 8
 	\end{figure}
 	
 \begin{lstlisting}[style=RScript]
-#install.package("tibble")
+#install.packages("tibble")
 library(`:pk:tibble`)
 
 # Convertir un data frame a tibble
@@ -384,7 +383,7 @@ as_tibble(datos_alumnos)
 
 
 \begin{frame}[fragile]
-	Para crear una tabla por filas podemos utilizar \rscript{tribble()}. Es util para tablas pequeñas que tengan que ser cargadas manualmente.
+	Para crear una tabla por filas podemos utilizar \rscript{tribble()}. Es \'util para tablas pequeñas que tengan que ser cargadas manualmente.
 \begin{lstlisting}[style=RScript]
 	# Crear un tibble por filas con tribble
 tabla_manual <- tribble(
@@ -657,7 +656,7 @@ c("M", "M", "S", "M", "M", "S", "S", "M", "M", "S", "S", "L",
 			\item ¿Qué tipo de dato usarías para cada columna?
 			\item ¿Cómo calcularías el promedio académico del estudiante?
 			\item El estudiante acaba de inscribirse en un nuevo curso. ¿Cómo agregarías esta información (\rscript{cursando = TRUE}) a su registro sin perder los datos anteriores?
-			\item Agrega una columna llamada \rscript{evaluacion_aprobada} y agregala al estudiante. Esta será un vector con \rscript{TRUE} si el estudiante aprobó la \textit{i}-ésima evaluación o \rscript{FALSE} en caso contrario.
+			\item Agrega un elemento llamado \rscript{evaluacion_aprobada} y agregalo al estudiante. Esta será un vector con \rscript{TRUE} si el estudiante aprobó la \textit{i}-ésima evaluación o \rscript{FALSE} en caso contrario.
 		\end{itemize}
 		
 		\item Una empresa tiene información sobre 3 empleados y sus salarios en dólares: Ana (25 años, \$1000), Bob (30 años, \$1200) y Sol (28 años, \$1100). Estructura estos tres datos en formato tabular.
