@@ -1,0 +1,828 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{stringr}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+\begin{frame}[fragile]{El paquete \texttt{stringr}}
+	\titleitem{Una interfaz consistente para cadenas de texto}
+	El paquete \rscript{stringr} forma parte del ecosistema \emph{tidyverse} y proporciona un conjunto de funciones coherentes para manipular cadenas de texto en R.
+	
+	Todas las funciones comienzan con el prefijo \rscript{str_}, lo que facilita su descubrimiento y memorización.
+	
+	\begin{figure}[h!]
+		\href{https://github.com/rstudio/cheatsheets/blob/main/strings.pdf}
+		{\includegraphics[width=0.15\textwidth]{img/stringr.png}}
+	\end{figure}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+		\titleitem{¿Por qué usar \texttt{stringr} en lugar de R Base?}
+	\begin{itemize}
+		\item Nombres consistentes y predecibles.
+		\item El primer argumento siempre es la cadena (compatible con el pipe \rscript{|>}).
+		\item Manejo uniforme de \rscript{NA} (devuelve \rscript{NA}, no errores).
+		\item Construido sobre la librería \texttt{ICU}, más robusta para Unicode.
+	\end{itemize}
+	
+\begin{lstlisting}[style=RScript]
+# install.packages("stringr")
+library(stringr)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Longitud y subcadenas}
+	\titleitem{str\_length: Contar caracteres}
+	A diferencia de \rscript{nchar()}, maneja \rscript{NA} de forma segura.
+\begin{lstlisting}[style=RScript]
+str_length(c("Hola", "Economía", NA))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  4  8 NA
+\end{lstlisting}
+
+	\titleitem{str\_sub: Extraer o reemplazar subcadenas}
+\begin{lstlisting}[style=RScript]
+x <- "Universidad"
+str_sub(x, 1, 4)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Univ"
+\end{lstlisting}
+
+Los índices negativos cuentan desde el final.
+\begin{lstlisting}[style=RScript]
+str_sub(x, -3, -1) # Últimos 3 caracteres
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "dad"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_sub(x, 1, 4) <- "UNIV" # Reemplazo in-place
+x
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "UNIVersidad"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Conversión de mayúsculas y minúsculas}
+	\rscript{stringr} ofrece cuatro funciones de conversión de caso, más robustas que \rscript{toupper()}/\rscript{tolower()} de R Base para caracteres Unicode.
+\begin{lstlisting}[style=RScript]
+x <- "facultad de ciencias económicas, universidad nacional del litoral"
+
+str_to_upper(x)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "FACULTAD DE CIENCIAS ECONÓMICAS, UNIVERSIDAD NACIONAL DEL LITORAL"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_to_lower("LICENCIATURA EN ECONOMÍA")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "licenciatura en economía"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_to_title(x) # Primera letra de cada palabra
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Facultad De Ciencias Económicas, Universidad Nacional Del Litoral"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_to_sentence("LiCenCIAtura eN EcOnomíA") # Solo la primera letra
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Licenciatura en economía"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Espacios en blanco: str\_trim, str\_squish y str\_pad}
+	\titleitem{str\_trim: Eliminar espacios laterales}
+\begin{lstlisting}[style=RScript]
+str_trim("   texto con espacios             ")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "texto con espacios"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_trim("   texto   ", side = "left") # Solo izq.
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "texto   "
+\end{lstlisting}
+
+	\titleitem{str\_squish: Limpiar todos los espacios}
+	Elimina laterales \textbf{y} colapsa múltiples espacios internos en uno solo. Ideal para procesar las observaciones cargadas manualmente.
+\begin{lstlisting}[style=RScript]
+str_squish("  datos    muy   sucios  ")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "datos muy sucios"
+\end{lstlisting}
+
+	\titleitem{str\_pad: Rellenar hasta un ancho}
+\begin{lstlisting}[style=RScript]
+str_pad(c("1", "23", "456"), width = 5, pad = "0")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "00001" "00023" "00456"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Truncar y ajustar: str\_trunc y str\_wrap}
+	\titleitem{str\_trunc: Cortar cadenas largas}
+	Trunca al ancho indicado, añadiendo puntos suspensivos.
+\begin{lstlisting}[style=RScript]
+x <- "Facultad de Ciencias Económicas"
+
+str_trunc(x, width = 15)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Facultad de ..."
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_trunc(x, width = 15, side = "left")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "...Económicas"
+\end{lstlisting}
+
+	\titleitem{str\_wrap: Ajustar texto a un ancho de línea}
+	Inserta saltos de línea para ajustar un párrafo a un ancho determinado.
+\begin{lstlisting}[style=RScript]
+cat(str_wrap(
+  "Este es un texto largo para un gráfico",
+  width = 20
+))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Este es un texto
+largo para un
+gráfico
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Concatenar y unir cadenas}
+	\titleitem{str\_c: Concatenar cadenas (como \texttt{paste0})}
+\begin{lstlisting}[style=RScript]
+str_c("Precio", "USD", sep = ": ")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Precio: USD"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_c("Ítem", 1:3, sep = "-")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Ítem-1" "Ítem-2" "Ítem-3"
+\end{lstlisting}
+
+
+	\titleitem{str\_dup: Duplicar una cadena}
+\begin{lstlisting}[style=RScript]
+str_dup("ab", 3)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "ababab"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Concatenar y unir cadenas}
+
+	\titleitem{str\_flatten: Colapsar un vector en una sola cadena}
+\begin{lstlisting}[style=RScript]
+provincias <- c("Santa Fe", "Córdoba", "Buenos Aires")
+str_flatten(provincias, collapse = ", ")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Santa Fe, Córdoba, Buenos Aires"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_flatten(provincias, collapse = ", ", last = " y ")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Santa Fe, Córdoba y Buenos Aires"
+\end{lstlisting}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Interpolación con str\_glue}
+	\rscript{str_glue()} permite insertar expresiones de R directamente dentro de una cadena usando llaves \rscript{\{...\}}.
+\begin{lstlisting}[style=RScript]
+nombre <- "Jonatán"
+nota 	 <- 8.5
+
+str_glue("El alumno {nombre} obtuvo {nota}")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+El alumno Jonatán obtuvo 8.5
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+#Aunque sea un despropósito, también se podría hacer esto.
+str_glue("Nota: {round(nota, 0)} ({if(nota >= 6) 'Aprobado' else 'Desaprobado'})")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Nota: 8 (Aprobado)
+\end{lstlisting}
+
+	\titleitem{str\_glue\_data: Interpolar desde un data frame}
+\begin{lstlisting}[style=RScript]
+`df` <- data.frame(
+  sector = c("Agro", "Industria"),
+  ventas = c(210.3, 120.5)
+)
+
+str_glue_data(`df`, "{sector}: ${ventas}M")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Agro: $210.3M
+Industria: $120.5M
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Detectar patrones: str\_detect}
+	\rscript{str_detect()} devuelve un vector lógico. Es la versión \rscript{stringr} de \rscript{grepl()}.
+	
+	Es especialmente útil dentro de \rscript{filter()} de \rscript{dplyr}.
+\begin{lstlisting}[style=RScript]
+sectores <- c("Industria", "Servicios", "Agro",
+              "Comercio", "Industria pesada")
+
+str_detect(sectores, "Industria")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE FALSE FALSE  TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Negar la detección
+str_detect(sectores, "Industria", negate = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE  TRUE  TRUE  TRUE FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Uso típico con dplyr
+datos |> filter(str_detect(`:bn:sector`, "Ind"))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Detectar patrones: str\_starts, str\_ends y str\_which}
+	\titleitem{str\_starts y str\_ends}
+	Versiones especializadas que verifican inicio o final.
+\begin{lstlisting}[style=RScript]
+x <- c("inflación", "ingreso", "exportación",
+       "importación")
+
+str_starts(x, "in")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE  TRUE FALSE FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_ends(x, "ción")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE  TRUE
+\end{lstlisting}
+
+	\titleitem{str\_which: Posiciones de las coincidencias}
+	Devuelve los índices (no lógicos), como \rscript{grep()}.
+\begin{lstlisting}[style=RScript]
+str_which(x, "ción")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 1 3 4
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Contar coincidencias: str\_count}
+	\rscript{str_count()} cuenta cuántas veces aparece un patrón en cada elemento.
+
+\begin{lstlisting}[style=RScript]
+texto <- c("banana", "manzana", "ananá")
+str_count(texto, "an")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 2 2 2
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Contar vocales
+str_count(c("Economía", "R"), "[aeiouáéíóú]")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 5 0
+\end{lstlisting}
+
+	Útil para generar variables en un data frame:
+\begin{lstlisting}[style=RScript]
+datos |>
+  mutate(`:bn:n_palabras` =
+    str_count(`:bn:descripcion`, "\\W+") + 1)
+\end{lstlisting}
+
+Estas \'ultimas dos l\'ineas usan algo llamado \quotation{expresiones regulares}. En general, est\'a bien saber que existen para, en ocasiones, orientar solicitudes en ese sentido. Pero aprender a manejarlas al 100\%, si no se usan con frecuencia, es un despropósito. Sí conviene aprender a buscar patrones regulares. Las siguientes funciones hacen uso de ellas.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Extraer coincidencias: str\_extract y str\_extract\_all}
+	\titleitem{str\_extract: Primera coincidencia}
+\begin{lstlisting}[style=RScript]
+x <- c("Precio: $150", "Costo: $80", "Sin dato", "135")
+
+str_extract(x, "\\$[0-9]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "$150" "$80"  NA    NA
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer solo los números
+str_extract(x, "[0-9]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "150" "80"  NA    "135"
+\end{lstlisting}
+
+	\titleitem{str\_extract\_all: Todas las coincidencias}
+\begin{lstlisting}[style=RScript]
+str_extract_all("Tel: 342-155-1234 / 351-123",
+                "[0-9]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "342" "155" "1234" "351" "123"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Subconjunto: str\_subset}
+	\rscript{str_subset()} devuelve los \textbf{elementos} que coinciden (no lógicos ni posiciones).
+\begin{lstlisting}[style=RScript]
+ciudades <- c("Santa Fe", "San Luis", "Córdoba",
+              "San Juan", "Rosario")
+
+str_subset(ciudades, "San")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Santa Fe" "San Luis" "San Juan"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con negate
+str_subset(ciudades, "San", negate = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Córdoba" "Rosario"
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Para filtrar filas de un data frame usá \rscript{filter(str_detect(...))} en lugar de \rscript{str_subset()}, que opera sobre vectores.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Localizar coincidencias: str\_locate}
+	Devuelve una matriz con las posiciones de inicio y fin. Útil para un procesamiento fino o junto con \rscript{str_sub()}.
+	
+	\titleitem{str\_locate: Primera coincidencia}
+\begin{lstlisting}[style=RScript]
+str_locate("Facultad de Ciencias", "de")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     start end
+[1,]    10  11
+\end{lstlisting}
+
+	\titleitem{str\_locate\_all: Todas las coincidencias}
+\begin{lstlisting}[style=RScript]
+str_locate_all("banana", "an")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+     start end
+[1,]     2   3
+[2,]     4   5
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Reemplazar: str\_replace y str\_replace\_all}
+	\titleitem{str\_replace: Primera coincidencia}
+\begin{lstlisting}[style=RScript]
+str_replace("2025-01-15", "-", "/")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2025/01-15"
+\end{lstlisting}
+
+	\titleitem{str\_replace\_all: Todas las coincidencias}
+\begin{lstlisting}[style=RScript]
+str_replace_all("2025-01-15", "-", "/")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2025/01/15"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Reemplazos múltiples con vector con nombre
+str_replace_all(
+  "Ingresos: 1000 USD",
+  c("USD" = "ARS", "1000" = "1200000")
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Ingresos: 1200000 ARS"
+\end{lstlisting}
+
+	\titleitem{str\_replace\_na: Reemplazar NA}
+\begin{lstlisting}[style=RScript]
+str_replace_na(c("dato", NA, "otro"), "Sin dato")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "dato"     "Sin dato" "otro"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Eliminar patrones: str\_remove y str\_remove\_all}
+	Son atajos para \rscript{str_replace(x, patron, "")}.
+
+	\titleitem{str\_remove: Primera coincidencia}
+\begin{lstlisting}[style=RScript]
+str_remove("$1.250,00", "\\$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "1.250,00"
+\end{lstlisting}
+
+	\titleitem{str\_remove\_all: Todas las coincidencias}
+	Ideal para limpiar datos importados.
+\begin{lstlisting}[style=RScript]
+precios <- c("$1.250,00", "$800,50", "$3.100,00")
+
+precios |>
+  str_remove_all("\\$") |>
+  str_remove_all("\\.") |>
+  str_replace_all(",", ".") |>
+  as.numeric() #Ojo! Es solo un ejemplo. Hay formas mejores.
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 1250.00  800.50 3100.00
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Dividir cadenas: str\_split}
+	\titleitem{str\_split: Devuelve una lista}
+\begin{lstlisting}[style=RScript]
+str_split("Santa Fe-Córdoba-Rosario", "-")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "Santa Fe" "Córdoba" "Rosario"
+\end{lstlisting}
+
+	\titleitem{str\_split\_fixed: Devuelve una matriz}
+	Útil cuando se necesita un número fijo de columnas.
+\begin{lstlisting}[style=RScript]
+str_split_fixed(
+  c("Perren, Jonatán", "García, Ana"),
+  ", ",
+  n = 2
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]     [,2]
+[1,] "Perren" "Jonatán"
+[2,] "García" "Ana"
+\end{lstlisting}
+
+	\titleitem{str\_split\_i: Extraer la i-ésima parte}
+\begin{lstlisting}[style=RScript]
+str_split_i("2025-01-15", "-", i = 2) # El mes
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "01"
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Grupos de captura: str\_match}
+	A diferencia de \rscript{str_extract()}, \rscript{str_match()} captura subgrupos definidos con paréntesis en la regex.
+
+	\titleitem{str\_match: Primera coincidencia}
+\begin{lstlisting}[style=RScript]
+x <- c("Juan (25 años)", "Ana (30 años)")
+
+str_match(x, "(\\w+) \\((\\d+) años\\)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]             [,2]   [,3]
+[1,] "Juan (25 años)" "Juan" "25"
+[2,] "Ana (30 años)"  "Ana"  "30"
+\end{lstlisting}
+
+	Cada columna extra corresponde a un grupo de captura.
+
+	\titleitem{str\_match\_all: Todas las coincidencias}
+\begin{lstlisting}[style=RScript]
+str_match_all(
+  "datos-2024 y datos-2025",
+  "(\\w+)-(\\d{4})"
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+     [,1]          [,2]    [,3]
+[1,] "datos-2024" "datos" "2024"
+[2,] "datos-2025" "datos" "2025"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ordenar cadenas: str\_sort y str\_order}
+	\titleitem{str\_sort: Ordenar alfabéticamente}
+\begin{lstlisting}[style=RScript]
+x <- c("Córdoba", "Buenos Aires", "Santa Fe",
+       "Álvarez")
+
+str_sort(x)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Álvarez"      "Buenos Aires" "Córdoba"
+[4] "Santa Fe"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_sort(x, decreasing = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Santa Fe"     "Córdoba"      "Buenos Aires"
+[4] "Álvarez"
+\end{lstlisting}
+
+	\titleitem{str\_order: Índices del orden}
+	Análogo a \rscript{order()} pero con soporte Unicode.
+\begin{lstlisting}[style=RScript]
+str_order(x)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 4 2 1 3
+\end{lstlisting}
+
+	\titleitem{str\_unique: Valores únicos}
+\begin{lstlisting}[style=RScript]
+str_unique(c("a", "b", "a", "c", "b"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "a" "b" "c"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Comparar e igualar: str\_equal}
+	\rscript{str_equal()} compara cadenas de forma consciente de la localización (\emph{locale}).
+\begin{lstlisting}[style=RScript]
+str_equal("café", "café")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Comparación ignorando mayúsculas/minúsculas
+str_equal("Economía", "economía",
+           ignore_case = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Patrones y expresiones regulares}
+	Muchas funciones de \rscript{stringr} aceptan \textbf{expresiones regulares} (regex) como patrón de búsqueda. Por ejemplo:
+\begin{lstlisting}[style=RScript]
+# Extraer números de un texto
+str_extract("Precio: $150", "[0-9]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "150"
+\end{lstlisting}
+
+	También se pueden usar \textbf{modificadores} para cambiar cómo se interpreta el patrón:
+\begin{lstlisting}[style=RScript]
+# Ignorar mayúsculas/minúsculas
+str_detect("INFLACIÓN",
+  regex("inflación", ignore_case = TRUE))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Coincidencia literal (sin interpretar regex)
+str_detect("3.14", fixed("."))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+
+	Para una guía completa de expresiones regulares, modificadores (\rscript{regex()}, \rscript{fixed()}, \rscript{coll()}, \rscript{boundary()}) y \rscript{str_view()}, consultá el \textbf{Cheatsheet de expresiones regulares}.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ejemplo integrador (I): Limpieza de datos}
+	Datos con provincias mal cargadas:
+\begin{lstlisting}[style=RScript]
+provincias <- c(
+  "  BUENOS      AIRES ",
+  "cOrdoba",
+  "santa fe  ",
+  "entre ríos",
+  " TUCUMAN  "
+)
+
+provincias |>
+  str_squish() |>
+  str_to_title()
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Buenos Aires" "Cordoba"      "Santa Fe"
+[4] "Entre Ríos"   "Tucuman"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ejemplo integrador (II): Con dplyr}
+\begin{lstlisting}[style=RScript, numbers=none]
+library(dplyr)
+
+empresas <- tibble(
+  id = 1:5,
+  nombre = c("ACME S.A.", "globant s.r.l.", "MERCADO libre", "YPF S.A.", "arcor"),
+  ventas_txt = c("$1.200,50", "$800,00", "$15.300,75", "$25.000,00", "$3.450,25")
+)
+
+empresas |>
+  mutate(
+    `:bn:nombre_limpio` = nombre |>
+      str_squish() |>
+      str_to_title(),
+    `:bn:tipo` = str_extract(nombre,
+      regex("s\\.a\\.|s\\.r\\.l\\.",
+            ignore_case = TRUE)) |>
+      str_to_upper(),
+    `:bn:ventas` = ventas_txt |>
+      str_remove_all("\\$|\\.") |>
+      str_replace(",", ".") |>
+      as.numeric()
+  )
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ejemplo integrador (III): Resultado}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 5 × 6
+id nombre           ventas_txt nombre_limpio  tipo   ventas
+	<int> <chr>            <chr>      <chr>          <chr>   <dbl>
+1     1 "  ACME S.A."    $1.200,50  Acme S.a.      S.A.    1200.
+2     2 "globant s.r.l." $800,00    Globant S.r.l. S.R.L.   800 
+3     3 "MERCADO libre"  $15.300,75 Mercado Libre  NA     15301.
+4     4 "YPF S.A."       $25.000,00 Ypf S.a.       S.A.   25000 
+5     5 "arcor"          $3.450,25  Arcor          NA      3450.
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Resumen de funciones}
+	\titleitem{Longitud y subcadenas}
+	\rscript{str_length()}, \rscript{str_sub()}, \rscript{str_dup()}.
+	
+	\titleitem{Caso y espacios}
+	\rscript{str_to_upper()}, \rscript{str_to_lower()}, \rscript{str_to_title()},\\
+	\rscript{str_to_sentence()}, \rscript{str_trim()}, \rscript{str_squish()},\\
+	\rscript{str_pad()}, \rscript{str_trunc()}, \rscript{str_wrap()}.
+	
+	\titleitem{Concatenar y unir}
+	\rscript{str_c()}, \rscript{str_flatten()}, \rscript{str_glue()}, \rscript{str_glue_data()}.
+	
+	\titleitem{Detectar y contar}
+	\rscript{str_detect()}, \rscript{str_starts()}, \rscript{str_ends()},\\
+	\rscript{str_which()}, \rscript{str_count()}.
+	
+	\titleitem{Extraer y localizar}
+	\rscript{str_extract()}, \rscript{str_extract_all()}, \rscript{str_subset()},\\
+	\rscript{str_locate()}, \rscript{str_match()}, \rscript{str_match_all()}.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\titleitem{Reemplazar y eliminar}
+\rscript{str_replace()}, \rscript{str_replace_all()}, \rscript{str_remove()},\\
+\rscript{str_remove_all()}, \rscript{str_replace_na()}.
+
+\titleitem{Dividir, ordenar y comparar}
+\rscript{str_split()}, \rscript{str_split_fixed()}, \rscript{str_split_i()},\\
+\rscript{str_sort()}, \rscript{str_order()}, \rscript{str_unique()}, \rscript{str_equal()}.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Equivalencias con R Base}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-3} = {cmd = \rscript}
+			}
+			Operación    & stringr             & R Base       \\
+			Detectar     & str\_detect()       & grepl()      \\
+			Posiciones   & str\_which()        & grep()       \\
+			Extraer      & str\_extract()      & regmatches() \\
+			Reemplazar 1 & str\_replace()      & sub()        \\
+			Reemplazar + & str\_replace\_all() & gsub()       \\
+			Dividir      & str\_split()        & strsplit()   \\
+			Longitud     & str\_length()       & nchar()      \\
+			Subcadena    & str\_sub()          & substr()     \\
+			Concatenar   & str\_c()            & paste0()     \\
+			Mayúsculas   & str\_to\_upper()    & toupper()    \\
+			Minúsculas   & str\_to\_lower()    & tolower()    \\
+			Trim         & str\_trim()         & trimws()
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+\end{document}

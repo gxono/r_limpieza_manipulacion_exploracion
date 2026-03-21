@@ -118,18 +118,42 @@
 		select, filter, arrange, mutate, summarise, ungroup,
 		ggplot, aes, theme, labs, factorial,
 		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith,
-		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse,
+		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse, regmatches,
 		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between
 	},
 	otherkeywords={
-		group_by, if_else, case_when, pivot_longer, pivot_wider, all.equal,
+		% dplyr
+		group_by, if_else, case_when, case_match,
 		left_join, right_join, inner_join, full_join,
-		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot, 
-		facet_wrap, facet_grid, read_csv, read_excel, as_tibble, paste0,
-		as.logical, as.integer, as.numeric, as.character, is.na,
-		fct_reorder, fct_relevel, fct_lump, fct_infreq, data.frame, as_date, 
-		case_match, which.max, which.min, na.omit, read_csv2, all_of, any_of, contains, 
-		matches, everything, starts_with, ends_with, num_range, is.numeric, log10, paste0, str_detect, str_replace, str_extract, as.factor, is.character, is.logical, is.null, is.vector, is.factor, complete.cases, Sys.Date, as.Date
+		% tidyr
+		pivot_longer, pivot_wider,
+		% ggplot2
+		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot,
+		facet_wrap, facet_grid,
+		% readr / readxl
+		read_csv, read_csv2, read_excel,
+		% forcats
+		fct_reorder, fct_relevel, fct_lump, fct_infreq,
+		% tidyselect
+		all_of, any_of, contains, matches, everything,
+		starts_with, ends_with, num_range,
+		% stringr
+		str_length, str_sub, str_dup,
+		str_to_upper, str_to_lower, str_to_title, str_to_sentence,
+		str_trim, str_squish, str_pad, str_trunc, str_wrap,
+		str_c, str_flatten, str_glue, str_glue_data,
+		str_detect, str_starts, str_ends, str_which, str_count,
+		str_extract, str_extract_all, str_subset,
+		str_locate, str_locate_all, str_match, str_match_all,
+		str_replace, str_replace_all, str_remove, str_remove_all, str_replace_na,
+		str_split, str_split_fixed, str_split_i,
+		str_sort, str_order, str_unique, str_equal, str_view,
+		% coerción
+		as.logical, as.integer, as.numeric, as.character, as.factor, as.Date, as_date, as_tibble,
+		% verificación de tipo
+		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor,
+		% base: datos y estadística
+		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date
 	},
 	moredelim=[is][\lst@r@normalstyle]{`}{`},
 	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename

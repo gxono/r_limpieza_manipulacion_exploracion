@@ -1,0 +1,973 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+
+
+\begin{document}
+	\subtitle{Cheatsheet de expresiones regulares}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+\begin{frame}[fragile]{¿Qué es una expresión regular?}
+	\titleitem{Un mini-lenguaje para describir patrones de texto}
+	Una expresión regular (\emph{regex}) es una secuencia de caracteres que define un patrón de búsqueda. En R, se usan principalmente con las funciones de \rscript{stringr} y con funciones base como \rscript{grep()}, \rscript{gsub()}, etc.
+	
+	\titleitem{¿Para qué se usan en el análisis de datos?}
+	\begin{itemize}
+		\item Extraer información de texto no estructurado (precios, fechas, códigos).
+		\item Limpiar datos cargados con formatos inconsistentes.
+		\item Validar el formato de observaciones (ej. CUIT, patentes).
+		\item Filtrar filas que contengan ciertos patrones textuales como emails.
+	\end{itemize}
+
+	\begin{alertblock}{}
+		En R, las barras invertidas se duplican. Para representar \texttt{\textbackslash d} en una regex, escribimos \rscript{"\\\\d"} en el código.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Caracteres literales}
+	La forma más simple de regex: buscar un texto exacto.
+\begin{lstlisting}[style=RScript]
+library(stringr)
+
+x <- c("Santa Fe", "San Luis", "Salta", "Mendoza")
+
+str_detect(x, "San")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE  TRUE FALSE FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_extract(x, "San")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "San" "San" NA    NA
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Las regex son \textbf{sensibles a mayúsculas} por defecto. \rscript{"san"} no matchea \rscript{"San"}. Usá \rscript{regex("san", ignore\_case = TRUE)} si necesitás ignorar la distinci\'on.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Metacaracteres}
+	Estos caracteres tienen un significado especial en regex. Si querés buscar el carácter literal, hay que escaparlos con \rscript{\\\\}.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {c l},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+			}
+			Metacarácter & Significado \\
+			\texttt{.}   & Cualquier carácter (excepto salto de línea) \\
+			\texttt{\textasciicircum}     & Inicio de la cadena \\
+			\texttt{\$}  & Final de la cadena \\
+			\texttt{*}   & 0 o más repeticiones \\
+			\texttt{+}   & 1 o más repeticiones \\
+			\texttt{?}   & 0 o 1 repetición (opcional) \\
+			\texttt{\{\}} & Cuantificador exacto \\
+			\texttt{[]}  & Clase de caracteres \\
+			\texttt{()}  & Grupo de captura \\
+			\texttt{|}   & Alternancia (OR) \\
+			\texttt{\textbackslash} & Escape \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Escapar metacaracteres}
+	Para buscar un metacarácter de forma literal, se lo escapa con \rscript{\\\\}. En R, como las barras se duplican, la tarea se hace as\'i
+\begin{lstlisting}[style=RScript]
+# Buscar un punto literal
+str_detect("3.14", "\\.")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Sin escapar, el punto matchea cualquier carácter
+str_detect("3X14", ".")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+Este \'ultimo \rscript{TRUE} es por el \rscript{"3"}, o \rscript{"X"} o \rscript{"1"} o \rscript{"4"}
+
+\begin{lstlisting}[style=RScript]
+# Buscar el signo $
+str_extract("Precio: $150", "\\$[0-9]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "$150"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Buscar paréntesis literales
+str_extract("Juan (25)", "\\(.+\\)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "(25)"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+Alternativamente, \rscript{fixed()} evita interpretar metacaracteres:
+\begin{lstlisting}[style=RScript]
+str_detect("3.14", fixed("."))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{El punto: Comodín universal}
+	El caracter \rscript{.} coincide con \textbf{cualquier carácter} excepto salto de línea.
+\begin{lstlisting}[style=RScript]
+x <- c("gato", "grito", "goto", "gusto")
+
+str_detect(x, "g.to")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE FALSE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_extract(x, "g.to")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "gato" NA     "goto" NA
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Dos puntos: dos caracteres cualesquiera
+str_detect(x, "g..to")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE  TRUE FALSE  TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_extract(x, "g..to")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] NA      "grito" NA      "gusto"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Anclas: \texttt{\textasciicircum{}} y \$}
+	Las anclas no coinciden con caracteres, sino con \textbf{posiciones}.
+	
+	\titleitem{\texttt{\textasciicircum{}} marca el inicio de la cadena}
+\begin{lstlisting}[style=RScript]
+x <- c("ingreso neto", "total ingreso", "ingreso")
+
+str_detect(x, "^ingreso")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE
+\end{lstlisting}
+
+	\titleitem{\$ marca el final de la cadena}
+\begin{lstlisting}[style=RScript]
+str_detect(x, "ingreso$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE  TRUE  TRUE
+\end{lstlisting}
+
+	\titleitem{Combinados: cadena exacta}
+\begin{lstlisting}[style=RScript]
+# Solo matchea "ingreso" exactamente
+str_detect(x, "^ingreso$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE FALSE  TRUE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Clases de caracteres: [ ]}
+	Los corchetes definen un \textbf{conjunto} de caracteres posibles para una posición.
+	
+\begin{lstlisting}[style=RScript]
+x <- c("gato", "geto", "gito", "goto", "gusto")
+
+# Matchea 'g' + vocal + 'to'
+str_extract(x, "g[aeiou]to")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "gato" "geto" "gito" "goto" NA
+\end{lstlisting}
+
+	\titleitem{Rangos dentro de clases}
+	Si queremos matchear cualquier letra, no es necesario escribir una cadena con cada una. Para eso hay rangos. 
+	
+	\begin{itemize}
+		\item \rscript{"A-Z"}: Un caracter en may\'usculas entre la \rscript{"A"} y la \rscript{"Z"}. 
+		\item \rscript{"a-z"}: Un caracter en min\'usculas entre la \rscript{"a"} y la \rscript{"z"}. 
+		\item \rscript{"0-9"}: Un d\'igito num\'erico. 
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+	x <- c("A1", "b2", "C3", "d4", "5E")
+	
+	str_extract(x, "[A-Z][0-9]") # Una mayúscula + un dígito
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+	[1] "A1" NA   "C3" NA   NA
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+	str_extract(x, "[a-z][0-9]") # Una minúscula + un dígito
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+	[1] NA   "b2" NA   "d4" NA
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+	str_extract(x, "[A-Za-z][0-9]") # Cualquier letra (una vez) + un dígito
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+	[1] "A1" "b2" "C3" "d4" "5E"
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Clases de caracteres: Negación y combinaciones}
+	\titleitem{Negación con \texttt{\textasciicircum{}} dentro de [ ]}
+	Cuando \verb|^| aparece \textbf{dentro} de corchetes, niega la clase.
+\begin{lstlisting}[style=RScript]
+x <- c("abc", "a1c", "a c", "a.c")
+
+# Cualquier carácter que NO sea letra
+str_extract(x, "a[^a-zA-Z]c")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] NA    "a1c" "a c" "a.c"
+\end{lstlisting}
+
+	\titleitem{Múltiples rangos y caracteres}
+\begin{lstlisting}[style=RScript]
+# Dígitos o punto (para parsear decimales)
+str_extract_all("Precio: 1.250,50",
+                "[0-9.,]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "1.250,50"
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Dentro de \rscript{"[]"}, el punto y la mayoría de metacaracteres son literales; no necesitan escape. Excepciones: \rscript{"]"} y \rscript{"\\"}.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Atajos de clase}
+	Son abreviaciones para clases de caracteres frecuentes.
+
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] l Q[m, font=\ttfamily]},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+			}
+			Atajo  & Descripción                        & Equivale a       \\
+			\textbackslash d    & Dígito                             & {[0-9]}            \\
+			\textbackslash D    & NO dígito                          & {[\textasciicircum 0-9]}          \\
+			\textbackslash w    & Carácter de \quotation{palabra}            & {[A-Za-z0-9\_]}    \\
+			\textbackslash W    & NO carácter de \quotation{palabra}         & {[\textasciicircum A-Za-z0-9\_]}  \\
+			\textbackslash s    & Espacio en blanco                  & {[ \textbackslash t\textbackslash n\textbackslash r]}  \\
+			\textbackslash S    & NO espacio en blanco               & {[\textasciicircum{} \textbackslash t\textbackslash n\textbackslash r]}  \\
+			\textbackslash b    & Límite de palabra                  & (posición)         \\
+		\end{tblr}
+	\end{table}
+
+	Recordá que en R se duplica la barra: \rscript{"\\\\d"}, \rscript{"\\\\w"}, etc.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Atajos de clase en acción}
+\begin{lstlisting}[style=RScript]
+x <- "Total: $1.250 (año 2025)"
+
+# Extraer todos los números
+str_extract_all(x, "\\d+") #Recordá que el + es un cuantificador.
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "1"    "250"  "2025"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer palabras
+str_extract_all(x, "\\w+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "Total" "1"     "250"   "año"   "2025"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer todo lo que NO sea espacio
+str_extract_all(x, "\\S+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "Total:"  "$1.250" "(año"   "2025)"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Límites de palabra: \textbackslash b}
+	\rscript{"\\\\b"} coincide con una \textbf{posición} entre un carácter de palabra y uno que no lo es. No consume caracteres.
+\begin{lstlisting}[style=RScript]
+x <- "El ingreso total y los ingresos parciales"
+
+# Sin límite: matchea "ingreso" dentro de "ingresos"
+str_extract_all(x, "ingreso")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "ingreso" "ingreso"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con límite: solo la palabra completa "ingreso"
+str_extract_all(x, "\\bingreso\\b")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "ingreso"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Palabras que empiezan con "in"
+str_extract_all(x, "\\bin\\w+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "ingreso"  "ingresos"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Cuantificadores}
+	Controlan \textbf{cuántas veces} se repite el elemento que los precede.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] l l},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+			}
+			Cuantificador & Repeticiones    & Ejemplo                        \\
+			*              & 0 o más         & \texttt{ab*c} matchea ac, abc, abbc... \\
+			+              & 1 o más         & \texttt{ab+c} matchea abc, abbc... \\
+			?              & 0 o 1           & \texttt{colou?r} matchea color, colour \\
+			\{n\}          & Exactamente $n$ & \texttt{\textbackslash d\{4\}} matchea 2025         \\
+			\{n,\}         & $n$ o más       & \texttt{\textbackslash d\{2,\}} matchea 25, 250...  \\
+			\{n,m\}        & Entre $n$ y $m$ & \texttt{\textbackslash d\{2,4\}} matchea 25, 250, 2025 \\
+		\end{tblr}
+	\end{table}
+
+	\begin{alertblock}{}
+		Los cuantificadores son \textbf{codiciosos} (\emph{greedy}) por defecto: capturan la mayor cantidad posible. Para hacerlos perezosos (\emph{lazy}), se agrega \verb|?| después (ej. \verb|.+?|).
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Cuantificadores en acción}
+\begin{lstlisting}[style=RScript]
+# * (0 o más): CUIT puede tener o no guiones
+cuits <- c("20-12345678-9", "20123456789")
+str_detect(cuits, "\\d{2}-?\\d{8}-?\\d{1}")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# {n}: Años de exactamente 4 dígitos
+x <- "En 2025 se registraron 15 casos."
+str_extract_all(x, "\\b\\d{4}\\b")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "2025"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# + (1 o más): Extraer secuencias de dígitos
+str_extract_all("IPC: 5.2, PBI: 150.3",
+                "\\d+\\.?\\d*")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "5.2"   "150.3"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# {n,m}: Códigos postales de 4 o 5 dígitos
+str_extract_all("CP: 3000, otro: 12345",
+                "\\b\\d{4,5}\\b")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "3000"  "12345"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Greedy vs. Lazy}
+	\titleitem{Greedy (por defecto): captura lo máximo posible}
+\begin{lstlisting}[style=RScript]
+x <- '<td>dato1</td><td>dato2</td>'
+
+# Greedy: captura desde el primer < hasta el último >
+str_extract(x, "<.+>")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "<td>dato1</td><td>dato2</td>"
+\end{lstlisting}
+
+	\titleitem{Lazy (con ?): captura lo mínimo posible}
+\begin{lstlisting}[style=RScript]
+# Lazy: se frena en el primer >
+str_extract(x, "<.+?>")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "<td>"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer todas las etiquetas
+str_extract_all(x, "<.+?>")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "<td>"  "</td>" "<td>"  "</td>"
+\end{lstlisting}
+
+	Se aplica a todos los cuantificadores: \verb|*?|, \verb|+?|, \verb|??|, \verb|{n,m}?|.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Alternancia: |}
+	El operador \verb`|` funciona como un \quotation{o} lógico entre patrones.
+\begin{lstlisting}[style=RScript]
+sectores <- c("Industria", "Agro", "Servicios",
+              "Comercio", "Agropecuario")
+
+str_detect(sectores, "Agro|Industria")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE  TRUE FALSE FALSE  TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer S.A. o S.R.L. (case insensitive)
+empresas <- c("ACME S.A.", "globant s.r.l.",
+              "Arcor", "YPF S.A.")
+
+str_extract(empresas,
+  regex("s\\.a\\.|s\\.r\\.l\\.",
+        ignore_case = TRUE))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "S.A."   "s.r.l." NA       "S.A."
+\end{lstlisting}
+	
+	\begin{alertblock}{}
+		Cuidado con la precedencia. \rscript{"gato|perro"} matchea \rscript{"gato"} o \rscript{"perro"}, no \rscript{"gat"} + (\rscript{"o"} o \rscript{"p"}) + \rscript{"erro"}. Use paréntesis si necesita acotar: \rscript{"gat(o|a)"}.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Grupos: ( )}
+	Los paréntesis cumplen dos funciones: \textbf{agrupar} y \textbf{capturar}.
+	
+	\titleitem{Agrupar para aplicar cuantificadores u OR}
+\begin{lstlisting}[style=RScript]
+x <- c("jajaja", "ja", "jejeje", "j")
+
+# (ja)+ matchea "ja" repetido 1 o más veces
+str_extract(x, "(ja)+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "jajaja" "ja"     NA       NA
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# gat(o|a|os|as): terminaciones múltiples
+x <- c("gato", "gata", "gatos", "gatas", "gatito")
+str_extract(x, "gat(o|a|os|as)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "gato"  "gata"  "gatos" "gatas" NA
+\end{lstlisting}
+
+	\titleitem{Capturar para extraer subgrupos}
+\begin{lstlisting}[style=RScript]
+# devuelve las capturas en columnas
+str_match("2025-01-15", "(\\d{4})-(\\d{2})-(\\d{2})")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]         [,2]   [,3] [,4]
+[1,] "2025-01-15" "2025" "01" "15"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Grupos sin captura: (?: )}
+	A veces necesitamos agrupar sin que el grupo se capture en el resultado.
+\begin{lstlisting}[style=RScript]
+# Con grupo de captura: la columna extra aparece
+str_match("2025-01", "(\\d{4})-(\\d{2})")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]      [,2]   [,3]
+[1,] "2025-01" "2025" "01"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con grupo sin captura (?:): no genera columna extra
+str_match("2025-01", "(\\d{4})-(?:\\d{2})")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]      [,2]
+[1,] "2025-01" "2025"
+\end{lstlisting}
+
+	Es útil cuando queremos agrupar para aplicarle un cuantificador, sin que nos interese extraer ese grupo:
+\begin{lstlisting}[style=RScript]
+# Matchear "http" o "https" sin capturar la "s"
+str_extract("https://unl.edu.ar",
+            "https?://\\S+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "https://unl.edu.ar"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Retrorreferencias (backreferences)}
+	Se puede hacer referencia a lo que capturó un grupo anterior con \verb|\\1|, \verb|\\2|, etc.
+\begin{lstlisting}[style=RScript]
+# Detectar palabras repetidas consecutivas
+x <- c("la la casa", "el perro", "muy muy bien")
+str_detect(x, "\\b(\\w+) \\1\\b")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Extraer la palabra repetida
+str_match(x, "\\b(\\w+) \\1\\b")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]       [,2]
+[1,] "la la"    "la"
+[2,] NA         NA
+[3,] "muy muy"  "muy"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# En reemplazos: reorganizar "Apellido, Nombre"
+str_replace("Perren, Jonatán", "(\\w+), (\\w+)",
+            "\\2 \\1")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Jonatán Perren"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Lookahead y Lookbehind}
+	Son \quotation{miradas} que verifican si un patrón está adelante o atrás, \textbf{sin consumir caracteres}.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] l},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+			}
+			Sintaxis        & Descripción \\
+			(?=...)          & Lookahead positivo: lo que sigue es... \\
+			(?!...)          & Lookahead negativo: lo que sigue NO es... \\
+			(?<=...)         & Lookbehind positivo: lo anterior es... \\
+			(?<!...)         & Lookbehind negativo: lo anterior NO es... \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Lookahead y Lookbehind: Ejemplos}
+	\titleitem{Lookahead positivo (?=...)}
+\begin{lstlisting}[style=RScript]
+# Extraer el número que está antes de "kg"
+str_extract("Peso: 150kg", "\\d+(?=kg)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "150"
+\end{lstlisting}
+
+	\titleitem{Lookbehind positivo (?<=...)}
+\begin{lstlisting}[style=RScript]
+# Extraer lo que está después de "Precio: $"
+str_extract("Precio: $1500", "(?<=\\$)\\d+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "1500"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]
+		\titleitem{Lookahead negativo (?!...)}
+\begin{lstlisting}[style=RScript]
+# Números que NO están seguidos de "%"
+str_extract_all("IPC: 5%, PBI: 150M",
+								"\\d+(?!%)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "150"
+\end{lstlisting}
+
+\titleitem{Lookbehind negativo (?<!...)}
+\begin{lstlisting}[style=RScript]
+# Números que NO están precedidos de "$"
+str_extract_all("$100 y 200", "(?<!\\$)\\b\\d+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "200"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Ejemplo práctico: Validar formatos}
+	\titleitem{CUIT argentino}
+	Formato: \texttt{XX-XXXXXXXX-X} (con o sin guiones).
+\begin{lstlisting}[style=RScript]
+cuits <- c("20-12345678-9", "20123456789",
+           "12345", "30-99887766-0")
+
+str_detect(cuits, "^\\d{2}-?\\d{8}-?\\d$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE  TRUE FALSE  TRUE
+\end{lstlisting}
+
+	\titleitem{Correo electrónico (simplificado)}
+\begin{lstlisting}[style=RScript]
+emails <- c("juan@unl.edu.ar", "nope",
+            "ana.garcia@gmail.com", "a@b")
+
+str_detect(emails,
+  "^[\\w.]+@[\\w]+\\.[a-z]{2,}(\\.[a-z]{2,})?$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE  TRUE FALSE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\titleitem{Patente argentina (formato nuevo)}
+\begin{lstlisting}[style=RScript]
+str_detect(c("AB123CD", "ABC123", "AB 123 CD"),
+						 "^[A-Z]{2}\\d{3}[A-Z]{2}$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1]  TRUE FALSE FALSE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Ejemplo práctico: Extraer datos de texto}
+	\titleitem{Parsear n\'umeros}
+\begin{lstlisting}[style=RScript]
+textos <- c("El IPC subió 3,5% en marzo",
+            "Inflación interanual: 105,3%",
+            "Sin variación")
+
+str_extract(textos, "\\d+,\\d+(?=%)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "3,5"   "105,3" NA
+\end{lstlisting}
+
+	\titleitem{Extraer fechas de texto libre}
+\begin{lstlisting}[style=RScript]
+x <- "Publicado el 15/03/2025 y revisado el 20/03/2025"
+
+str_extract_all(x, "\\d{1,2}/\\d{2}/\\d{4}")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "15/03/2025" "20/03/2025"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
+\titleitem{Separar nombre y valor}
+\begin{lstlisting}[style=RScript]
+x <- c("PBI: 150.3", "IPC: 5.2", "Desempleo: 7.1")
+
+str_match(x, "(\\w+):\\s+([\\d.]+)")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+		 [,1]            [,2]        [,3]
+[1,] "PBI: 150.3"    "PBI"       "150.3"
+[2,] "IPC: 5.2"      "IPC"       "5.2"
+[3,] "Desempleo: 7.1" "Desempleo" "7.1"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Ejemplo práctico: Limpieza con regex en dplyr}
+\begin{lstlisting}[style=RScript, numbers=none]
+library(dplyr)
+
+datos <- tibble(
+  texto = c(
+    "Ventas: $1.250.000,50 (2024)",
+    "Costos: $800.000,00 (2023)",
+    "Ventas: $2.100.500,75 (2025)"
+  )
+)
+
+datos |>
+  mutate(
+    `:bn:concepto` = str_extract(texto, "^\\w+"),
+    `:bn:monto` = str_extract(texto, "(?<=\\$)[\\d.,]+") |>
+      	str_remove_all("\\.") |>
+      	str_replace(",", ".") |>
+      	as.numeric(),
+    `:bn:anio` = str_extract(texto, "(?<=\\()\\d{4}(?=\\))") |>
+      	as.integer()
+  )
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 3 x 4
+  texto                         concepto   monto  anio
+1 Ventas: $1.250.000,50 (2024)  Ventas   1250000. 2024
+2 Costos: $800.000,00 (2023)    Costos    800000  2023
+3 Ventas: $2.100.500,75 (2025)  Ventas   2100501. 2025
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Modificadores de patrón en stringr}
+	Las funciones de \rscript{stringr} aceptan modificadores que cambian la interpretación.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] X[m]},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+			}
+			Modificador    & Descripción \\
+			regex()        & Interpretación estándar como expresión regular (por defecto). Acepta \texttt{ignore\_case}. \\
+			fixed()        & Coincidencia literal, sin interpretar metacaracteres. Más rápido. \\
+			coll()         & Comparación sensible a la localización (idioma). \\
+			boundary()     & Coincide con límites (de palabra, oración, carácter). \\
+		\end{tblr}
+	\end{table}
+
+\begin{lstlisting}[style=RScript]
+# Ignorar mayúsculas/minúsculas
+str_detect("ECONOMÍA",
+  regex("economía", ignore_case = TRUE))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Contar palabras con boundary
+str_count("Tres simples palabras",
+          boundary("word"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 3
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Errores comunes}
+	\titleitem{Olvidar duplicar la barra invertida}
+\begin{lstlisting}[style=RScript]
+str_extract("2025", "\d+")   # Error o no matchea
+str_extract("2025", "\\d+")  # Correcto
+\end{lstlisting}
+
+	\titleitem{No anclar al validar formatos}
+\begin{lstlisting}[style=RScript]
+# Sin anclas: "AB123CD extra" también matchea
+str_detect("AB123CD extra", "[A-Z]{2}\\d{3}[A-Z]{2}")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con anclas: solo matchea la cadena completa
+str_detect("AB123CD extra",
+           "^[A-Z]{2}\\d{3}[A-Z]{2}$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] FALSE
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+\titleitem{Confundir str\_extract con str\_extract\_all}
+\rscript{str_extract()} devuelve solo la \textbf{primera} coincidencia. Si necesitás todas, usá \rscript{str_extract_all()}.
+
+\titleitem{Usar el punto sin escapar}
+Recordá que \rscript{"."} matchea \textbf{cualquier} carácter. Si buscás un punto literal, usá \rscript{"\\\\."} o \rscript{fixed(".")}.
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Referencia rápida}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] l Q[m, font=\ttfamily] l},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+				row{2-Z} = {font=\small},
+				cell{2-Z}{1,3} = {font = \ttfamily}
+			}
+			Patrón & Descripción & Patrón & Descripción \\
+			.       & Cualquier carácter          & (...)      & Grupo de captura \\
+			\textbackslash d / \textbackslash D & Dígito / No dígito & (?:...)    & Grupo sin captura \\
+			\textbackslash w / \textbackslash W & Car. palabra / No  & a|b        & Alternancia \\
+			\textbackslash s / \textbackslash S & Espacio / No       & \textbackslash 1 & Retrorreferencia \\
+			\textbackslash b   & Límite de palabra           & (?=...)    & Lookahead + \\
+			\textasciicircum{} / \$ & Inicio / Final cadena  & (?!...)    & Lookahead $-$ \\
+			{[abc]} & Clase: a, b o c             & (?<=...)   & Lookbehind + \\
+			{[\textasciicircum abc]} & Negación           & (?<!...)   & Lookbehind $-$ \\
+			{[a-z]} & Rango                       & *~~+~~?    & 0+, 1+, 0/1 repet. \\
+			\{n\} / \{n,m\} & Exacto / Rango       &            & \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{str\_view: Tu mejor amigo para depurar}
+	\rscript{str_view()} resalta visualmente las coincidencias. Usalo siempre para probar tus regex antes de aplicarlas.
+\begin{lstlisting}[style=RScript]
+x <- c("Precio: $1.500,00", "Costo: $800,50")
+
+str_view(x, "\\$[\\d.,]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] │ Precio: <$1.500,00>
+[2] │ Costo: <$800,50>
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_view(x, "\\d+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] │ Precio: $<1>.<500>,<00>
+[2] │ Costo: $<800>,<50>
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_view(x, "(?<=\\$)[\\d.]+")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] │ Precio: $<1.500>
+[2] │ Costo: $<800>
+\end{lstlisting}
+\end{frame}
+
+
+
+\end{document}
