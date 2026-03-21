@@ -115,16 +115,23 @@
 	tabsize=2,
 	alsoletter={_.0123456789},
 	morekeywords={
+		% base
 		select, filter, arrange, mutate, summarise, ungroup,
 		ggplot, aes, theme, labs, factorial,
-		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith,
+		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith, n, first, last,
 		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse, regmatches,
-		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between
-	},
-	otherkeywords={
+		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between,
+		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date,
 		% dplyr
-		group_by, if_else, case_when, case_match,
+		group_by, if_else, case_when, case_match, coalesce,
 		left_join, right_join, inner_join, full_join,
+		semi_join, anti_join, join_by,
+		bind_rows, bind_cols,
+		count, add_count, tally, n_distinct, distinct,
+		across, if_all, if_any,
+		slice, slice_head, slice_tail, slice_min, slice_max, slice_sample,
+		pull, relocate, rename, rename_with,
+		last_col, drop_na, where,
 		% tidyr
 		pivot_longer, pivot_wider,
 		% ggplot2
@@ -151,10 +158,9 @@
 		% coerción
 		as.logical, as.integer, as.numeric, as.character, as.factor, as.Date, as_date, as_tibble,
 		% verificación de tipo
-		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor,
-		% base: datos y estadística
-		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date
+		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor
 	},
+	otherkeywords={},
 	moredelim=[is][\lst@r@normalstyle]{`}{`},
 	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename
 	moredelim=[is][\lst@r@consolestyle]{`:cn:}{`}, %<- console
