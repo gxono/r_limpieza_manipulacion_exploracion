@@ -10,7 +10,7 @@
 \usepackage{emoji}
 \usepackage{enumitem}
 \usepackage{subcaption}
-
+\usepackage{currfile}
 
 \usepackage{listings}
 \usepackage{color}
@@ -349,6 +349,9 @@
 
 
 
+\edef\stydir{\CurrentFilePathUsed}
+
 \author{Jonat\'an Perren}
 \title{R: limpieza, manipulaci\'on y exploraci\'on de datos}
-\logo{\lower1cm\hbox{\includegraphics[width=0.3cm]{../sty/sign.pdf}}}
+\logo{\lower1cm\hbox{\includegraphics[width=0.3cm]{\stydir/sign.pdf}}}
+

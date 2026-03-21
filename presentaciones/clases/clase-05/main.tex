@@ -1,7 +1,5 @@
 \documentclass[8pt]{beamer}
-\usepackage{../config}
-
-
+\input{../../sty/main}
 
 
 \begin{document}
@@ -40,18 +38,18 @@ ventas
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
 # A tibble: 10 × 6
-vendedor region producto monto cantidad satisfaccion
-	<chr>    <chr>  <chr>    <dbl>    <dbl>        <dbl>
-1 Ana      Norte  Laptop    1200        2          4.5
-2 Beto     Sur    Tablet     450        5          3.8
-3 Carla    Norte  Celular    800       10          4.2
-4 Ana      Oeste  Tablet     400        3          4  
-5 Beto     Sur    Laptop    1100        2          4.8
-6 Carla    Oeste  Celular    850        8          3.5
-7 Ana      Norte  Laptop    1250        3          4.7
-8 Beto     Sur    Tablet     480        6          3.9
-9 Carla    Oeste  Celular    820        9          4.1
-10 Ana      Este   Laptop    1180        2          4.6
+  vendedor region producto  monto cantidad satisfaccion
+	 <chr>    <chr>   <chr>   <dbl>    <dbl>        <dbl>
+1  Ana      Norte   Laptop   1200        2          4.5
+2  Beto     Sur     Tablet    450        5          3.8
+3  Carla    Norte   Celular   800       10          4.2
+4  Ana      Oeste   Tablet    400        3          4  
+5  Beto     Sur     Laptop   1100        2          4.8
+6  Carla    Oeste   Celular   850        8          3.5
+7  Ana      Norte   Laptop   1250        3          4.7
+8  Beto     Sur     Tablet    480        6          3.9
+9  Carla    Oeste   Celular   820        9          4.1
+10 Ana      Este    Laptop   1180        2          4.6
 \end{lstlisting}
 	\end{frame}
 	
@@ -74,6 +72,12 @@ Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean
 	\item \rscript{!=}: Distinto de
 	\item \lstinline[style=RScript, basicstyle=\normalsize\ttfamily]|%in%|: Pertenece al conjunto (muy útil para no escribir muchos O)	
 \end{itemize}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]
 \end{frame}
 	
 	
