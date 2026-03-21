@@ -86,35 +86,5 @@ Integra todas las competencias previas mediante la creación de documentos diná
 | **Eje 4** | | | ✓ | | | | | ✓ | ✓ | ✓ | | | |
 | **Eje 5** | | | | | | | | | | | ✓ | ✓ | ✓ |
 
-## Sistema de evaluación
 
-La evaluación se concibe como un proceso continuo e integral, estructurado en dos modalidades complementarias: **formativa** (seguimiento constante) y **sumativa** (integración de saberes).
-
-### Evaluación Formativa: Actividades Prácticas Semanales (APS)
-
-Al finalizar cada clase, se asignará una actividad práctica para realizar de forma asincrónica. Estas tareas consisten en ejercicios de los temas vistos en la sesión articulados con los temas de encuentros anteriores.
-
-- Se prevé una actividad por cada unidad/clase dictada.
-- Se calificará como **aprobado** o **no aprobado**.
-
-### Evaluación Sumativa: Trabajo Práctico Integrador (TPI)
-
-En lugar de exámenes parciales fragmentados, se evaluará la capacidad del estudiante para articular todas las competencias de la asignatura mediante un único proyecto transversal.
-
-- Un trabajo de elaboración propia que deberá resolver una problemática compleja utilizando las herramientas adquiridas durante todo el cursado.
-- Se calificará como **aprobado** o **no aprobado**.
-
-### Condiciones de promoción
-
-Para aprobar la materia deberá alcanzar **10 puntos** entre todas las actividades:
-- **1 punto** por cada actividad semanal aprobada.
-- **5 puntos** por el trabajo final.
-
-## ¿Qué NO es este curso?
-
-- No es un curso de programación general (no se aprende a hacer apps o sitios web).
-- No es un curso de estadística teórica.
-
-## Bibliografía
-
-Todo el material disponible se encuentra en el Aula Virtual de la Facultad de Ciencias Económicas.
+El resto de la información la pueden encontrar en el programa de la asignatura.
