@@ -1,0 +1,767 @@
+\documentclass[8pt]{beamer}
+\usepackage{../sty/main}
+
+
+
+\begin{document}
+	\subtitle{Cheatsheet de operadores y operaciones}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Recomendaciones para nombrar una variable}
+	Otras buenas pr\'acticas en el uso de R pueden ser encontradas \href{https://github.com/rstudio/cheatsheets/blob/4ad6722c62bb894a15764c0247728370ba461d07/R-best-practice.pdf}{\textbf{en este cheatsheet}}.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l X},
+				hlines,
+				vlines,
+				row{1} = {bg=gray9, font=\bfseries},
+				column{2} = {font=\ttfamily},
+				cells = {valign=m},
+			}
+			Estado      & Variable         & Razón                                                   \\
+			Recomendado & ingreso\_total   & Descriptivo y usa \textit{sc}.                          \\
+			Correcto    & IngresoTotal     & Estilo \textit{UpperCamelCase}.                         \\
+			Correcto    & ingresoTotal     & Estilo \textit{LowerCamelCase}.                         \\
+			Correcto    & ingreso.total    & Estilo antiguo.                                         \\
+			Incorrecto  & 1ingreso         & Empieza con número.                                     \\
+			Incorrecto  & ingreso total    & Contiene espacios.                                      \\
+			Incorrecto  & ingreso-total    & El guion \texttt{-} es un operador.                     \\
+			Evitar      & c, t, df         & Nombres de funciones del sistema o ambiguos.            \\
+			Evitar      & x, cosa          & No describe el contenido del objeto.                    \\
+			Evitar      & prom\_edad\_2023 & Se prefiere un equilibrio como \texttt{promedio\_edad}.
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Op. de asignaci\'on y pipe}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3-4} = {cmd = \rscript}
+			}
+			Tipo                          & Operaci\'on                    & Operador & Ejemplo de Uso \\
+			\SetCell[r=4]{l} Asignaci\'on & Asignar (\emoji{grin})         & <-       & x <- 10        \\
+			                              & Asignar (\emoji{rage})         & =        & x = 10         \\
+			                              & Asignar (\emoji{cursing-face}) & ->       & 10 -> x        \\
+			                              & Asignar global                 & <<-      & x <<- 10       \\
+			\SetCell[r=2]{l} Pipe         & Pipe nativo (R 4.1+)           & |>       & x |> mean()    \\
+			                              & Pipe (magrittr)                & \%>\%    & x \%>\% mean()
+		\end{tblr}
+	\end{table}
+	
+	\vspace{0.3em}
+	El pipe toma el resultado de la izquierda y lo pasa como primer argumento a la funci\'on de la derecha.
+\begin{lstlisting}[style=RScript]
+c(1, NA, 3) |> mean(na.rm = TRUE)
+# mean(c(1, NA, 3), na.rm = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] 2
+\end{lstlisting}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Op. sobre vectores (Generaci\'on e informaci\'on)}
+	Muchas m\'as operaciones sobre vectores se encuentran en el paquete \verb|purrr|.
+	
+	Revis\'a su cheatsheet.
+	
+	\begin{figure}[h!]
+		\href{https://github.com/rstudio/cheatsheets/blob/4ad6722c62bb894a15764c0247728370ba461d07/purrr.pdf}
+			{\includegraphics[width = 0.15\textwidth]{img/purrr.png}}
+	\end{figure}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on  & Op./Funci\'on & Ejemplo de Uso         & Resultado        \\
+			Concatenar   & c()           & c("a", "b")            & c("a", "b")      \\
+			Secuencia    & seq()         & seq(1, 10, by = 2)     & c(1, 3, 5, 7, 9) \\
+			Repetir      & rep()         & rep("X", 3)            & c("X", "X", "X") \\
+			Longitud     & length()      & length(c(TRUE, FALSE)) & 2                \\
+			Tipo de dato & class()       & class(c(1, 2, 3))      & "numeric"
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Op. sobre vectores (Orden y selecci\'on)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on      & Op./Funci\'on & Ejemplo de Uso         & Resultado        \\
+			Ordenar          & sort()        & sort(c("Z", "A", "C")) & c("A", "C", "Z") \\
+			Posiciones ord.  & order()       & order(c(50, 20, 40))   & c(2, 3, 1)       \\
+			Invertir orden   & rev()         & rev(c(10, 20, 30))     & c(30, 20, 10)    \\
+			Valores \'unicos & unique()      & unique(c(1, 1, 2, 1))  & c(1, 2)          \\
+			Primeros elem.   & head()        & head(1:10, 2)          & c(1, 2)          \\
+			\'Ultimos elem.  & tail()        & tail(1:10, 2)          & c(9, 10)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Op. sobre vectores (B\'usqueda y conjuntos)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on       & Op./Funci\'on & Ejemplo de Uso                & Resultado  \\
+			Posic. condic.    & which()       & which(c(5, 2, 8) > 3)         & c(1, 3)    \\
+			Posic. del m\'in. & which.min()   & which.min(c(5, 2, 8))         & 2          \\
+			Posic. del m\'ax. & which.max()   & which.max(c(5, 2, 8))         & 3          \\
+			Diferencia conj.  & setdiff()     & setdiff(c(1,2,3), c(2,3,4))   & 1          \\
+			Intersecci\'on    & intersect()   & intersect(c(1,2,3), c(2,3,4)) & c(2, 3)    \\
+			Uni\'on           & union()       & union(c(1,2), c(2,3))         & c(1, 2, 3)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Op. relacionales}
+	Pueden operar sobre diferentes tipos de datos
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3-5} = {cmd = \rscript}
+			}
+			Tipo                         & Operación                      & Op.    & Ejemplo de Uso         & Resultado  \\
+			\SetCell[r=12]{l}	Relaci\'on & \SetCell[r=2]{l} Igual a       & ==     & "Té" == "Te"           & F          \\
+			                             &                                & ==     & c(1, 2, 3) == 2        & c(F, T, F) \\
+			                             & \SetCell[r=2]{l} Distinto de   & !=     & "Té" != "té"           & T          \\
+			                             &                                & !=     & c(1, 2, 3) != 2        & c(T, F, T) \\
+			                             & \SetCell[r=2]{l} Mayor que     & >      & 5 > 3                  & T          \\
+			                             &                                & >      & c(1, 5, 3) > 2         & c(F, T, T) \\
+			                             & \SetCell[r=2]{l} Menor que     & <      & 3 < 5                  & T          \\
+			                             &                                & <      & c(1, 5, 3) < 4         & c(T, F, T) \\
+			                             & \SetCell[r=2]{l} Mayor o igual & >=     & 5 >= 5                 & T          \\
+			                             &                                & >=     & c(4, 5, 6) >= 5        & c(F, T, T) \\
+			                             & \SetCell[r=2]{l} Menor o igual & <=     & 3 <= 5                 & T          \\
+			                             &                                & <=     & c(4, 5, 6) <= 5        & c(T, T, F) \\
+			\SetCell[r=2]{l} Otros       & \SetCell[r=2]{l} Pertenencia   & \%in\% & "a" \%in\% c("a", "b") & T          \\
+			                             &                                & \%in\% & c(1, 3) \%in\% c(1, 2) & c(T, F)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Op. relacionales (complementos)}
+	\begin{alertblock}{}
+		Cuidado con la comparaci\'on de punto flotante:
+		\begin{itemize}
+			\item \rscript{0.1 + 0.2 == 0.3} devuelve \rscript{FALSE}, pero
+			\item \rscript{all.equal(0.1 + 0.2, 0.3)} devuelve \rscript{TRUE}.
+		\end{itemize}
+	\end{alertblock}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on         & Funci\'on   & Ejemplo de Uso            & Resultado \\
+			Igualdad num\'erica & all.equal() & all.equal(0.1 + 0.2, 0.3) & TRUE      \\
+			Casi igual (dplyr)  & near()      & near(0.1 + 0.2, 0.3)      & TRUE      \\
+			En un rango (dplyr) & between()   & between(5, 1, 10)         & TRUE
+		\end{tblr}
+	\end{table}
+	
+	{\footnotesize Las \'ultimas dos funciones pertenecen al paquete \texttt{dplyr}.}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Op. l\'ogicos}
+	Operan sobre valores l\'ogicos
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3,4,5} = {cmd = \rscript}
+			}
+			Tipo                    & Operación                 & Operador & Ejemplo de Uso     & Resultado      \\
+			\SetCell[r=3]{l} Unario & \SetCell[r=2]{l} Negación & !        & !TRUE              & FALSE          \\
+			                        &                           & !        & !(c(TRUE, FALSE))  & c(FALSE, TRUE) \\
+			                        & Val. faltantes            & is.na()  & is.na(c(1, NA, 3)) & c(F, T, F)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Op. l\'ogicos}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{3-5} = {cmd = \rscript}
+			}
+			Tipo                  & Operación                & Op.   & Ejemplo de Uso             & Resultado  \\
+			\SetCell[r=9]{l} Bin. & \SetCell[r=2]{l} AND (Y) & \&    & TRUE \& FALSE              & FALSE      \\
+			                      &                          & \&    & (c(T, T, F) \& c(T, F, T)) & c(T, F, F) \\
+			                      & \SetCell[r=2]{l} OR (O)  & |     & TRUE | FALSE               & TRUE       \\
+			                      &                          & |     & (c(T, T, F) | c(F, F, T))  & c(T, T, T) \\
+			                      & AND escalar              & \&\&  & c(T, F) \&\& c(T, T)       & TRUE       \\
+			                      & OR escalar               & ||    & c(F, T) || c(F, F)         & FALSE      \\
+			                      & OR exclusivo             & xor() & xor(TRUE, TRUE)            & FALSE      \\
+			                      & Alguno                   & any() & any(c(FALSE, TRUE))        & TRUE       \\
+			                      & Todos                    & all() & all(c(TRUE, TRUE))         & TRUE
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Op. l\'ogicos (complementos)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on       & Funci\'on & Ejemplo de Uso                & Resultado   \\
+			Verif. TRUE       & isTRUE()  & isTRUE(TRUE)                  & TRUE        \\
+			Verif. FALSE      & isFALSE() & isFALSE(NA)                   & FALSE       \\
+			L\'ogico a posic. & which()   & which(c(T, F, T))             & c(1, 3)     \\
+			Cond. vect.       & ifelse()  & ifelse(c(2, 3) > 2, "x", "o") & c("o", "x")
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	Operan sobre vectores numéricos.
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación         & Operador/Función & Ejemplo de Uso    & Resultado   \\
+			Suma              & +                & c(4, 9) + 2       & c(6, 11)    \\
+			Resta             & -                & c(10, 5) - 3      & c(7, 2)     \\
+			Multiplicación    & *                & c(3, 5) * 2       & c(6, 10)    \\
+			División          & /                & c(10, 20) / 5     & c(2, 4)     \\
+			Potencia          & ^                & c(2, 3) ^ 2       & c(4, 9)     \\
+			Raíz cuadrada     & sqrt()           & sqrt(c(4, 9, 16)) & c(2, 3, 4)  \\
+			División entera   & \%/\%            & 10 \%/\% 3        & 3           \\
+			Resto (módulo)    & \%\%             & 10 \%\% 3         & 1           \\
+			Signo             & sign()           & sign(c(-5, 0, 8)) & c(-1, 0, 1) \\
+			Logaritmo base 10 & log10()          & log10(c(10, 100)) & c(1, 2)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación       & Op./Función & Ejemplo de Uso          & Resultado            \\
+			Logaritmo nat.  & log()       & log(c(1, `:nm:2.718`))  & c(0, 1)              \\
+			Exponencial     & exp()       & exp(c(0, 1))            & c(1, `:nm:2.718`...) \\
+			Valor absoluto  & abs()       & abs(c(-5, 3))           & c(5, 3)              \\
+			Redondeo        & round()     & round(`:nm:3.14159`, 2) & 3.14                 \\
+			Redondeo arriba & ceiling()   & ceiling(`:nm:3.14`)     & 4                    \\
+			Redondeo abajo  & floor()     & floor(`:nm:3.99`)       & 3                    \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones (Acumulados y Estadística)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación     & Op./Función & Ejemplo de Uso                   & Resultado                \\
+			Máximo        & max()       & max(c(1, 5, 3))                  & 5                        \\
+			Mínimo        & min()       & min(c(1, 5, 3))                  & 1                        \\
+			Mínimo paral. & pmin()      & pmin(c(1, 5), c(3, 2))           & c(1, 2)                  \\
+			Máximo paral. & pmax()      & pmax(c(1, 5), c(3, 2))           & c(3, 5)                  \\
+			Suma total    & sum()       & sum(c(1, 2, 3))                  & 6                        \\
+			Suma acum.    & cumsum()    & cumsum(c(1, 2, 3))               & c(1, 3, 6)               \\
+			Productoria   & prod()      & prod(c(`:nm:1.1`, `:nm:1.2`))    & `:nm:1.32`               \\
+			Prod. acum.   & cumprod()   & cumprod(c(`:nm:1.1`, `:nm:1.2`)) & c(`:nm:1.1`, `:nm:1.32`)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones (Acumulados y Estadística)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación    & Op./Función & Ejemplo de Uso         & Resultado            \\
+			Media        & mean()      & mean(c(2, 4, 6))       & 4                    \\
+			Mediana      & median()    & median(c(1, 2, 10))    & 2                    \\
+			Desvío est.  & sd()        & sd(c(1, 2, 3))         & 1                    \\
+			Varianza     & var()       & var(c(1, 2, 3))        & 1                    \\
+			Diferencias  & diff()      & diff(c(100, 110, 105)) & c(10, -5)            \\
+			Covarianza   & cov()       & cov(c(1, 2), c(3, 6))  & `:nm:1.5`            \\
+			Correlación  & cor()       & cor(c(1, 2), c(3, 6))  & 1                    \\
+			Resumen est. & summary()   & summary(c(1, 5, 9))    & `:cn:Min. 1st Qu...`
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones (Acumulados y Estad\'istica)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on  & Op./Funci\'on & Ejemplo de Uso        & Resultado     \\
+			Rango        & range()       & range(c(3, 1, 7))     & c(1, 7)       \\
+			M\'ax. acum. & cummax()      & cummax(c(3, 1, 4, 2)) & c(3, 3, 4, 4) \\
+			M\'in. acum. & cummin()      & cummin(c(3, 1, 4, 2)) & c(3, 1, 1, 1) \\
+			Cuantil      & quantile()    & quantile(1:100, 0.25) & 25.75         \\
+			Truncar      & trunc()       & trunc(c(3.7, -3.7))   & c(3, -3)      \\
+			Estandarizar & scale()       & scale(c(1, 2, 3))     & c(-1, 0, 1)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	Muchas m\'as operaciones sobre cadenas se encuentran en el paquete \verb|stringr|. M\'as aun, muchas de las funciones que est\'an abajo, tambi\'en est\'an optimizadas o ampliadas en este paquete. Es recomendable adoptarlo.
+	
+	Revis\'a su cheatsheet.
+	\begin{figure}[h!]
+		\href{https://github.com/rstudio/cheatsheets/blob/4ad6722c62bb894a15764c0247728370ba461d07/strings.pdf}
+			{\includegraphics[width = 0.15\textwidth]{img/stringr.png}}
+	\end{figure}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación   & Función   & Ejemplo de Uso             & Resultado    \\
+			Concatenar  & paste()   & paste("Curso", "de", "R")  & "Curso de R" \\
+			Concatenar  & paste0()  & paste0("Curso", "de", "R") & "CursodeR"   \\
+			Contar car. & nchar()   & nchar(c("Hola", "Mundo"))  & c(4, 5)      \\
+			Mayúsculas  & toupper() & toupper("hola")            & "HOLA"       \\
+			Minúsculas  & tolower() & tolower("MUNDO")           & "mundo"
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+
+
+
+\begin{frame}[fragile]{Operadores y operaciones más frecuentes}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operación      & Función      & Ejemplo de Uso            & Resultado         \\
+			Subcadena      & substr()     & substr("Viernes", 1, 4)   & "Vier"            \\
+			Reempl. todo   & gsub()       & gsub("a", "o", "casa")    & "coso"            \\
+			Reempl. 1ro    & sub()        & sub("a", "o", "casa")     & "cosa"            \\
+			Dividir cad.   & strsplit()   & strsplit("a-b", "-")      & list(c("a", "b")) \\
+			Eliminar esp.  & trimws()     & trimws(" texto ")         & "texto"           \\
+			Detectar (lóg) & grepl()      & grepl("o", c("yo", "tu")) & c(T, F)           \\
+			Detectar (pos) & grep()       & grep("o", c("yo", "tu"))  & 1                 \\
+			Formatear      & sprintf()    & sprintf("\%.2f", 3.14159) & "3.14"            \\
+			Empieza con    & startsWith() & startsWith("Sur", "S")    & TRUE              \\
+			Termina con    & endsWith()   & endsWith("Sur", "r")      & TRUE
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Operaciones sobre cadenas (complementos)}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on & Funci\'on      & Ejemplo de Uso                     & Resultado  \\
+			Map caract. & chartr()       & chartr("\'ae\'i", "aei", "caf\'e") & "cafe"     \\
+			Formatear   & format()       & format(12345.6, big.mark=".")      & "12.345.6" \\
+			Detectar    & str\_detect()  & str\_detect("Hola", "ol")          & TRUE       \\
+			Reemplazar  & str\_replace() & str\_replace("casa", "a", "o")     & "cosa"     \\
+			Extraer     & str\_extract() & str\_extract("abc123", "[0-9]+")   & "123"
+		\end{tblr}
+	\end{table}
+	{\footnotesize Las funciones \texttt{str\_*} pertenecen al paquete \texttt{stringr}.}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Indexaci\'on de vectores}
+	Dado \rscript{x <- c(10, 20, 30, 40, 50)}:
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-3} = {cmd = \rscript}
+			}
+			Tipo de indexaci\'on & Sintaxis   & Resultado         \\
+			Por posici\'on       & x[2]       & 20                \\
+			M\'ultiples posic.   & x[c(1, 3)] & c(10, 30)         \\
+			Excluir posici\'on   & x[-2]      & c(10, 30, 40, 50) \\
+			Por condici\'on      & x[x > 25]  & c(30, 40, 50)     \\
+			Rango                & x[1:3]     & c(10, 20, 30)
+		\end{tblr}
+	\end{table}
+	
+	y para indexaci\'on por nombre (\'util para las claves de las encuestas, como por ejemplo los distritos)
+\begin{lstlisting}[style=RScript]
+edad <- c(juan = 10, lucia = 20, pedro = 30, martina = 40, ana = 50)
+
+edad["ana"]
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+ana
+50
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Op. de acceso (listas y data frames)}
+	Dado \rscript{`df` <- data.frame(nombre = c("Ana", "Luis"), edad = c(25, 30))}.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on      & Sintaxis     & Ejemplo (df)           & Resultado               \\
+			Columna (vector) & `df`$`col`   & `df`$nombre            & c("Ana", "Luis")        \\
+			Columna (lista)  & `df`["col"]  & `df`["nombre"]         & `:cn:# tibble 2x1`      \\
+			Elem. de lista   & lista[[i]]   & lista[[1]]             & `:cn:# primer elem.`    \\
+			Fila(s)          & `df`[i, ]    & `df`[1, ]              & `:cn:# primera fila`    \\
+			Celda            & `df`[i, j]   & `df`[1, 2]             & `:cn:# fila 1, col 2`   \\
+			Subconjunto      & `df`[cond, ] & `df`[`df`$edad > 20, ] & `:cn:# filas filtradas`
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Inspecci\'on de estructuras}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] X[m]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2} = {cmd = \rscript}
+			}
+			Operaci\'on        & Funci\'on/Ejemplo & Descripci\'on                                              \\
+			Estructura         & str(`df`)         & Muestra tipos, dimensiones y primeros valores.             \\
+			Estructura (dplyr) & glimpse(`df`)     & Similar a \rscript{str} pero m\'as legible.                \\
+			Dimensiones        & dim(`df`)         & N\'umero de filas y columnas: \rscript{c(`nrow`, `ncol`)}. \\
+			N\'umero de filas  & nrow(`df`)        & Cantidad de filas (observaciones).                         \\
+			N\'umero de col.   & ncol(`df`)        & Cantidad de columnas (variables).                          \\
+			Nombres de col.    & names(`df`)       & Vector con los nombres de las columnas.                    \\
+			Resumen            & summary(`df`)     & Estad\'isticas resumen por columna.
+		\end{tblr}
+	\end{table}
+	{\footnotesize La funci\'on \texttt{glimpse()} pertenece al paquete \texttt{dplyr}.}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Familia \texttt{apply}}
+	Aplican una funci\'on sobre elementos de una estructura de datos.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] X[m]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2} = {cmd = \rscript}
+			}
+			Funci\'on & Ejemplo de Uso                & Descripci\'on                                         \\
+			sapply()  & sapply(1:3, sqrt)             & Aplica a cada elemento, devuelve vector o matriz.     \\
+			lapply()  & lapply(1:3, sqrt)             & Aplica a cada elemento, devuelve lista.               \\
+			tapply()  & tapply(edad, genero, mean)    & Aplica agrupando por un factor.                       \\
+			apply()   & apply(matriz, 1, sum)         & Aplica por filas (1) o columnas (2) de una matriz.    \\
+			vapply()  & vapply(1:3, sqrt, numeric(1)) & Como sapply pero con tipo de retorno especificado.    \\
+			Map()     & Map("+", 1:3, 4:6)            & Aplica en paralelo sobre m\'ultiples listas/vectores.
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Operaciones con fechas}
+	Muchas m\'as operaciones sobre vectores se encuentran en el paquete \verb|lubridate|. Las funciones \rscript{ymd}, \rscript{dmy}, \rscript{year}, \rscript{month} y \rscript{day} pertenecen a este paquete.
+	
+	Revis\'a su cheatsheet.
+	
+	\begin{figure}[h!]
+		\href{https://github.com/rstudio/cheatsheets/blob/4ad6722c62bb894a15764c0247728370ba461d07/lubridate.pdf}
+		{\includegraphics[width = 0.15\textwidth]{img/lubridate.png}}
+	\end{figure}
+	
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on     & Funci\'on  & Ejemplo de Uso           & Resultado        \\
+			Fecha actual    & Sys.Date() & Sys.Date()               & "2026-03-21"     \\
+			Texto a fecha   & as.Date()  & as.Date("2026-01-15")    & `:dt:2026-01-15` \\
+			A\~no-mes-d\'ia & ymd()      & ymd("2026-01-15")        & `:dt:2026-01-15` \\
+			D\'ia-mes-a\~no & dmy()      & dmy("15-01-2026")        & `:dt:2026-01-15` \\
+			Extraer a\~no   & year()     & year(ymd("2026-01-15"))  & 2026             \\
+			Extraer mes     & month()    & month(ymd("2026-01-15")) & 1                \\
+			Extraer d\'ia   & day()      & day(ymd("2026-01-15"))   & 15
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Coerci\'on de tipos}
+	Jerarqu\'ia de coerci\'on impl\'icita: \texttt{logical} $<$ \texttt{integer} $<$ \texttt{double} $<$ \texttt{character}
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Conversi\'on & Funci\'on      & Ejemplo de Uso         & Resultado           \\
+			A num\'erico & as.numeric()   & as.numeric("3.14")     & `:nm:3.14`          \\
+			A car\'acter & as.character() & as.character(42)       & "42"                \\
+			A l\'ogico   & as.logical()   & as.logical(c(0, 1))    & c(FALSE, TRUE)      \\
+			A entero     & as.integer()   & as.integer(`:nm:3.9`)  & 3                   \\
+			A factor     & as.factor()    & as.factor(c("a", "b")) & `:cn:Levels: a b`   \\
+			Impl.        &                & c(TRUE, 2, "a")        & c("TRUE", "2", "a")
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Funciones de verificaci\'on de tipo}
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Verificaci\'on   & Funci\'on      & Ejemplo de Uso       & Resultado  \\
+			?`Es num\'erico? & is.numeric()   & is.numeric(42)       & TRUE       \\
+			?`Es car\'acter? & is.character() & is.character("hola") & TRUE       \\
+			?`Es l\'ogico?   & is.logical()   & is.logical(TRUE)     & TRUE       \\
+			?`Es NA?         & is.na()        & is.na(c(1, NA, 3))   & c(F, T, F) \\
+			?`Es NULL?       & is.null()      & is.null(NULL)        & TRUE       \\
+			?`Es vector?     & is.vector()    & is.vector(c(1, 2))   & TRUE       \\
+			?`Es factor?     & is.factor()    & is.factor("a")       & FALSE
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Manejo de \texttt{NA}}
+	Sea \rscript{x <- c(1, NA, 3)}.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {l Q[m, font=\ttfamily] Q[m, font=\ttfamily] Q[m, font=\ttfamily]}, 
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries}, 
+				cells = {valign=m},
+				cell{2-Z}{2-4} = {cmd = \rscript}
+			}
+			Operaci\'on     & Funci\'on/Arg.   & Ejemplo de Uso         & Resultado  \\
+			Detectar NA     & is.na()          & is.na(x)               & c(F, T, F) \\
+			Ignorar NA      & na.rm = TRUE     & sd(x, na.rm = T)         & 2          \\
+			Eliminar NA     & na.omit()        & na.omit(x)             & c(1, 3)    \\
+			Filas completas & complete.cases() & complete.cases(df)     & c(T, F, T) \\
+			Reemplazar NA   & ifelse()         & ifelse(is.na(x), 0, x) & c(1, 0, 3)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+\end{document}

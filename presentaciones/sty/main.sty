@@ -21,6 +21,7 @@
 \setmonofont[Contextuals=Alternate]{Cascadia Code NF}
 
 
+
 \definecolor{main}{HTML}{001489}
 
 \definecolor{dkgreen}{rgb}{0,0.6,0}
@@ -29,10 +30,11 @@
 \definecolor{unlfce}{HTML}{001489}
 
 \colorlet{R_BOOLEAN}{violet}
+\colorlet{R_COMMENT}{gray}
+\colorlet{R_CONSOLE}{darkgray}
 \colorlet{R_OPERATOR}{magenta}
 \colorlet{R_MISSING}{violet}
 \colorlet{R_STRING}{dkgreen}
-\colorlet{R_COMMENT}{gray}
 \colorlet{R_DELIMITER}{purple}
 \colorlet{R_NUMBER}{mauve}
 \colorlet{R_NORMAL}{unlfce}
@@ -40,6 +42,24 @@
 \colorlet{R_SYMBOL}{orange}
 \colorlet{R_KEY}{R_NORMAL}
 \colorlet{R_FUNCTION}{blue}
+
+\makeatletter
+	\def\lst@r@booleanstyle		{\color{R_BOOLEAN}\bfseries}
+	\def\lst@r@consolestyle		{\color{R_CONSOLE}\bfseries}
+	\def\lst@r@operatorstyle	{\color{R_OPERATOR}\bfseries}
+	\def\lst@r@missingstyle		{\color{R_MISSING}\bfseries}
+	\def\lst@r@stringstyle		{\color{R_STRING}\bfseries}
+	\def\lst@r@commentstyle		{\color{R_COMMENT}\itshape}
+	\def\lst@r@delimiterstyle	{\color{R_DELIMITER}\bfseries}
+	\def\lst@r@numberstyle		{\color{R_NUMBER}\bfseries}
+	\def\lst@r@normalstyle		{\color{R_NORMAL}\bfseries}
+	\def\lst@r@keywordstyle		{\color{R_KEYWORD}\bfseries}
+	\def\lst@r@symbolstyle		{\color{R_SYMBOL}\bfseries}
+	\def\lst@r@keystyle				{\color{R_KEY}\bfseries}
+	\def\lst@r@functionstyle	{\color{R_FUNCTION}\bfseries}
+\makeatother
+
+
 
 \colorlet{JULIA_SYMBOL}{orange}
 \colorlet{JULIA_OPERATOR}{magenta}
@@ -85,7 +105,7 @@
 
 
 
-
+\makeatletter
 \lstdefinestyle{RScript}{
 	language=R,
 	stringstyle=\color{R_STRING},
@@ -93,74 +113,81 @@
 	sensitive=true,
 	keywordstyle=\color{R_KEYWORD},
 	tabsize=2,
-	alsoletter={_,.},
+	alsoletter={_.0123456789},
 	morekeywords={
 		select, filter, arrange, mutate, summarise, ungroup,
 		ggplot, aes, theme, labs, factorial,
-		ymd, mdy, dmy, year, month, day, lag, lead,
-		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages
+		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith,
+		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse,
+		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between
 	},
 	otherkeywords={
-		group_by, if_else, case_when, pivot_longer, pivot_wider,
+		group_by, if_else, case_when, pivot_longer, pivot_wider, all.equal,
 		left_join, right_join, inner_join, full_join,
 		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot, 
 		facet_wrap, facet_grid, read_csv, read_excel, as_tibble, paste0,
 		as.logical, as.integer, as.numeric, as.character, is.na,
 		fct_reorder, fct_relevel, fct_lump, fct_infreq, data.frame, as_date, 
-		case_match, which.max, na.omit, read_csv2, all_of, any_of, contains, 
-		matches, everything, starts_with, ends_with, num_range, is.numeric
+		case_match, which.max, which.min, na.omit, read_csv2, all_of, any_of, contains, 
+		matches, everything, starts_with, ends_with, num_range, is.numeric, log10, paste0, str_detect, str_replace, str_extract, as.factor, is.character, is.logical, is.null, is.vector, is.factor, complete.cases, Sys.Date, as.Date
 	},
-	moredelim=[is][\color{R_NORMAL}]{`}{`},
-	moredelim=[is][\color{R_NORMAL}]{`:pk:}{`}, %<- packagename
-	moredelim=[is][\color{R_NUMBER}]{`:nm:}{`}, %<- numeric.
-	moredelim=[is][\color{R_FUNCTION}]{`:fn:}{`}, %<- simbolos.
-	moredelim=[is][\color{R_SYMBOL}]{`:sy:}{`}, %<- simbolos.
-	moredelim=[is][\color{R_SYMBOL}]{`:bn:}{`}, %<- bare names
-	moredelim=[is][\color{R_SYMBOL}]{`:dt:}{`}, %<- fechas
-	moredelim=[is][\color{R_KEY}]{`:ky:}{`}, %<- keys
+	moredelim=[is][\lst@r@normalstyle]{`}{`},
+	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename
+	moredelim=[is][\lst@r@consolestyle]{`:cn:}{`}, %<- console
+	moredelim=[is][\lst@r@booleanstyle]{`:lg:}{`}, %<- logicos.
+	moredelim=[is][\lst@r@numberstyle]{`:nm:}{`}, %<- numeric.
+	moredelim=[is][\lst@r@functionstyle]{`:fn:}{`}, %<- simbolos.
+	moredelim=[is][\lst@r@symbolstyle]{`:sy:}{`}, %<- simbolos.
+	moredelim=[is][\lst@r@symbolstyle]{`:bn:}{`}, %<- bare names
+	moredelim=[is][\lst@r@symbolstyle]{`:dt:}{`}, %<- fechas
+	moredelim=[is][\lst@r@keystyle]{`:ky:}{`}, %<- keys
 	emph={T, F, TRUE, FALSE},
-	emphstyle={\color{R_BOOLEAN}\bfseries},
+	emphstyle={\lst@r@booleanstyle},
+	emph={[2]NULL},
+	emphstyle={[2]\lst@r@missingstyle},
 	literate=
-	*{:}{{\textcolor{R_OPERATOR}{\bfseries{:}}}}1
-	{\~}{{\textcolor{R_OPERATOR}{\bfseries{\textasciitilde}}}}1
-	{]}{{\textcolor{R_DELIMITER}{\bfseries{]}}}}1
-	{[}{{\textcolor{R_DELIMITER}{\bfseries{[}}}}1
-	{?}{{\textcolor{R_OPERATOR}{\bfseries{?}}}}1
-	{<}{{\textcolor{R_OPERATOR}{\bfseries{<}}}}1  
-	{>}{{\textcolor{R_OPERATOR}{\bfseries{>}}}}1 
-	{=}{{\textcolor{R_OPERATOR}{\bfseries{=}}}}1
-	{+}{{\textcolor{R_OPERATOR}{\bfseries{+}}}}1  
-	{-}{{\textcolor{R_OPERATOR}{\bfseries{-}}}}1 
-	{*}{{\textcolor{R_OPERATOR}{\bfseries{*}}}}1
-	{\^}{{\textcolor{R_OPERATOR}{\bfseries{\textasciicircum}}}}1
-	{\&}{{\textcolor{R_OPERATOR}{\bfseries{\&}}}}1 
-	{|}{{\textcolor{R_OPERATOR}{\bfseries{|}}}}1
-	{\$}{{\textcolor{R_OPERATOR}{\bfseries{\$}}}}1 
-	{/}{{\textcolor{R_OPERATOR}{\bfseries{/}}}}1  
-	{!}{{\textcolor{R_OPERATOR}{\bfseries{!}}}}1 
-	{|>}{{\textcolor{R_OPERATOR}{\bfseries{|>}}}}2
-	{\%in\%}{{\textcolor{R_OPERATOR}{\bfseries{\%in\negthinspace\%}}}}4
-	{<-}{{\textcolor{R_OPERATOR}{\bfseries{<-}}}}2
-	{->}{{\textcolor{R_OPERATOR}{\bfseries{->}}}}2  
-	{==}{{\textcolor{R_OPERATOR}{\bfseries{==}}}}2 
-	{!=}{{\textcolor{R_OPERATOR}{\bfseries{!=}}}}2
-	{>=}{{\textcolor{R_OPERATOR}{\bfseries{>=}}}}2
-	{<=}{{\textcolor{R_OPERATOR}{\bfseries{<=}}}}2
-	{\%\%}{{\textcolor{R_OPERATOR}{\bfseries{\%\negthinspace\%}}}}2
-	{\%/\%}{{\textcolor{R_OPERATOR}{\bfseries{\%/\negthinspace\%}}}}3
-	{\%>\%}{{\textcolor{R_OPERATOR}{\bfseries{\texttt{\%>\negthinspace\%}}}}}3
-	{NA}{{\textcolor{R_MISSING}{\bfseries{NA}}}}2
-	{0}{{\textcolor{R_NUMBER}{\bfseries{0}}}}1
-	{1}{{\textcolor{R_NUMBER}{\bfseries{1}}}}1
-	{2}{{\textcolor{R_NUMBER}{\bfseries{2}}}}1
-	{3}{{\textcolor{R_NUMBER}{\bfseries{3}}}}1
-	{4}{{\textcolor{R_NUMBER}{\bfseries{4}}}}1
-	{5}{{\textcolor{R_NUMBER}{\bfseries{5}}}}1
-	{6}{{\textcolor{R_NUMBER}{\bfseries{6}}}}1
-	{7}{{\textcolor{R_NUMBER}{\bfseries{7}}}}1
-	{8}{{\textcolor{R_NUMBER}{\bfseries{8}}}}1
-	{9}{{\textcolor{R_NUMBER}{\bfseries{9}}}}1
-	{::}{{\textcolor{R_OPERATOR}{\bfseries{:\negthinspace:}}}}1
+	*{:}       	{{\lst@r@operatorstyle {:}}}                            1
+	{\~}        {{\lst@r@operatorstyle{\textasciitilde}}}               1
+	{]}         {{\lst@r@delimiterstyle{]}}}                            1
+	{[}         {{\lst@r@delimiterstyle{[}}}                            1
+	{?}         {{\lst@r@operatorstyle {?}}}                            1
+	{<}         {{\lst@r@operatorstyle {<}}}                            1
+	{>}         {{\lst@r@operatorstyle {>}}}                            1
+	{=}         {{\lst@r@operatorstyle {=}}}                            1
+	{+}         {{\lst@r@operatorstyle {+}}}                            1
+	{-}         {{\lst@r@operatorstyle {-}}}                            1
+	{*}         {{\lst@r@operatorstyle {*}}}                            1
+	{\^}        {{\lst@r@operatorstyle {\textasciicircum}}}             1
+	{\&}        {{\lst@r@operatorstyle {\&}}}                           1
+	{|}         {{\lst@r@operatorstyle {|}}}                            1
+	{\$}        {{\lst@r@operatorstyle {\$}}}                           1
+	{/}         {{\lst@r@operatorstyle {/}}}                            1
+	{!}         {{\lst@r@operatorstyle {!}}}                            1
+	{|>}        {{\lst@r@operatorstyle {|>}}}                           2
+	{\%in\%}    {{\lst@r@operatorstyle {\%in\negthinspace\%}}}          4
+	{<-}        {{\lst@r@operatorstyle {<-}}}                           2
+	{<<-}        {{\lst@r@operatorstyle {<<-}}}                         2
+	{->}        {{\lst@r@operatorstyle {->}}}                           2
+	{->>}        {{\lst@r@operatorstyle {->>}}}                         2
+	{==}        {{\lst@r@operatorstyle {==}}}                           2
+	{!=}        {{\lst@r@operatorstyle {!=}}}                           2
+	{>=}        {{\lst@r@operatorstyle {>=}}}                           2
+	{<=}        {{\lst@r@operatorstyle {<=}}}                           2
+	{\%\%}      {{\lst@r@operatorstyle{\%\negthinspace\%}}}             2
+	{\%/\%}     {{\lst@r@operatorstyle{\%/\negthinspace\%}}}            3
+	{\%>\%}     {{\lst@r@operatorstyle{\texttt{\%>\negthinspace\%}}}}   3
+	{NA}        {{\lst@r@missingstyle {NA}}}                            2
+	{0}         {{\lst@r@numberstyle {0}}}                              1
+	{1}         {{\lst@r@numberstyle {1}}}                              1
+	{2}         {{\lst@r@numberstyle {2}}}                              1
+	{3}         {{\lst@r@numberstyle {3}}}                              1
+	{4}         {{\lst@r@numberstyle {4}}}                              1
+	{5}         {{\lst@r@numberstyle {5}}}                              1
+	{6}         {{\lst@r@numberstyle {6}}}                              1
+	{7}         {{\lst@r@numberstyle {7}}}                              1
+	{8}         {{\lst@r@numberstyle {8}}}                              1
+	{9}         {{\lst@r@numberstyle {9}}}                              1
+	{::}        {{\lst@r@operatorstyle {:\negthinspace:}}}              1
 }
 
 
@@ -177,7 +204,7 @@
 	{>=}{{>=}}2
 	{<=}{{<=}}2,
 }
-
+\makeatother
 
 
 
@@ -324,3 +351,4 @@
 
 \author{Jonat\'an Perren}
 \title{R: limpieza, manipulaci\'on y exploraci\'on de datos}
+\logo{\lower1cm\hbox{\includegraphics[width=0.3cm]{../sty/sign.pdf}}}
