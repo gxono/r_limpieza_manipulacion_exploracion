@@ -497,9 +497,9 @@ ventas |>
 
 
 \begin{frame}[fragile]{Contar: count y tally}
-	\rscript{count()} es un atajo para \rscript{group_by() |> summarise(`n` = n())}.
+	\rscript{count()} es un atajo para \rscript{group_by() |> summarise(`:bn:n` = n())}.
 \begin{lstlisting}[style=RScript]
-starwars |> count(`:bn:species`, `sort` = TRUE)
+starwars |> count(`:bn:species`, `:ky:sort` = TRUE)
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
 # A tibble: 38 x 2
@@ -513,7 +513,7 @@ starwars |> count(`:bn:species`, `sort` = TRUE)
 \end{lstlisting}
 \begin{lstlisting}[style=RScript]
 # Con wt: en vez de contar filas, SUMA una columna
-starwars |> count(`:bn:species`, `wt` = `:bn:mass`, `sort` = TRUE,
+starwars |> count(`:bn:species`, `:ky:wt` = `:bn:mass`, `:ky:sort` = TRUE,
                   name = "masa_total")
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
@@ -532,9 +532,9 @@ starwars |> count(`:bn:species`, `wt` = `:bn:mass`, `sort` = TRUE,
 
 
 \begin{frame}[fragile]
-	Sin \rscript{`wt`}, \rscript{count()} suma \rscript{1} por cada fila que pertenece al grupo (cuenta cantidad de observaciones).
-	
-	Con \rscript{`wt` = `:bn:mass`}, en lugar de sumar \rscript{1}, \textbf{suma el valor} de la columna \rscript{`:bn:mass`} para cada observación de ese grupo. Es el equivalente a hacer:
+	Sin \rscript{`:ky:wt`}, \rscript{count()} suma \rscript{1} por cada fila que pertenece al grupo (cuenta cantidad de observaciones).
+
+	Con \rscript{`:ky:wt` = `:bn:mass`}, en lugar de sumar \rscript{1}, \textbf{suma el valor} de la columna \rscript{`:bn:mass`} para cada observación de ese grupo. Es el equivalente a hacer:
 	
 \begin{lstlisting}[style=RScript]
 starwars |>
@@ -667,17 +667,17 @@ notas |>
 	Familia de funciones para elegir filas específicas.
 \begin{lstlisting}[style=RScript]
 starwars |> slice(1:5)  # Primeras 5 filas
-starwars |> slice_head(`n` = 3)
-starwars |> slice_tail(`n` = 3)
+starwars |> slice_head(`:ky:n` = 3)
+starwars |> slice_tail(`:ky:n` = 3)
 \end{lstlisting}
 
 	\titleitem{slice\_min y slice\_max}
 \begin{lstlisting}[style=RScript]
 # Los 5 personajes más altos (trae más si hay empates)
-starwars |> slice_max(`:bn:height`, `n` = 5)
+starwars |> slice_max(`:bn:height`, `:ky:n` = 5)
 
 # Omitir empates
-starwars |> slice_max(`:bn:height`, `n` = 5, with_ties = FALSE)
+starwars |> slice_max(`:bn:height`, `:ky:n` = 5, with_ties = FALSE)
 \end{lstlisting}
 
 	\titleitem{Corte por grupos}
@@ -685,14 +685,14 @@ starwars |> slice_max(`:bn:height`, `n` = 5, with_ties = FALSE)
 # Los 3 más livianos por especie
 starwars |>
   group_by(`:bn:species`) |>
-  slice_min(`:bn:mass`, `n` = 3) |>
+  slice_min(`:bn:mass`, `:ky:n` = 3) |>
   ungroup()
 \end{lstlisting}
 
 	\titleitem{slice\_sample: Muestra aleatoria}
 \begin{lstlisting}[style=RScript]
-starwars |> slice_sample(`n` = 10)
-starwars |> slice_sample(`prop` = 0.1)
+starwars |> slice_sample(`:ky:n` = 10)
+starwars |> slice_sample(`:ky:prop` = 0.1)
 \end{lstlisting}
 \end{frame}
 

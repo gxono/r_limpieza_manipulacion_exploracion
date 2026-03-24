@@ -1,13 +1,15 @@
 *.log
 *.nav
 *.snm
-*.synctex.gz
+*.synctex.gz*
 *.gz
 *.toc
 *.tuc
 *.vrb
 *.aux
 *.Rhistory
+*.tmp*
 
 /apunte_quarto/
 /propuesta_solicitud_curso/
+/.*/

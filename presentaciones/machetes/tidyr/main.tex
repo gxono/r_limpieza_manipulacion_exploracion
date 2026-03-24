@@ -1,0 +1,231 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{tidyr}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Introducción: datos ordenados (\textit{tidy data})}
+		Un dataset está \textbf{ordenado} cuando sigue tres reglas: cada variable ocupa una columna, cada observación una fila, y cada unidad observacional forma una tabla separada. La mayoría de los datos económicos (Banco Mundial, INDEC, OCDE) llegan en formato \textbf{ancho} y deben convertirse a \textbf{largo} para analizar.
+
+		\begin{figure}[h!]
+			\href{https://rstudio.github.io/cheatsheets/tidyr.pdf}{\includegraphics[width=0.15\textwidth]{img/tidyr.png}}
+		\end{figure}
+
+		\begin{exampleblock}{}
+			\rscript{`:pk:tidyr`} viene incluido en \rscript{`:pk:tidyverse`} y se carga automáticamente. Sus dos funciones centrales, \rscript{pivot_longer()} y \rscript{pivot_wider()}, permiten cambiar la estructura de un dataset sin perder información.
+		\end{exampleblock}
+
+\begin{lstlisting}[style=RScript]
+library(tidyverse) # tidyr ya viene incluido
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()}: De formato ancho a largo}
+		El formato ancho tiene una columna por período o categoría (una columna por año). El formato largo tiene una columna para el nombre y otra para el valor. Los datos del \textbf{Banco Mundial} siempre vienen en formato ancho.
+
+\begin{lstlisting}[style=RScript]
+pbi <- tibble(
+  pais   = c("Argentina", "Brasil", "Chile"),
+  `2021` = c(487, 1649, 317),
+  `2022` = c(633, 1920, 301),
+  `2023` = c(622, 2174, 345)
+)
+
+pbi |> pivot_longer(
+  cols      = `2021`:`2023`,       # columnas que se van a pivotar
+  `:ky:names_to`  = "anio",              # nombre de la nueva columna de categorías
+  `:ky:values_to` = "pbi_miles_mdd"      # nombre de la nueva columna de valores
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> pbi |> pivot_longer(cols = \`2021\`:\`2023\`, ...)`
+# A tibble: 9 x 3
+  pais      anio  pbi_miles_mdd
+  <chr>     <chr>         <dbl>
+1 Argentina 2021            487
+2 Argentina 2022            633
+3 Argentina 2023            622
+4 Brasil    2021           1649
+...
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()}: Opciones avanzadas}
+		\titleitem{Seleccionar columnas con helpers}
+\begin{lstlisting}[style=RScript]
+# Pivotar todas las columnas numéricas excepto el identificador
+pbi |> pivot_longer(`:ky:cols` = where(is.numeric), `:ky:names_to` = "anio",
+                    `:ky:values_to` = "pbi")
+
+# Cuando los nombres tienen prefijo común (ej: "export_2021", "export_2022"):
+datos |> pivot_longer(`:ky:cols` = starts_with("export_"),
+                      `:ky:names_to`     = "anio",
+                      `:ky:names_prefix` = "export_",  # quita el prefijo del nombre
+                      `:ky:values_to`    = "exportaciones")
+\end{lstlisting}
+
+		\titleitem{Convertir el tipo de la clave y descartar NAs}
+		Por defecto, los nombres de columna se convierten en texto (\rscript{character}). Usando \rscript{`:ky:names_transform`} se puede convertir el año directamente a entero.
+\begin{lstlisting}[style=RScript]
+pbi |> pivot_longer(
+  `:ky:cols`            = `2021`:`2023`,
+  `:ky:names_to`        = "anio",
+  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> 2021L
+  `:ky:values_drop_na`  = TRUE             # descarta filas donde el valor es NA
+)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()}: De formato largo a ancho}
+		Operación inversa a \rscript{pivot_longer()}. Los valores de una columna pasan a ser los nuevos nombres de columna. Útil para comparar indicadores lado a lado o para exportar a Excel.
+
+\begin{lstlisting}[style=RScript]
+macro <- tibble(
+  anio      = c(2022, 2022, 2023, 2023),
+  indicador = c("inflacion", "desempleo", "inflacion", "desempleo"),
+  valor     = c(`:nm:94.8`, `:nm:6.8`, `:nm:211.4`, `:nm:5.7`)
+)
+
+macro |> pivot_wider(
+  `:ky:names_from`  = `:bn:indicador`,  # valores de esta col. -> nombres de columna
+  `:ky:values_from` = `:bn:valor`       # valores de esta col. -> celdas de la tabla
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> macro |> pivot_wider(...)`
+# A tibble: 2 x 3
+   anio inflacion desempleo
+  <dbl>     <dbl>     <dbl>
+1  2022      94.8       6.8
+2  2023     211.4       5.7
+\end{lstlisting}
+
+		\begin{block}{}
+			Si hay combinaciones que no existen en los datos originales, se rellenan con \rscript{NA}. Usá \rscript{`:ky:values_fill` = 0} para reemplazar esos NA por cero automáticamente.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{drop\_na()} y \texttt{replace\_na()}}
+		\titleitem{\texttt{drop\_na()}: Eliminar filas con valores faltantes}
+		Sin argumentos elimina cualquier fila que tenga al menos un \rscript{NA}. Con argumentos, solo elimina las filas donde esas columnas específicas son \rscript{NA}.
+\begin{lstlisting}[style=RScript]
+encuesta <- tibble(
+  id      = c(1, 2, 3, 4),
+  ingreso = c(45000, NA, 72000, NA),
+  region  = c("NOA", "Sur", NA, "Centro")
+)
+
+encuesta |> drop_na()        # elimina filas 2, 3 y 4
+encuesta |> drop_na(`:bn:ingreso`) # elimina solo filas 2 y 4
+\end{lstlisting}
+
+		\titleitem{\texttt{replace\_na()}: Sustituir NAs por un valor concreto}
+		Recibe una lista con el valor de reemplazo para cada columna. Es el complemento de \rscript{drop_na()} cuando preferís conservar la fila pero completar el dato faltante.
+\begin{lstlisting}[style=RScript]
+encuesta |> replace_na(
+  list(`:bn:ingreso` = 0, `:bn:region` = "Sin datos")
+)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{fill()}: Propagar valores faltantes}
+		En datos institucionales (INDEC, ministerios) es frecuente que un valor aplique a varios registros pero aparezca escrito solo en el primero. \rscript{fill()} lo propaga hacia abajo (o arriba) para completar la columna.
+
+\begin{lstlisting}[style=RScript]
+exportaciones <- tibble(
+  region   = c("NOA", NA, NA, "Pampeana", NA),
+  producto = c("Limones", "Soja", "Maíz", "Trigo", "Girasol"),
+  monto    = c(450, 1200, 980, 2100, 780)
+)
+
+exportaciones |> fill(`:bn:region`)                      # "down" por defecto
+exportaciones |> fill(`:bn:region`, `:ky:.direction` = "up")   # rellena hacia arriba
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> exportaciones |> fill(region)`
+# A tibble: 5 x 3
+  region   producto  monto
+  <chr>    <chr>     <dbl>
+1 NOA      Limones     450
+2 NOA      Soja       1200
+3 NOA      Maíz        980
+4 Pampeana Trigo      2100
+5 Pampeana Girasol     780
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{separate\_wider\_delim()} y \texttt{unite()}}
+		\titleitem{Separar: partir una columna en varias}
+		Cuando un campo codifica múltiples variables juntas (ej: \rscript{"2023-T3"}), \rscript{separate_wider_delim()} las separa en columnas individuales usando un delimitador.
+
+\begin{lstlisting}[style=RScript]
+periodos <- tibble(
+  periodo = c("2023-T1", "2023-T2", "2024-T1", "2024-T2"),
+  pbi     = c(340, 355, 380, 395)
+)
+
+periodos |> separate_wider_delim(
+  `:ky:cols`  = `:bn:periodo`,
+  `:ky:delim` = "-",
+  `:ky:names` = c("anio", "trimestre")
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> periodos |> separate_wider_delim(...)`
+  anio  trimestre   pbi
+  <chr> <chr>     <dbl>
+1 2023  T1          340
+2 2023  T2          355
+\end{lstlisting}
+
+		\titleitem{Unir: combinar varias columnas en una}
+		\rscript{unite()} es la operación inversa. El primer argumento es el nombre de la nueva columna.
+\begin{lstlisting}[style=RScript]
+largo |> unite(`:bn:periodo`, `:bn:anio`, `:bn:trimestre`, `:ky:sep` = "-")
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{complete()}: Completar series temporales}
+		\rscript{complete()} garantiza que todas las combinaciones posibles entre variables estén presentes en la tabla. Es ideal para detectar \textbf{períodos faltantes} en series de tiempo, algo muy frecuente en datos de comercio exterior, precios o empleo.
+
+\begin{lstlisting}[style=RScript]
+export <- tibble(
+  anio     = c(2021, 2021, 2022,   2022),
+  producto = c("Soja", "Maíz", "Soja", "Trigo"),
+  monto    = c(12000,  8000,  13500,  5200)
+)
+
+# Faltan Trigo 2021 y Maíz 2022 -> complete() los crea con NA
+export |> complete(`:bn:anio`, `:bn:producto`)
+
+# Para reemplazar los NA directamente por cero:
+export |> complete(`:bn:anio`, `:bn:producto`, `:ky:fill` = list(`:bn:monto` = 0))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> export |> complete(anio, producto)`
+# A tibble: 6 x 3
+   anio producto  monto
+  <dbl> <chr>     <dbl>
+1  2021 Maíz       8000
+2  2021 Soja      12000
+3  2021 Trigo        NA
+4  2022 Maíz         NA
+5  2022 Soja      13500
+6  2022 Trigo      5200
+\end{lstlisting}
+	\end{frame}
+
+
+\end{document}

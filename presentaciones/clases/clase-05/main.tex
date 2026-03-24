@@ -8,42 +8,33 @@
 	\begin{frame}[plain]
 		\maketitle
 	\end{frame}
-	
-	
+
+
 	\begin{frame}[fragile]
 		En el encuentro anterior vimos cómo seleccionar columnas (\rscript{select}) y crear nuevas variables (\rscript{mutate}). Hoy completaremos nuestra caja de herramientas de manipulación de datos aprendiendo a trabajar con las filas (filtrarlas y ordenarlas) y, lo más potente de todo: cómo resumir información por grupos.
-		
+
 		Para este encuentro, usaremos un dataset simulado de ventas más completo que nos permitirá hacer análisis interesantes.
 	\end{frame}
-	
-	
-	
+
+
+
 	\begin{frame}[fragile]
-\begin{lstlisting}[style=RScript, numbers=none]
+\begin{lstlisting}[style=RScript]
 library(`:pk:tibble`)
 
-`ventas` <- tibble(
-	vendedor = c("Ana", "Beto", "Carla", "Ana", "Beto", "Carla",
-							 "Ana", "Beto", "Carla", "Ana"),
-	region = c("Norte", "Sur", "Norte", "Oeste", "Sur", 
-						 "Oeste", "Norte", "Sur", "Oeste", "Este"),
-	producto = c("Laptop", "Tablet", "Celular", "Tablet", "Laptop", 
-							 "Celular", "Laptop", "Tablet", "Celular", "Laptop"),
-	monto = c(1200, 450, 800, 400, 1100, 850, 1250, 480, 820, 1180),
-	cantidad = c(2, 5, 10, 3, 2, 8, 3, 6, 9, 2),
-	satisfaccion = c(4.5, 3.8, 4.2, 4.0, 4.8, 3.5, 4.7, 3.9, 4.1, 4.6)
-)
+raw_url <- "https://github.com/gxono/r_limpieza_manipulacion_exploracion/raw/refs/heads/main/presentaciones/clases/clase-05/data/ventas.rds"
 
-ventas
+ventas <- readRDS(url(raw_url))
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
+`:in:> ventas`
 # A tibble: 10 × 6
   vendedor region producto  monto cantidad satisfaccion
 	 <chr>    <chr>   <chr>   <dbl>    <dbl>        <dbl>
 1  Ana      Norte   Laptop   1200        2          4.5
 2  Beto     Sur     Tablet    450        5          3.8
 3  Carla    Norte   Celular   800       10          4.2
-4  Ana      Oeste   Tablet    400        3          4  
+4  Ana      Oeste   Tablet    400        3          4
 5  Beto     Sur     Laptop   1100        2          4.8
 6  Carla    Oeste   Celular   850        8          3.5
 7  Ana      Norte   Laptop   1250        3          4.7
@@ -52,11 +43,10 @@ ventas
 10 Ana      Este    Laptop   1180        2          4.6
 \end{lstlisting}
 	\end{frame}
-	
-	
-	
-	
-	
+
+
+
+
 \begin{frame}[fragile]{El verbo \texttt{filter}}
 La función \rscript{filter()} nos permite quedarnos solo con las filas (observaciones) que cumplen cierta condición. Es el equivalente a usar \quotation{filtros} en Excel.
 
@@ -68,9 +58,9 @@ Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean
 	\item \rscript{<}: Menor que
 	\item \rscript{>=}: Mayor o igual que
 	\item \rscript{<=}: Menor o igual que
-	\item \rscript{==}: Igual a 
+	\item \rscript{==}: Igual a
 	\item \rscript{!=}: Distinto de
-	\item \lstinline[style=RScript, basicstyle=\normalsize\ttfamily]|%in%|: Pertenece al conjunto (muy útil para no escribir muchos O)	
+	\item \lstinline[style=RScript, basicstyle=\normalsize\ttfamily]|%in%|: Pertenece al conjunto (muy útil para no escribir muchos O)
 \end{itemize}
 \end{frame}
 
@@ -78,9 +68,9 @@ Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean
 
 
 \begin{frame}[fragile]{Operadores lógicos y helpers}
-	
+
 	Además de los operadores básicos (\rscript{==}, \rscript{>}, \rscript{<}), \rscript{`:pk:dplyr`} y R base ofrecen herramientas poderosas para filtros más complejos:
-	
+
 	\begin{itemize}
 		\item \rscript{&}: Y (ambas condiciones deben ser verdaderas). \rscript{filter(`cond1`, `cond2`)} es equivalente a \rscript{filter(`cond1` & `cond2`)}.
 		\item \rscript{|}: O (al menos una condición es verdadera).
@@ -96,52 +86,84 @@ Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean
 
 
 
-
 \begin{frame}[fragile]
 \begin{lstlisting}[style=RScript]
 # 1. Ventas mayores a 1000 dólares
-`ventas` |> filter(`:bn:monto` > `:nm:1000`)
+ventas |> filter(`:bn:monto` > 1000)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 4 × 6
+  vendedor region producto  monto cantidad satisfaccion
+  <chr>    <chr>  <chr>     <dbl>    <dbl>        <dbl>
+1 Ana      Norte  Laptop     1200        2          4.5
+2 Beto     Sur    Laptop     1100        2          4.8
+3 Ana      Norte  Laptop     1250        3          4.7
+4 Ana      Este   Laptop     1180        2          4.6
 \end{lstlisting}
 
 \begin{lstlisting}[style=RScript]
 # 2. Ventas de "Ana" en la región "Norte" (Y implícito con la coma)
-`ventas` |> filter(`:bn:vendedor` == "Ana", `:bn:region` == "Norte")
+ventas |> filter(`:bn:vendedor` == "Ana", `:bn:region` == "Norte")
 # Equivalente a:
-`ventas` |> filter(`:bn:vendedor` == "Ana" & `:bn:region` == "Norte")
+ventas |> filter(`:bn:vendedor` == "Ana" & `:bn:region` == "Norte")
 \end{lstlisting}
 
 \begin{lstlisting}[style=RScript]
 # 3. Ventas de "Tablets" O "Celulares" (Operador O)
-`ventas` |> filter(`:bn:producto` == "Tablet" | `:bn:producto` == "Celular")
+ventas |> filter(`:bn:producto` == "Tablet" | `:bn:producto` == "Celular")
 \end{lstlisting}
 
 \begin{lstlisting}[style=RScript]
 # 4. Forma más elegante y escalable de hacer lo anterior (con %in%)
-`ventas` |> filter(`:bn:producto` %in% c("Tablet", "Celular"))
-\end{lstlisting}
-
-\begin{lstlisting}[style=RScript]
-# 5. Ventas con monto entre 800 y 1200 (usando between)
-`ventas` |> filter(between(`:bn:monto`, `:nm:800`, `:nm:1200`))
-\end{lstlisting}
-
-\begin{lstlisting}[style=RScript]
-# 6. Filtrar por texto parcial: Productos que contienen "top" (Laptop)
-`ventas` |> filter(str_detect(`:bn:producto`, "top"))
-\end{lstlisting}
-
-\begin{lstlisting}[style=RScript]
-# 7. Excluir una región específica (Operador NO)
-`ventas` |> filter(`:bn:region` != "Sur")
-\end{lstlisting}
-
-\begin{lstlisting}[style=RScript]
-# 8. Combinaciones complejas: (Norte O Sur) Y (monto > 1000)
-`ventas` |> filter((`:bn:region` == "Norte" | `:bn:region` == "Sur") & `:bn:monto` > `:nm:1000`)
+ventas |> filter(`:bn:producto` %in% c("Tablet", "Celular"))
 \end{lstlisting}
 \end{frame}
 
 
+
+
+\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+# 5. Ventas con monto entre 800 y 1200 (usando between)
+ventas |> filter(between(`:bn:monto`, 800, 1200))
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# 6. Filtrar por texto parcial: Productos que contienen "top" (Laptop)
+ventas |> filter(str_detect(`:bn:producto`, "top"))
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# 7. Excluir una región específica (Operador NO)
+ventas |> filter(`:bn:region` != "Sur")
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# 8. Combinaciones complejas: (Norte O Sur) Y (monto > 1000)
+ventas |> filter((`:bn:region` == "Norte" | `:bn:region` == "Sur") & `:bn:monto` > 1000)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Eliminar valores perdidos con \texttt{drop\_na()}}
+Muchas veces queremos directamente eliminar las filas que tienen \rscript{NA} en ciertas columnas antes de operar. Si bien se puede hacer con \rscript{filter(!is.na(`:bn:columna`))}, el paquete \rscript{`:pk:tidyr`} ofrece un atajo más legible: \rscript{drop_na()}.
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyr`)
+
+# Eliminar filas donde mass o height sean NA
+starwars |> drop_na(`:bn:mass`, `:bn:height`)
+
+# Sin argumentos, elimina filas con NA en CUALQUIER columna
+starwars |> drop_na()
+\end{lstlisting}
+
+\begin{alertblock}{}
+\rscript{drop_na()} sin argumentos puede ser muy agresivo si el dataset tiene muchas columnas con \rscript{NA}s parciales. Es preferible ser explícito sobre qué columnas importan para el análisis.
+\end{alertblock}
+\end{frame}
 
 
 
@@ -155,7 +177,7 @@ Para usar \rscript{filter()}, necesitamos expresar condiciones lógicas que sean
 
 Opción 1: Tidyverse (\rscript{filter})
 \begin{lstlisting}[style=RScript]
-`ventas` |> filter(`:bn:vendedor` == "Ana", `:bn:monto` > `:nm:1000`)		
+ventas |> filter(`:bn:vendedor` == "Ana", `:bn:monto` > 1000)
 \end{lstlisting}
 
 Ventajas: Se lee de izquierda a derecha, usa los nombres de columnas directamente.
@@ -166,13 +188,13 @@ Ventajas: Se lee de izquierda a derecha, usa los nombres de columnas directament
 \begin{frame}[fragile]
 Opción 2: R Base (Corchetes \rscript{[]})
 \begin{lstlisting}[style=RScript]
-`ventas`[`ventas`$`:bn:vendedor` == "Ana" & `ventas`$`:bn:monto` > `:nm:1000`, ]	
+ventas[ventas$vendedor == "Ana" & ventas$monto > 1000, ]
 \end{lstlisting}
 
 Desventajas
 \begin{itemize}
-	\item Debes repetir el nombre del dataframe (\rscript{`ventas`$}) cada vez. 
-	\item No olvides la coma al final \rscript{..., ]} (indica que quieres todas las columnas). Si la olvidas, da error o resultados inesperados. 
+	\item Debes repetir el nombre del dataframe (\rscript{ventas$}) cada vez.
+	\item No olvides la coma al final \rscript{..., ]} (indica que quieres todas las columnas). Si la olvidas, da error o resultados inesperados.
 	\item Es difícil de encadenar con otras operaciones (requiere guardar variables intermedias o anidar funciones).
 \end{itemize}
 \end{frame}
@@ -183,7 +205,7 @@ Desventajas
 \begin{frame}[fragile]
 Opción 3: R Base (\rscript{subset()})
 \begin{lstlisting}[style=RScript]
-subset(`ventas`, `:bn:vendedor` == "Ana" & `:bn:monto` > `:nm:1000`)	
+subset(ventas, `:bn:vendedor` == "Ana" & `:bn:monto` > 1000)
 \end{lstlisting}
 
 \begin{block}{}
@@ -194,20 +216,15 @@ subset(`ventas`, `:bn:vendedor` == "Ana" & `:bn:monto` > `:nm:1000`)
 
 
 
-
 \begin{frame}[fragile]{Filtrar para visualizar}
 Una de las utilidades más comunes de \rscript{filter()} es limpiar los datos antes de hacer un gráfico. Por ejemplo, si solo queremos graficar las ventas de \quotation{Ana}:
-%NO es un grafico de barras este. Es un boxplot meparece.
-\begin{lstlisting}[style=RScript] 
+\begin{lstlisting}[style=RScript]
 # Gráfico de barras solo para Ana
-`ventas` |> 
+ventas |>
 	filter(`:bn:vendedor` == "Ana") |>
-	plot(`:bn:monto` ~ factor(`:bn:region`), data = _, main = "Ventas de Ana por Región")
+	with(barplot(`:bn:monto`, names.arg = `:bn:region`, main = "Ventas de Ana por Región"))
 \end{lstlisting}
 \end{frame}
-
-
-
 
 
 
@@ -216,22 +233,20 @@ Una de las utilidades más comunes de \rscript{filter()} es limpiar los datos an
 La función \rscript{arrange()} cambia el orden de las filas. Por defecto ordena de menor a mayor (ascendente). Si queremos ordenar de mayor a menor, usamos la función auxiliar \rscript{desc()}.
 \begin{lstlisting}[style=RScript]
 # 1. Ordenar por monto (menor a mayor)
-`ventas` |> arrange(`:bn:monto`)	
+ventas |> arrange(`:bn:monto`)
 \end{lstlisting}
 
 \begin{lstlisting}[style=RScript]
 # 2. Ordenar por monto descendente (las mejores ventas primero)
-`ventas` |> arrange(desc(`:bn:monto`))	
+ventas |> arrange(desc(`:bn:monto`))
 \end{lstlisting}
 
 \begin{lstlisting}[style=RScript]
 # 3. Ordenar por vendedor y luego por monto descendente
 # (Dentro de cada vendedor, sus ventas de mayor a menor)
-`ventas` |> arrange(`:bn:vendedor`, desc(`:bn:monto`))	
+ventas |> arrange(`:bn:vendedor`, desc(`:bn:monto`))
 \end{lstlisting}
 \end{frame}
-
-
 
 
 
@@ -246,23 +261,22 @@ Más allá de ver la tabla ordenada en la consola, \rscript{arrange()} es fundam
 
 \begin{lstlisting}[style=RScript]
 # Ejemplo: El Top 3 absoluto de mejores comprobantes de venta
-`ventas` |> 
-	slice_max(`:bn:monto`, `:ky:n` = `:nm:3`)
+ventas |>
+	slice_max(`:bn:monto`, `:ky:n` = 3)
 \end{lstlisting}
 
 \begin{block}{}
-En versiones primitivas de R se usaba \rscript{arrange()} seguido de \rscript{head()} para obtener un Top N. Hoy en día la familia \rscript{slice\_} (\rscript{slice\_max()}, \rscript{slice\_min()}, \rscript{slice\_head()}) es inmensamente superior porque \textbf{respeta los grupos biológicos} si usás \rscript{group\_by()} previamente devolviendo, por ejemplo, el \quotation{Top N de cada sucursal individualmente}.
+En versiones primitivas de R se usaba \rscript{arrange()} seguido de \rscript{head()} para obtener un Top N. Hoy en día la familia \rscript{slice_} (\rscript{slice_max()}, \rscript{slice_min()}, \rscript{slice_head()}) es inmensamente superior porque \textbf{respeta los grupos} si usás \rscript{group_by()} previamente devolviendo, por ejemplo, el \quotation{Top N de cada vendedor individualmente}.
 \end{block}
 
 \begin{lstlisting}[style=RScript]
 # Ejemplo Visual: Ordenando barras
 # Si no ordenamos, R suele graficar en orden alfabético o de aparición
-`ventas` |> 
-	arrange(desc(`:bn:monto`)) |> 
-	with(barplot(`:bn:monto`, names.arg = `:bn:vendedor`, main = "Ventas ordenadas por monto"))	
+ventas |>
+	arrange(desc(`:bn:monto`)) |>
+	with(barplot(`:bn:monto`, names.arg = `:bn:vendedor`, main = "Ventas ordenadas por monto"))
 \end{lstlisting}
 \end{frame}
-
 
 
 
@@ -285,113 +299,66 @@ Las funciones más comunes dentro de \rscript{summarise()} son:
 
 
 \begin{frame}[fragile]
-\begin{alertblock}{El peligro logístico de los valores faltantes}
-Pedirle ingenuamente a R que calcule \rscript{mean(x)} cuando la columna arrastra al menos una celda vacía devolverá colateralmente un inservible \rscript{`NA`}. Para forzar a la matemática a ignorar las filas corruptas de inmediato y arrojar el promedio de lo restante, \textbf{siempre} debemos encadenar internamente el argumento \rscript{`:ky:na.rm` = TRUE} (por ejemplo, \rscript{mean(`:bn:monto`, `:ky:na.rm` = TRUE)}).
+\begin{alertblock}{Valores perdidos (\texttt{NA})}
+Al calcular estadísticas como \rscript{mean()} o \rscript{sum()}, si la columna tiene al menos un \rscript{NA}, la función devolverá invariablemente \rscript{NA}. Para que las funciones omitan los datos faltantes y calculen sobre el resto, \textbf{siempre} debemos agregar el argumento \rscript{`:ky:na.rm` = TRUE} (por ejemplo, \rscript{mean(`:bn:monto`, `:ky:na.rm` = TRUE)}).
 \end{alertblock}
 
 \begin{lstlisting}[style=RScript]
-	# Resumen general de todas las ventas
-`ventas` |> 
+# Resumen general de todas las ventas
+ventas |>
 	summarise(
-		`:bn:total_ventas` = sum(`:bn:monto`),
-		`:bn:promedio_monto` = mean(`:bn:monto`),
-		`:bn:mejor_venta` = max(`:bn:monto`),
+		`:bn:total_ventas` = sum(`:bn:monto`, `:ky:na.rm` = TRUE),
+		`:bn:promedio_monto` = mean(`:bn:monto`, `:ky:na.rm` = TRUE),
+		`:bn:mejor_venta` = max(`:bn:monto`, `:ky:na.rm` = TRUE),
 		`:bn:cantidad_transacciones` = n(),
 		`:bn:vendedores_unicos` = n_distinct(`:bn:vendedor`)
-	)	
+	)
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
 # A tibble: 1 × 5
-	total_ventas promedio_monto mejor_venta cantidad_transacciones vendedores_unicos
-				 <dbl>          <dbl>       <dbl>                  <int>             <int>
+  total_ventas promedio_monto mejor_venta cantidad_transacciones vendedores_unicos
+         <dbl>          <dbl>       <dbl>                  <int>             <int>
 1         8530            853        1250                     10                 3
 \end{lstlisting}
 \end{frame}
 
-	
-
-\begin{frame}[fragile]{Agrupando datos con \texttt{group\_by()}}
-El verdadero poder de \rscript{`:pk:dplyr`} aparece cuando combinamos \rscript{summarise()} con \rscript{group_by()}.
-
-\rscript{group_by()} no cambia cómo se ven los datos, pero cambia cómo actúan los verbos siguientes. Divide el dataset en \quotation{grupos} invisibles, y las operaciones se aplican por grupo.
-\end{frame}
 
 
 
-
-\begin{frame}[fragile]{El combo \texttt{group\_by() |> summarise()}}
-
-Este es el patrón más común en análisis de datos: \quotation{Agrupar por X y calcular Y}.
-\begin{lstlisting}[style=RScript]
-# 1. Total de ventas y promedio de satisfacción POR VENDEDOR
-ventas |> 
-	group_by(vendedor) |> 
-	summarise(
-		total_vendido = sum(monto),
-		satisfaccion_promedio = mean(satisfaccion),
-		n_ventas = n()
-	)	
-\end{lstlisting}
+\begin{frame}[fragile]{Agrupando datos: \texttt{group\_by() |> summarise()}}
+\rscript{group_by()} no cambia cómo se ven los datos, pero cambia cómo actúan los verbos siguientes: las operaciones se aplican grupo a grupo de forma independiente. Combinado con \rscript{summarise()}, es el patrón más común del análisis de datos: \quotation{Agrupar por X y calcular Y}.
 
 \begin{lstlisting}[style=RScript]
-# 2. Análisis POR REGIÓN y POR PRODUCTO
-ventas |> 
-	group_by(region, producto) |> 
+# Total de ventas y promedio de satisfacción POR VENDEDOR
+ventas |>
+	group_by(`:bn:vendedor`) |>
 	summarise(
-		total_monto = sum(monto),
-		total_unidades = sum(cantidad)
+		`:bn:total_vendido` = sum(`:bn:monto`, `:ky:na.rm` = TRUE),
+		`:bn:satisfaccion_promedio` = mean(`:bn:satisfaccion`, `:ky:na.rm` = TRUE),
+		`:bn:n_ventas` = n()
 	)
 \end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{El atajo exploratorio definitivo: \texttt{count()}}
-La combinación analítica de agrupar categorías sumando sus filas (\rscript{group\_by() |> summarise(n = n())}) es tan hiperutilizada en la rutina de un explorador de datos que los diseñadores de \rscript{`:pk:dplyr`} le dedicaron un verbo sintético que colapsa puramente el trámite a una sola orden: el atajo universal \rscript{count()}.
-
-\begin{lstlisting}[style=RScript]
-# Contar la frecuencia estadística absoluta de ventas por Vendedor
-`ventas` |> count(`:bn:vendedor`)
-\end{lstlisting}
-
-\begin{lstlisting}[style=RScript]
-# Contar el volumen del vendedor y forzar que R devuelva la lista ya priorizada
-`ventas` |> count(`:bn:vendedor`, `:ky:sort` = TRUE)
-\end{lstlisting}
-\end{frame}
-
-\begin{frame}[fragile]{Operaciones particionadas lógicas: \texttt{group\_by()} |> \texttt{mutate()}}
-Creemos a menudo que aglutinar (\rscript{group\_by()}) nos ancla coercitivamente a destrozar el formato de la base resumiéndola (\rscript{summarise()}). 
-
-Es infinitamente provechoso anidar \rscript{mutate()} a posteriori de agrupar. La etiqueta nueva calculará fracciones observando exclusivamente la burbuja local de su \quotation{subgrupo}, y gracias a dios \textbf{arrastra consigo el 100\% de las filas biológicas de matriz}. Resulta neurálgico para definir pesos de mercado estáticos relativos.
-
-\begin{lstlisting}[style=RScript]
-# ¿Qué porcentaje de peso aportó cada ticket respecto al gran total DE ESA REGIÓN?
-`ventas` |> 
-	group_by(`:bn:region`) |> 
-	mutate(
-		`:bn:peso_regional` = `:bn:monto` / sum(`:bn:monto`) * `:nm:100`
-	) |> 
-	ungroup()
+\begin{lstlisting}[style=RConsole]
+# A tibble: 3 × 4
+  vendedor total_vendido satisfaccion_promedio n_ventas
+  <chr>            <dbl>                 <dbl>    <int>
+1 Ana               4030                  4.45        4
+2 Beto              2030                  4.17        3
+3 Carla             2470                  3.93        3
 \end{lstlisting}
 \end{frame}
 
 
 
-\begin{frame}[fragile]{Un ejemplo integrador}
-Juntemos todo lo aprendido. Imaginemos que queremos responder: \quotation{¿Cuáles son los vendedores con mejor desempeño en ventas de productos tecnológicos (Laptops y Celulares), ignorando transacciones pequeñas (menores a 500)?}
+\begin{frame}[fragile]
 \begin{lstlisting}[style=RScript]
-`ventas` |> 
-	# 1. Filtramos: solo Laptops/Celulares y montos considerables
-	filter(`:bn:producto` %in% c("Laptop", "Celular"), `:bn:monto` >= `:nm:500`) |> 
-	# 2. Agrupamos por vendedor
-	group_by(`:bn:vendedor`) |> 
-	# 3. Resumimos su desempeño
+# Análisis POR REGIÓN y POR PRODUCTO
+ventas |>
+	group_by(`:bn:region`, `:bn:producto`) |>
 	summarise(
-		`:bn:ingresos_totales` = sum(`:bn:monto`),
-		`:bn:unidades_vendidas` = sum(`:bn:cantidad`),
-		`:bn:promedio_satisfaccion` = mean(`:bn:satisfaccion`)
-	) |> 
-	# 4. Ordenamos para ver el "ranking" (quién vendió más)
-	arrange(desc(`:bn:ingresos_totales`))	
+		`:bn:total_monto` = sum(`:bn:monto`, `:ky:na.rm` = TRUE),
+		`:bn:total_unidades` = sum(`:bn:cantidad`, `:ky:na.rm` = TRUE)
+	)
 \end{lstlisting}
 
 \begin{block}{}
@@ -401,82 +368,125 @@ Después de usar \rscript{group_by()}, el dataset queda \quotation{agrupado}. Si
 
 
 
+\begin{frame}[fragile]{El atajo exploratorio definitivo: \texttt{count()}}
+Contar cuántas veces aparece cada categoría es una de las operaciones más frecuentes al explorar datos. En lugar de escribir \rscript{group_by() |> summarise(n = n())}, \rscript{`:pk:dplyr`} ofrece el atajo \rscript{count()}.
 
-\begin{frame}[fragile]
-\begin{block}{Recomendación final}
-Al trabajar manipulando bases de datos reales, es común que los verbos de \rscript{`:pk:dplyr`} expongan inconsistencias ocultas en la información (como errores de tipeo al agrupar o existencias de \rscript{`NA`}s inesperadas al filtrar). 
+\begin{lstlisting}[style=RScript]
+# Cuántas ventas hizo cada vendedor
+ventas |> count(`:bn:vendedor`)
+\end{lstlisting}
 
-Revisar constantemente la cantidad de filas resultantes antes de continuar el pipeline y comprender las ventajas de encadenar operaciones lógicamente con \rscript{|>} te permitirá dominar cualquier proceso de limpieza de forma segura, legible y reproducible para cualquier colega.
-\end{block}
+\begin{lstlisting}[style=RScript]
+# Con sort = TRUE, ordena de mayor a menor automáticamente
+ventas |> count(`:bn:vendedor`, `:ky:sort` = TRUE)
+\end{lstlisting}
 \end{frame}
+
+
+
+\begin{frame}[fragile]{Operaciones por grupo: \texttt{group\_by()} |> \texttt{mutate()}}
+\rscript{group_by()} no solo funciona con \rscript{summarise()}. Combinado con \rscript{mutate()}, la nueva variable se calcula dentro de cada grupo, pero el dataset conserva todas las filas originales. Es útil para calcular proporciones o participaciones relativas.
+
+\begin{lstlisting}[style=RScript]
+# Participación de cada venta dentro del total de su región
+ventas |>
+	group_by(`:bn:region`) |>
+	mutate(
+		`:bn:peso_regional` = `:bn:monto` / sum(`:bn:monto`, `:ky:na.rm` = TRUE) * 100
+	) |>
+	ungroup()
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Un ejemplo integrador}
+Juntemos todo lo aprendido. Imaginemos que queremos responder: \quotation{¿Cuáles son los vendedores con mejor desempeño en ventas de productos tecnológicos (Laptops y Celulares), ignorando transacciones pequeñas (menores a 500)?}
+\begin{lstlisting}[style=RScript]
+ventas |>
+	# 1. Filtramos: solo Laptops/Celulares y montos considerables
+	filter(`:bn:producto` %in% c("Laptop", "Celular"), `:bn:monto` >= 500) |>
+	# 2. Agrupamos por vendedor
+	group_by(`:bn:vendedor`) |>
+	# 3. Resumimos su desempeño
+	summarise(
+		`:bn:ingresos_totales` = sum(`:bn:monto`, `:ky:na.rm` = TRUE),
+		`:bn:unidades_vendidas` = sum(`:bn:cantidad`, `:ky:na.rm` = TRUE),
+		`:bn:promedio_satisfaccion` = mean(`:bn:satisfaccion`, `:ky:na.rm` = TRUE)
+	) |>
+	# 4. Ordenamos para ver el "ranking" (quién vendió más)
+	arrange(desc(`:bn:ingresos_totales`))
+\end{lstlisting}
+\end{frame}
+
 
 
 
 \begin{frame}[fragile]{Ejercicios}
 \begin{enumerate}
-	\item Del dataset \rscript{`starwars`}, filtra los personajes que pesen más de \rscript{`:nm:80`} kg.
-	\item Filtra los personajes de \rscript{`starwars`} cuya especie (\rscript{`species`}) sea \rscript{"Human"}.
-	\item Filtra los personajes de \rscript{`starwars`} cuya especie sea \rscript{"Human"} \textbf{y} que además tengan los ojos (\rscript{`eye_color`}) de color \rscript{"blue"}.
-	\item Filtra los personajes de \rscript{`starwars`} cuya especie sea \rscript{"Human"} \textbf{o} \rscript{"Droid"}.
-	\item Usa \rscript{\%in\%} para filtrar de \rscript{`starwars`} los personajes que nacieron en \rscript{"Tatooine"}, \rscript{"Naboo"} o \rscript{"Coruscant"}.
-	\item ¿Cuántos personajes de \rscript{`starwars`} tienen valor desconocido (\rscript{`NA`}) en la columna \rscript{`mass`}? Usa \rscript{filter(is.na(...))} para encontrarlos.
-	\item Filtra de \rscript{`starwars`} los personajes cuya estatura (\rscript{`height`}) esté entre \rscript{`:nm:150`} y \rscript{`:nm:190`} cm usando la función \rscript{between()}.
-	\item Del dataset \rscript{`mtcars`}, filtra los autos que tienen más de \rscript{`:nm:4`} cilindros (\rscript{`cyl`}) \textbf{y} un consumo mayor a \rscript{`:nm:20`} millas por galón (\rscript{`mpg`}).
-	\item Filtra de \rscript{`mtcars`} los autos que tengan transmisión manual (\rscript{`:bn:am` == `:nm:1`}) \textbf{o} más de \rscript{`:nm:200`} caballos de potencia (\rscript{`:bn:hp` > `:nm:200`}).
-	\item Usando \rscript{str_detect()}, filtra de \rscript{`starwars`} todos los personajes cuyo nombre contenga la cadena \rscript{"Skywalker"}.
+	\item Del dataset \rscript{starwars}, filtra los personajes que pesen más de 80 kg.
+	\item Filtra los personajes de \rscript{starwars} cuya especie (\rscript{species}) sea \rscript{"Human"}.
+	\item Filtra los personajes de \rscript{starwars} cuya especie sea \rscript{"Human"} \textbf{y} que además tengan los ojos (\rscript{eye_color}) de color \rscript{"blue"}.
+	\item Filtra los personajes de \rscript{starwars} cuya especie sea \rscript{"Human"} \textbf{o} \rscript{"Droid"}.
+	\item Usa \rscript{\%in\%} para filtrar de \rscript{starwars} los personajes que nacieron en \rscript{"Tatooine"}, \rscript{"Naboo"} o \rscript{"Coruscant"}.
+	\item ¿Cuántos personajes de \rscript{starwars} tienen valor desconocido (\rscript{NA}) en la columna \rscript{mass}? Usa \rscript{filter(is.na(...))} para encontrarlos.
+	\item Filtra de \rscript{starwars} los personajes cuya estatura (\rscript{height}) esté entre 150 y 190 cm usando la función \rscript{between()}.
+	\item Del dataset \rscript{mtcars}, filtra los autos que tienen más de 4 cilindros (\rscript{cyl}) \textbf{y} un consumo mayor a 20 millas por galón (\rscript{mpg}).
+	\item Filtra de \rscript{mtcars} los autos que tengan transmisión manual (\rscript{`:bn:am` == 1}) \textbf{o} más de 200 caballos de potencia (\rscript{`:bn:hp` > 200}).
+	\item Usando \rscript{str_detect()}, filtra de \rscript{starwars} todos los personajes cuyo nombre contenga la cadena \rscript{"Skywalker"}.
+	\item Usá \rscript{drop_na()} para eliminar de \rscript{starwars} las filas donde \rscript{mass} o \rscript{height} sean \rscript{NA}. ¿Cuántas filas quedan? Compará con \rscript{drop_na()} sin argumentos.
 \end{enumerate}
 \end{frame}
 
 
 
 
-
 \begin{frame}[fragile]
-\begin{enumerate}[start=11]
-	\item Ordena el dataset \rscript{`starwars`} de mayor a menor altura (\rscript{`height`}).
-\item Ordena \rscript{`mtcars`} por número de cilindros (\rscript{`cyl`}) de forma ascendente y, dentro de cada grupo de cilindros, por consumo (\rscript{`mpg`}) de mayor a menor.
-\item Filtra los personajes humanos de \rscript{`starwars`} y luego ordénalos por masa (\rscript{`mass`}) de menor a mayor. ¿Quién es el humano más liviano?
-\item Usa \rscript{arrange()} y \rscript{head()} para encontrar los \rscript{`:nm:5`} autos con mayor potencia (\rscript{`hp`}) en \rscript{`mtcars`}.
-\item Ordena \rscript{`iris`} por especie (\rscript{`Species`}) alfabéticamente y, dentro de cada especie, por longitud de pétalo (\rscript{`Petal.Length`}) descendente.
-\item Calcula el promedio de altura (\rscript{`height`}) y el promedio de masa (\rscript{`mass`}) de todos los personajes en \rscript{`starwars`}. Ojo: investiga el argumento \rscript{`:ky:na.rm`}.
-\item Usando \rscript{`starwars`}, calcula en un solo \rscript{summarise()}: el total de personajes (\rscript{n()}), la cantidad de especies únicas (\rscript{n_distinct(`species`)}), la altura máxima y la mínima.
-\item Sobre \rscript{`mtcars`}, calcula la suma total de caballos de fuerza (\rscript{`hp`}) y la mediana del consumo (\rscript{`mpg`}).
-\item Filtra los personajes de \rscript{`starwars`} que pesen más de \rscript{`:nm:100`} kg y luego calcula su peso promedio.
-\item Calcula la desviación estándar de \rscript{`Sepal.Length`} en \rscript{`iris`}.
+\begin{enumerate}[start=12]
+	\item Ordena el dataset \rscript{starwars} de mayor a menor altura (\rscript{height}).
+\item Ordena \rscript{mtcars} por número de cilindros (\rscript{cyl}) de forma ascendente y, dentro de cada grupo de cilindros, por consumo (\rscript{mpg}) de mayor a menor.
+\item Filtra los personajes humanos de \rscript{starwars} y luego ordénalos por masa (\rscript{mass}) de menor a mayor. ¿Quién es el humano más liviano?
+\item Usa \rscript{arrange()} y \rscript{head()} para encontrar los 5 autos con mayor potencia (\rscript{hp}) en \rscript{mtcars}.
+\item Ordena \rscript{iris} por especie (\rscript{Species}) alfabéticamente y, dentro de cada especie, por longitud de pétalo (\rscript{Petal.Length}) descendente.
+\item Calcula el promedio de altura (\rscript{height}) y el promedio de masa (\rscript{mass}) de todos los personajes en \rscript{starwars}. Ojo: investiga el argumento \rscript{`:ky:na.rm`}.
+\item Usando \rscript{starwars}, calcula en un solo \rscript{summarise()}: el total de personajes (\rscript{n()}), la cantidad de especies únicas (\rscript{n_distinct(`species`)}), la altura máxima y la mínima.
+\item Sobre \rscript{mtcars}, calcula la suma total de caballos de fuerza (\rscript{hp}) y la mediana del consumo (\rscript{mpg}).
+\item Filtra los personajes de \rscript{starwars} que pesen más de 100 kg y luego calcula su peso promedio.
+\item Calcula la desviación estándar de \rscript{Sepal.Length} en \rscript{iris}.
 \end{enumerate}
 \end{frame}
 
 
 
 \begin{frame}[fragile]
-\begin{enumerate}[start=21]
-\item Agrupa \rscript{`starwars`} por especie (\rscript{`species`}) y calcula la altura promedio de cada una. ¿Qué especie es la más alta?
-\item Agrupa \rscript{`mtcars`} por número de cilindros (\rscript{`cyl`}) y calcula: el promedio de \rscript{`mpg`}, la media de \rscript{`hp`}, y el número de modelos (\rscript{n()}).
-\item Agrupa \rscript{`iris`} por especie (\rscript{`Species`}) y calcula el promedio de las \rscript{`:nm:4`} variables numéricas en un solo \rscript{summarise()}.
-\item Usando el dataset \rscript{`ventas`} del encuentro (créalo si es necesario), agrupa por \rscript{`region`} y calcula el monto total, el promedio de satisfacción y la cantidad de transacciones por región.
-\item Agrupa \rscript{`starwars`} por \rscript{`gender`} y calcula la masa promedio. Luego ordena el resultado de mayor a menor masa promedio.
-\item De \rscript{`starwars`}, filtra solo los personajes con altura mayor a \rscript{`:nm:170`} cm, luego agrupa por especie y calcula el conteo de cada especie (\rscript{n()}). Ordena el resultado de mayor a menor. ¿Qué especie alta es la más representada?
-\item De \rscript{`mtcars`}, filtra los autos con más de \rscript{`:nm:4`} cilindros (\rscript{`cyl` > `:nm:4`}), agrupa por número de cilindros y calcula el promedio de \rscript{`hp`} y \rscript{`mpg`}.
-\item Replica este análisis en palabras usando código: \textit{\quotation{Quiero saber cuál es el producto más vendido (mayor suma de \rscript{`monto`}) en cada región del dataset \rscript{`ventas`}, y solo me interesan las regiones donde el monto total supere los \rscript{`:nm:1000`}.}}
-\item Usa \rscript{group_by()} + \rscript{summarise()} + \rscript{arrange()} para encontrar los \rscript{`:nm:3`} personajes de \rscript{`starwars`} más pesados de cada género (\rscript{`gender`}). (Pista: investiga \rscript{slice_max()}.)
+\begin{enumerate}[start=22]
+\item Agrupa \rscript{starwars} por especie (\rscript{species}) y calcula la altura promedio de cada una. ¿Qué especie es la más alta?
+\item Agrupa \rscript{mtcars} por número de cilindros (\rscript{cyl}) y calcula: el promedio de \rscript{mpg}, la media de \rscript{hp}, y el número de modelos (\rscript{n()}).
+\item Agrupa \rscript{iris} por especie (\rscript{Species}) y calcula el promedio de las 4 variables numéricas en un solo \rscript{summarise()}.
+\item Usando el dataset \rscript{ventas} del encuentro (créalo si es necesario), agrupa por \rscript{region} y calcula el monto total, el promedio de satisfacción y la cantidad de transacciones por región.
+\item Agrupa \rscript{starwars} por \rscript{gender} y calcula la masa promedio. Luego ordena el resultado de mayor a menor masa promedio.
+\item De \rscript{starwars}, filtra solo los personajes con altura mayor a 170 cm, luego agrupa por especie y calcula el conteo de cada especie (\rscript{n()}). Ordena el resultado de mayor a menor. ¿Qué especie alta es la más representada?
+\item De \rscript{mtcars}, filtra los autos con más de 4 cilindros (\rscript{`:bn:cyl` > 4}), agrupa por número de cilindros y calcula el promedio de \rscript{hp} y \rscript{mpg}.
+\item Replica este análisis en palabras usando código: \textit{\quotation{Quiero saber cuál es el producto más vendido (mayor suma de \rscript{monto}) en cada región del dataset \rscript{ventas}, y solo me interesan las regiones donde el monto total supere los 1000.}}
+\item Usa \rscript{group_by()} + \rscript{summarise()} + \rscript{arrange()} para encontrar los 3 personajes de \rscript{starwars} más pesados de cada género (\rscript{gender}). (Pista: investiga \rscript{slice_max()}.)
 \end{enumerate}
 \end{frame}
 
 
 \begin{frame}[fragile]
-\begin{enumerate}[start=30]
-\item En un solo pipeline sobre \rscript{`starwars`}:
+\begin{enumerate}[start=31]
+\item En un solo pipeline sobre \rscript{starwars}:
 \begin{enumerate}
-	\item Filtra los personajes que no sean \rscript{`NA`} en \rscript{`mass`} ni en \rscript{`height`}.
-	\item Crea una variable \rscript{`bmi`} (índice de masa corporal).
-	\item Agrupa por \rscript{`species`}.
-	\item Calcula el \rscript{`bmi`} promedio por especie.
-	\item Filtra las especies con al menos \rscript{`:nm:2`} personajes (\rscript{n() >= `:nm:2`}).
-	\item Ordena de mayor a menor \rscript{`bmi`} promedio y muestra los primeros \rscript{`:nm:5`} resultados.
+	\item Filtra los personajes que no sean \rscript{NA} en \rscript{mass} ni en \rscript{height}.
+	\item Crea una variable \rscript{bmi} (índice de masa corporal).
+	\item Agrupa por \rscript{species}.
+	\item Calcula el \rscript{bmi} promedio por especie.
+	\item Filtra las especies con al menos 2 personajes (\rscript{n() >= 2}).
+	\item Ordena de mayor a menor \rscript{bmi} promedio y muestra los primeros 5 resultados.
 \end{enumerate}
 \end{enumerate}
 \end{frame}
-
 
 
 

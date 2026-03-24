@@ -1,0 +1,283 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{janitor}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+
+
+	\begin{frame}[fragile]{Introducción a janitor}
+		Los datos del mundo real llegan sucios: nombres de columnas imposibles de leer, filas o columnas vacías, duplicados silenciosos y fechas de Excel guardadas como números enteros. \rscript{`:pk:janitor`} es el paquete especializado en limpiar ese desorden estructural antes de analizar.
+		\begin{figure}[h!]
+			\href{https://sfirke.github.io/janitor/}{\includegraphics[width=0.15\textwidth]{img/janitor.png}}
+		\end{figure}
+
+		\begin{exampleblock}{}
+			\rscript{`:pk:janitor`} no forma parte del núcleo de \quotation{tidyverse} pero es completamente compatible con el pipe \rscript{|>} y devuelve siempre tibbles. Sus cuatro superpoderes son: normalizar nombres de columnas, detectar duplicados, construir tablas de frecuencia cruzadas y remover basura estructural de un dataset.
+		\end{exampleblock}
+
+\begin{lstlisting}[style=RScript]
+# No viene con tidyverse; hay que instalarlo una vez y cargarlo explícitamente
+install.packages("janitor")
+library(tidyverse)
+library(`:pk:janitor`)
+\end{lstlisting}
+	\end{frame}
+
+
+
+
+
+
+	\begin{frame}[fragile]{\texttt{clean\_names()}: Normalizar nombres de columnas}
+		\titleitem{Comportamiento por defecto: \texttt{snake\_case}}
+\begin{lstlisting}[style=RScript]
+sucio <- tibble(
+  "Nombre Completo" = c("Ana", "Beto"),
+  "Edad (Años)"     = c(25, 30),
+  "SALARIO $"       = c(50000, 60000),
+  "Trimestre 1"     = c("Q1", "Q1")
+)
+sucio |> clean_names()
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> sucio |> clean_names()`
+  nombre_completo edad_anos salario `trimestre_1`
+\end{lstlisting}
+
+		\titleitem{Cambiar el estilo de capitalización con \texttt{case}}
+		El argumento \rscript{`:ky:case`} acepta cualquier estilo de la familia \rscript{`:pk:snakecase`}. Los más útiles:
+\begin{lstlisting}[style=RScript]
+sucio |> clean_names(`:ky:case` = "lower_camel")
+# nombreCompleto  edadAnos  salario  `trimestre1`
+
+sucio |> clean_names(`:ky:case` = "screaming_snake")
+# NOMBRE_COMPLETO  EDAD_ANOS  SALARIO  `TRIMESTRE_1`
+\end{lstlisting}
+
+		\begin{block}{}
+			Patrón canónico al importar: \rscript{read_excel("archivo.xlsx") |> clean_names()}. La función es idempotente: aplicarla dos veces produce el mismo resultado.
+		\end{block}
+	\end{frame}
+
+
+
+
+
+
+
+	\begin{frame}[fragile]{\texttt{remove\_empty()} y \texttt{remove\_constant()}}
+		\titleitem{Eliminar filas y columnas vacías}
+		Las bases de datos institucionales suelen tener filas de separación y columnas de formato completamente vacías. \rscript{remove_empty()} las detecta y elimina en un solo paso.
+
+\begin{lstlisting}[style=RScript]
+con_vacios <- tibble(
+  nombre = c("Ana", NA,   "Carlos"),
+  activo = c(TRUE,  NA,   TRUE),
+  notas  = c(NA,    NA,   NA)    # columna 100% vacía
+)
+
+con_vacios |> remove_empty("cols")         # solo columnas
+con_vacios |> remove_empty("rows")         # solo filas
+con_vacios |> remove_empty(c("rows", "cols"))  # ambas
+\end{lstlisting}
+
+		\titleitem{Eliminar columnas constantes}
+		Una columna con el mismo valor en todas las filas no aporta información al análisis. \rscript{remove_constant()} las purga automáticamente.
+
+\begin{lstlisting}[style=RScript]
+con_constante <- tibble(
+  nombre = c("Ana", "Beto", "Carlos"),
+  pais   = c("Argentina", "Argentina", "Argentina")
+)
+
+con_constante |> remove_constant()
+# A tibble: 3 x 1  ->  solo queda la columna "nombre"
+\end{lstlisting}
+	\end{frame}
+
+
+
+
+
+
+
+	\begin{frame}[fragile]{\texttt{get\_dupes()}: Detectar duplicados}
+		A diferencia de \rscript{distinct()}, \rscript{get_dupes()} no elimina los duplicados: los \textbf{expone} para que puedas inspeccionarlos. Agrega automáticamente la columna \rscript{dupe_count} con la cantidad de veces que aparece cada combinación.
+
+\begin{lstlisting}[style=RScript]
+ventas <- tibble(
+  id       = c(1, 2, 3, 4, 5),
+  vendedor = c("Ana",    "Beto", "Ana",    "Carlos", "Beto"),
+  producto = c("Laptop", "Silla", "Laptop", "Mesa",  "Silla")
+)
+
+# Buscar duplicados por la combinación vendedor + producto
+ventas |> get_dupes(`:bn:vendedor`, `:bn:producto`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> ventas |> get_dupes(vendedor, producto)`
+# A tibble: 4 x 4
+  vendedor producto dupe_count    id
+  <chr>    <chr>         <int> <dbl>
+1 Ana      Laptop            2     1
+2 Ana      Laptop            2     3
+3 Beto     Silla             2     2
+4 Beto     Silla             2     5
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Llamar a \rscript{get_dupes()} sin argumentos busca filas absolutamente idénticas en \textbf{todas} las columnas a la vez.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{tabyl()}: Tablas de frecuencia modernas}
+		\rscript{tabyl()} reemplaza a la función base \rscript{table()}: devuelve un tibble con conteos \textbf{y} porcentajes, es compatible con \rscript{|>} y acepta tanto una como dos variables para tablas cruzadas.
+
+		\titleitem{Una variable: distribución simple}
+\begin{lstlisting}[style=RScript]
+encuesta <- tibble(
+  genero    = c("F", "M", "F", "F", "M", "M", "F"),
+  respuesta = c("Sí", "No", "Sí", "No", "Sí", "Sí", "No")
+)
+
+encuesta |> tabyl(`:bn:genero`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> encuesta |> tabyl(genero)`
+ genero n   percent
+      F 4 0.5714286
+      M 3 0.4285714
+\end{lstlisting}
+
+		\titleitem{Dos variables: tabla cruzada}
+\begin{lstlisting}[style=RScript]
+encuesta |> tabyl(`:bn:genero`, `:bn:respuesta`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> encuesta |> tabyl(genero, respuesta)`
+ genero No Sí
+      F  2  2
+      M  1  2
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{adorn\_*()}: Decorar tablas de frecuencia}
+		Las funciones \rscript{`:fn:adorn_*`()} se encadenan con \rscript{|>} sobre el resultado de \rscript{tabyl()} para agregar totales, convertir a porcentajes y dar formato final.
+
+\begin{lstlisting}[style=RScript]
+encuesta |>
+  tabyl(`:bn:genero`, `:bn:respuesta`) |>
+  adorn_totals(c("row", "col")) |>        # fila y columna de totales
+  adorn_percentages("row") |>   # "row" = % s/ total fila
+                                # "col" = % s/ total columna
+                                # "all" = % s/ total general
+  adorn_pct_formatting(`:ky:digits` = 1) |>    # formato "42.9%"
+  adorn_ns() |>                           # agregar los (n) al lado
+  adorn_title()                           # etiqueta en la esquina
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> ... |> adorn_title()`
+              respuesta
+ genero           No           Sí        Total
+      F   50.0%  (2)   50.0%  (2)  100.0%  (4)
+      M   33.3%  (1)   66.7%  (2)  100.0%  (3)
+  Total   42.9%  (3)   57.1%  (4)  100.0%  (7)
+\end{lstlisting}
+
+		\begin{block}{}
+			Cada \rscript{`:fn:adorn_*()`} es independiente y opcional. Podés encadenar solo los que necesitás: por ejemplo, \rscript{tabyl() |> adorn_totals("row")} ya es útil por sí solo.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{row\_to\_names()}: Promover una fila a encabezado}
+		Los reportes de Excel suelen tener logos y metadatos en las primeras filas, y los nombres reales de las columnas enterrados en la fila 3 o 4 del cuerpo. \rscript{row_to_names()} saca esa fila y la convierte en el encabezado de la tabla.
+
+\begin{lstlisting}[style=RScript]
+crudo <- tibble(
+  `X1` = c("ID",     "1",   "2"),
+  `X2` = c("Nombre", "Ana", "Beto"),
+  `X3` = c("Nota",   "8",   "7")
+)
+
+crudo |> row_to_names(`:ky:row_number` = 1)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> crudo |> row_to_names(row_number = 1)`
+# A tibble: 2 x 3
+  ID    Nombre Nota
+  <chr> <chr>  <chr>
+1 1     Ana    8
+2 2     Beto   7
+\end{lstlisting}
+
+		\begin{block}{}
+			El pipeline completo para comenzar con un informe institucional es:\\
+			\rscript{read_excel("f.xlsx", skip = 3) |> row_to_names(1) |> clean_names()}
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Utilidades varias}
+		\titleitem{\texttt{excel\_numeric\_to\_date()}: Fechas de Excel}
+		Excel almacena fechas como el número de días transcurridos desde el 1 de enero de 1900. Esta función los convierte a \rscript{Date} de R.
+
+\begin{lstlisting}[style=RScript]
+datos <- tibble(
+  evento    = c("Reunión", "Entrega"),
+  fecha_num = c(45000, 45060)
+)
+
+datos |> mutate(`:bn:fecha` = excel_numeric_to_date(`:bn:fecha_num`))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> datos |> mutate(fecha = excel_numeric_to_date(fecha_num))`
+# A tibble: 2 x 3
+  evento  fecha_num fecha
+  <chr>       <dbl> <date>
+1 Reunión     45000 2023-03-15
+2 Entrega     45060 2023-05-14
+\end{lstlisting}
+
+		\titleitem{\texttt{round\_half\_up()}: Redondeo matemático}
+		R base usa \quotation{redondeo bancario}: \rscript{round(`:nm:2.5`)} devuelve \rscript{2}. \rscript{round_half_up()} siempre redondea 0.5 hacia arriba, como se aprende en el colegio.
+
+\begin{lstlisting}[style=RScript]
+round(`:nm:2.5`)          # 2  <- redondeo bancario de R base (!)
+round_half_up(`:nm:2.5`)  # 3  <- el resultado que esperabas
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{compare\_df\_cols()}: Verificar estructuras antes de apilar}
+		Antes de usar \rscript{bind_rows()} para apilar dos tablas, \rscript{compare_df_cols()} detecta incompatibilidades de columnas o tipos que causarían errores o pérdida silenciosa de información.
+
+\begin{lstlisting}[style=RScript]
+`trimestre_1` <- tibble(nombre = c("Ana", "Beto"), nota = c(8L, 7L))
+`trimestre_2` <- tibble(nombre = c("Carlos"),      nota = c(`:nm:9.5`))
+
+compare_df_cols(`trimestre_1`, `trimestre_2`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> compare_df_cols(trimestre_1, trimestre_2)`
+  column_name trimestre_1 trimestre_2
+1      nombre   character   character
+2        nota     integer      double
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			La columna \rscript{`:bn:nota`} tiene tipo \rscript{`integer`} en un tibble y \rscript{`double`} en el otro. \rscript{bind_rows()} lo resolvería silenciosamente promoviendo a \rscript{double}, pero es mucho mejor saberlo de antemano para no sorprenderse con los datos.
+		\end{alertblock}
+	\end{frame}
+
+
+\end{document}

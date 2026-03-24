@@ -262,12 +262,12 @@ Nota: 8 (Aprobado)
 
 	\titleitem{str\_glue\_data: Interpolar desde un data frame}
 \begin{lstlisting}[style=RScript]
-`df` <- data.frame(
+sectores <- data.frame(
   sector = c("Agro", "Industria"),
   ventas = c(210.3, 120.5)
 )
 
-str_glue_data(`df`, "{sector}: ${ventas}M")
+str_glue_data(sectores, "{sector}: ${ventas}M")
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
 Agro: $210.3M
