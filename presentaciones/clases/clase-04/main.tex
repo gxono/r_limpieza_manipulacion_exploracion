@@ -181,10 +181,10 @@ mean(c(1, 2, 3, 4, 5))
 
 	
 	\begin{itemize}
-		\item Sintaxis: \lstinline[style=RScript, basicstyle = \normalfont]`%>%`
+		\item Sintaxis: \lstinline[style=RScript, basicstyle = \normalfont\ttfamily]`%>%`
 		\item Ventaja: Más flexible (permite usar el punto \rscript{.} para referenciar el dato en lugares que no sean el primer argumento), aunque un poco más lento.
-		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, .)` es equivalente a \rscript{f(y, x)}
-		\item \lstinline[style=RScript, basicstyle = \normalfont]`x %>% f(y, z = .)` es equivalente a \rscript{f(y, z = x)}
+		\item \lstinline[style=RScript, basicstyle = \normalfont\ttfamily]`x %>% f(y, .)` es equivalente a \rscript{f(y, x)}
+		\item \lstinline[style=RScript, basicstyle = \normalfont\ttfamily]`x %>% f(y, z = .)` es equivalente a \rscript{f(y, z = x)}
 		\item Requerimiento: Necesitas cargar \rscript{library(tidyverse)} o \rscript{library(magrittr)}.
 	\end{itemize}
 	
@@ -393,15 +393,15 @@ z <- round(y, 1)
 
 \begin{frame}[fragile]{}
 \begin{enumerate}[start = 10]
-		\item Us\'a \rscript{select()} con \rscript{starts\_with()} para quedarte con todas las variables del dataset \rscript{iris} que tengan que ver con el \quotation{Sepal} .
+		\item Us\'a \rscript{select()} con \rscript{starts_with()} para quedarte con todas las variables del dataset \rscript{iris} que tengan que ver con el \quotation{Sepal} .
 	
 	\item Reorden\'a las columnas de \rscript{mtcars} para que \rscript{`wt`} (peso) aparezca primero, seguida de todo el resto.
 	
-	\item Intent\'a seleccionar la columna \rscript{hair\_color} de \rscript{starwars} pero renombrándola como \rscript{color\_pelo} al vuelo (dentro del mismo \rscript{select}).
+	\item Intent\'a seleccionar la columna \rscript{hair_color} de \rscript{starwars} pero renombrándola como \rscript{color_pelo} al vuelo (dentro del mismo \rscript{select}).
 	
 	\item ¿Qué pasa si seleccionas una columna que no existe? Intent\'a ejecutar \rscript{mtcars |> select(turbo)}.
 	
-	\item Usando \rscript{any\_of()}, seleccion\'a las columnas \quotation{farenheit} y \quotation{celcius} de \rscript{airquality}. ¿Qué hace la función si las columnas no existen?
+	\item Usando \rscript{any_of()}, seleccion\'a las columnas \quotation{farenheit} y \quotation{celcius} de \rscript{airquality}. ¿Qué hace la función si las columnas no existen?
 	
 	\item Seleccion\'a de \rscript{iris} todas las columnas numéricas (investig\'a \rscript{where(is.numeric)} dentro de \rscript{select} \emoji{wink}).
 	
@@ -422,9 +422,9 @@ z <- round(y, 1)
 
 \begin{frame}[fragile]
 	\begin{enumerate}[start=20]
-		\item Sobre \rscript{mtcars}, cre\'a una columna lógica \rscript{es\_eficiente} que sea \rscript{TRUE} si el auto rinde más de 20 mpg, y \rscript{FALSE} si no.
-		\item En \rscript{starwars}, cre\'a una variable \rscript{es\_droide} que contenga \rscript{TRUE} si la especie (\rscript{species}) es \quotation{Droid} y \rscript{FALSE} en caso contrario. (Ojo con los \rscript{NA}).
-			\item Usando \rscript{ifelse()} dentro de \rscript{mutate()} en \rscript{mtcars}: cre\'a \rscript{tipo\_consumo} que diga \quotation{Alto} si \rscript{mpg < 15}, y \quotation{Bajo} si es \rscript{>= 15}.
+		\item Sobre \rscript{mtcars}, cre\'a una columna lógica \rscript{es_eficiente} que sea \rscript{TRUE} si el auto rinde más de 20 mpg, y \rscript{FALSE} si no.
+		\item En \rscript{starwars}, cre\'a una variable \rscript{es_droide} que contenga \rscript{TRUE} si la especie (\rscript{species}) es \quotation{Droid} y \rscript{FALSE} en caso contrario. (Ojo con los \rscript{NA}).
+			\item Usando \rscript{ifelse()} dentro de \rscript{mutate()} en \rscript{mtcars}: cre\'a \rscript{tipo_consumo} que diga \quotation{Alto} si \rscript{mpg < 15}, y \quotation{Bajo} si es \rscript{>= 15}.
 		
 		\item Modific\'a el ejercicio anterior para tener 3 categorías: \quotation{Alto} (<15), \quotation{Medio} (15-25), \quotation{Bajo} (>25).
 		
@@ -438,7 +438,7 @@ z <- round(y, 1)
 		
 		\item Tom\'a \rscript{iris}, seleccion\'a las 4 columnas numéricas y crea 4 nuevas columnas que sean el logaritmo de las originales.
 		
-		\item Utilizando \rscript{mtcars}, cre\'a una variable \rscript{potencia\_peso} (\rscript{hp / `wt`}) y luego quedate solo con los autos que tengan un ratio mayor a 50.
+		\item Utilizando \rscript{mtcars}, cre\'a una variable \rscript{potencia_peso} (\rscript{hp / `wt`}) y luego quedate solo con los autos que tengan un ratio mayor a 50.
 	\end{enumerate}
 \end{frame}
 

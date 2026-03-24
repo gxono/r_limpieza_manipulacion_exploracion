@@ -38,21 +38,17 @@
 library(stringr)
 
 x <- c("Santa Fe", "San Luis", "Salta", "Mendoza")
-
-str_detect(x, "San")
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
+`:in:> str_detect(x, "San")`
 [1]  TRUE  TRUE FALSE FALSE
-\end{lstlisting}
-\begin{lstlisting}[style=RScript]
-str_extract(x, "San")
-\end{lstlisting}
-\begin{lstlisting}[style=RConsole]
+`:in:>`
+`:in:> str_extract(x, "San")`
 [1] "San" "San" NA    NA
 \end{lstlisting}
 
 	\begin{alertblock}{}
-		Las regex son \textbf{sensibles a mayúsculas} por defecto. \rscript{"san"} no matchea \rscript{"San"}. Usá \rscript{regex("san", ignore\_case = TRUE)} si necesitás ignorar la distinci\'on.
+		Las regex son \textbf{sensibles a mayúsculas} por defecto. \rscript{"san"} no matchea \rscript{"San"}. Usá \rscript{regex("san", ignore_case = TRUE)} si necesitás ignorar la distinci\'on.
 	\end{alertblock}
 \end{frame}
 
@@ -792,7 +788,102 @@ str_match(x, "(\\w+):\\s+([\\d.]+)")
 
 
 
-\begin{frame}[fragile]{Ejemplo práctico: Limpieza con regex en dplyr}
+\begin{frame}[fragile]{Modificar texto: str\_replace y str\_remove}
+	\titleitem{Reemplazar texto}
+	\rscript{str_replace()} cambia el \textbf{primer} patrón encontrado por cadena. \rscript{str_replace_all()} los cambia \textbf{todos}.
+\begin{lstlisting}[style=RScript]
+x <- c("manzana, pera, banana")
+
+str_replace(x, ",", ";")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "manzana; pera, banana"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+str_replace_all(x, ",", ";")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "manzana; pera; banana"
+\end{lstlisting}
+
+	\titleitem{Eliminar texto}
+	\rscript{str_remove()} equivale a \rscript{str_replace()} con un string vacío (\rscript{""}). También tiene versión \rscript{_all()}.
+\begin{lstlisting}[style=RScript]
+precios <- c("$1.200", "$4.500")
+
+# Eliminamos el signo $ literal (escapado) de todos
+str_remove_all(precios, "\\$")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "1.200" "4.500"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Filtrar y separar el texto}
+	\titleitem{str\_subset: Filtrar un vector}
+	Devuelve solo los elementos que \textbf{contienen} el patrón. Es equivalente a \rscript{x[str_detect(x, patron)]}.
+\begin{lstlisting}[style=RScript]
+frutas <- c("manzana", "banana", "kiwi", "naranja")
+
+# Solo las frutas que tienen "anja"
+str_subset(frutas, "anja")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "manzana" "naranja"
+\end{lstlisting}
+
+	\titleitem{str\_split: Separar cadenas}
+	Divide una cadena en partes usando la regex como delimitador. Devuelve una \textbf{lista} por defecto.
+\begin{lstlisting}[style=RScript]
+x <- "Ana, 35 años, Abogada"
+
+# Separar por comas seguidas (opcionalmente) de espacios
+str_split(x, ",\\s*")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[[1]]
+[1] "Ana"     "35 años" "Abogada"
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{El súper poder: simplify = TRUE}
+	Funciones que devuelven múltiples resultados en tamaño variable (como \rscript{str_extract_all} o \rscript{str_split}) retornan una \textbf{lista}. Si pasás \rscript{simplify = TRUE}, devuelven una \textbf{matriz}, lo cual es perfecto para meter en un data frame nuevo o un \rscript{mutate()}.
+\begin{lstlisting}[style=RScript]
+x <- c("Juan-35", "Ana-28")
+str_split(x, "-", simplify = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1]   [,2]
+[1,] "Juan" "35"
+[2,] "Ana"  "28"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+textos <- c("A: 10, B: 20", "C: 30")
+str_extract_all(textos, "\\d+", simplify = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+     [,1] [,2]
+[1,] "10" "20"
+[2,] "30" ""
+\end{lstlisting}
+	\begin{alertblock}{}
+		Si falta un valor (como en el segundo elemento del último ejemplo), la matriz se completa con cadenas vacías (\rscript{""}).
+	\end{alertblock}
+\end{frame}
+
+
+
+
+% ===========================================================================
+% SECCIÓN DE EJEMPLOS PRÁCTICOS AVANZADOS
+% ===========================================================================
+\begin{frame}[fragile]
 \begin{lstlisting}[style=RScript, numbers=none]
 library(dplyr)
 

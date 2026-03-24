@@ -683,8 +683,13 @@ str_detect("3.14", fixed("."))
 \begin{lstlisting}[style=RConsole]
 [1] TRUE
 \end{lstlisting}
+\end{frame}
 
-	Para una guía completa de expresiones regulares, modificadores (\rscript{regex()}, \rscript{fixed()}, \rscript{coll()}, \rscript{boundary()}) y \rscript{str_view()}, consultá el \textbf{Cheatsheet de expresiones regulares}.
+
+
+
+\begin{frame}[fragile]
+	Para una guía completa de expresiones regulares, modificadores (\rscript{regex()}, \rscript{fixed()}, \rscript{coll()}, \rscript{boundary()}) y \rscript{str_view()}, consultá \href{https://github.com/gxono/r_limpieza_manipulacion_exploracion/blob/main/presentaciones/machetes/regex/main.pdf}{\textbf{mis slides con un resumen de todo lo que se puede hacer y c\'omo}}, o tambi\'en ten\'es el \href{https://github.com/rstudio/cheatsheets/blob/main/regex.pdf}{\textbf{cheatsheet de expresiones regulares}}.
 \end{frame}
 
 
@@ -808,18 +813,18 @@ id nombre           ventas_txt nombre_limpio  tipo   ventas
 				cell{2-Z}{2-3} = {cmd = \rscript}
 			}
 			Operación    & stringr             & R Base       \\
-			Detectar     & str\_detect()       & grepl()      \\
-			Posiciones   & str\_which()        & grep()       \\
-			Extraer      & str\_extract()      & regmatches() \\
-			Reemplazar 1 & str\_replace()      & sub()        \\
-			Reemplazar + & str\_replace\_all() & gsub()       \\
-			Dividir      & str\_split()        & strsplit()   \\
-			Longitud     & str\_length()       & nchar()      \\
-			Subcadena    & str\_sub()          & substr()     \\
-			Concatenar   & str\_c()            & paste0()     \\
-			Mayúsculas   & str\_to\_upper()    & toupper()    \\
-			Minúsculas   & str\_to\_lower()    & tolower()    \\
-			Trim         & str\_trim()         & trimws()
+			Detectar     & str_detect()       & grepl()      \\
+			Posiciones   & str_which()        & grep()       \\
+			Extraer      & str_extract()      & regmatches() \\
+			Reemplazar 1 & str_replace()      & sub()        \\
+			Reemplazar + & str_replace_all() & gsub()       \\
+			Dividir      & str_split()        & strsplit()   \\
+			Longitud     & str_length()       & nchar()      \\
+			Subcadena    & str_sub()          & substr()     \\
+			Concatenar   & str_c()            & paste0()     \\
+			Mayúsculas   & str_to_upper()    & toupper()    \\
+			Minúsculas   & str_to_lower()    & tolower()    \\
+			Trim         & str_trim()         & trimws()
 		\end{tblr}
 	\end{table}
 \end{frame}

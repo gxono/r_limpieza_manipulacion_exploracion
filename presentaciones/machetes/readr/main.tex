@@ -1,0 +1,135 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de Importación (\texttt{readr}, \texttt{readxl}, \texttt{googlesheets4})}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+	\begin{frame}[fragile]{Introducción a la importación pura}
+		Antes de analizar o limpiar datos, hay que ingresarlos a R. Originalmente se usaba el verbo base \rscript{read.csv()}, pero sufría de graves problemas: era desesperantemente lento, trataba a todos los textos automáticamente como \rscript{`factor`} destruyendo información, y escupía un \rscript{`data.frame`} crudo.
+		
+		\begin{exampleblock}{}
+			\rscript{`:pk:readr`} (archivos planos), \rscript{`:pk:readxl`} (Excels locales) y \rscript{`:pk:googlesheets4`} (hojas en la nube) son los componentes del ecosistema \quotation{tidy} para importar datos súper rápido, con estándares modernos, devolviendo siempre un \rscript{`tibble`} impecable del que no se fuga información.
+		\end{exampleblock}
+
+\begin{lstlisting}[style=RScript]
+# Para leer .csv, readr ya se carga automáticamente con tidyverse.
+library(tidyverse)
+
+# Pero si vas a leer .xlsx o google sheets, tenés que cargarlos a mano encima:
+library(readxl)
+library(`:pk:googlesheets4`)
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Archivos Planos (CSV/TXT): \texttt{read\_csv} vs \texttt{read\_csv2}}
+		Un CSV es simplemente un archivo de texto rústico donde los valores están separados por signos de puntuación. Como la puntuación matemática no es global, existen dos funciones claves según el origen geográfico del archivo.
+		
+\begin{lstlisting}[style=RScript]
+# Versión anglosajona: separa columnas con COMA (,) y usa PUNTO (.) para decimales
+`df_yanki` <- read_csv("data/ventas.csv")
+
+# Versión Latinoamérica o Europa: separa columnas con PUNTO Y COMA (;) para
+# poder dejar libre la COMA (,) para usarla en los decimales de nuestra región.
+# -> La función lleva un `2` al final.
+`df_arg` <- read_csv2("data/ventas_arg.csv")
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Archivos Planos: Opciones avanzadas de lectura}
+		R intenta adivinar el formato de tus datos leyendo las primeras 1000 filas. Cuando la base es sucia o tiene errores, debés tomar el control usando los argumentos opcionales incluidos en todas las funciones \rscript{read_XXX()}.
+		
+\begin{lstlisting}[style=RScript]
+# 1. ¿No tiene nombres de columna en la primera fila o preferís pisarlos todos?
+`sin_header` <- read_csv("data.csv", `:ky:col_names` = FALSE)
+`mis_nombrs` <- read_csv("data.csv", `:ky:col_names` = c("ID", "Edad", "Provincia"))
+
+# 2. Ignorar metadatos institucionales o texto basura en las primeras "n" filas
+`saltar_n`   <- read_csv("data.csv", `:ky:skip` = `:nm:3`)
+
+# 3. Exigir explícitamente qué caracteres estrafalarios significan "dato vacío"
+`con_nas`    <- read_csv("data.csv", `:ky:na` = c("", "NA", "Sin Dato", "-"))
+
+# 4. Forzar el tipo de dato de las columnas a nivel microscópico si hace falta
+# (c = character, d = double numerico, i = integer entero, D = Date)
+`forzado`    <- read_csv("data.csv", `:ky:col_types` = "cddiD")
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Trabajar con Microsoft Excel (\texttt{read\_excel})}
+		Las hojas de c\'alculo de Excel (\rscript{`.xlsx`}) no son archivos planos, guardan color, múltiples pestañas y metadatos. Usá \rscript{`:pk:readxl`}.
+		
+\begin{lstlisting}[style=RScript]
+# Si no tocás nada, R lee por defecto la primera hoja del Excel ciegamente:
+`empleados` <- read_excel("data/rrhh.xlsx")
+
+# Si tenés pestañas específicas, podés indicar el nombre exacto de la Hoja:
+`ventas_q3` <- read_excel("data/informe.xlsx", `:ky:sheet` = "Ventas Trimestre 3")
+\end{lstlisting}
+
+		\begin{block}{Rompiendo informes institucionales}
+A veces los datos se guardan en un archivo de Excel donde las primeras filas tienen logos y recién en la fila 5 arranca la tabla de forma tabular real.
+\begin{lstlisting}[style=RScript]
+# Combinamos saltos en Excel con la poderosa opción explícita "range" 
+# que importa aislando absolutamente un cuadrante sin tocar el resto de la hoja
+`datos_indec` <- read_excel("INDEC.xlsx", `:ky:skip` = `:nm:4`, `:ky:range` = "B2:G14")
+\end{lstlisting}
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{Importar directamente de la nube (\texttt{read\_sheet})}
+		¡No descargues a tu computadora una hoja de c\'alculo que otra persona sigue modificando todos los días! Usá \rscript{`:pk:googlesheets4`} para conectarte a Google Drive e importar los datos en tiempo real al compilar el script.
+		
+\begin{lstlisting}[style=RScript]
+# Para que R no te corte el script pidiendo autorización manual en la terminal
+# leyendo archivos por primera vez (ideal para documentos que ya son públicos):
+gs4_deauth()
+
+# Le pasás la URL completa hiperlarga (desde el "https...") como un texto puro
+`url_padron` <- "https://docs.google.com/spreadsheets/d/1Uv_A.../edit"
+
+# "sheet" y "range" funcionan acá idénticamente que en Excel local
+`afiliados` <- read_sheet(
+  `url_padron`, 
+  `:ky:sheet` = "Padron Activo 2026",
+  `:ky:range` = "A1:F500"
+)
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Exportar el trabajo en formato tabular (CSV)}
+		Una vez limpia tu base de datos en R, es muy probable que necesites guardarla en un archivo físico para compartirla o publicarla. Generalmente se utiliza un archivo \rscript{`.csv`} ya que representa un estándar universal, lo que significa que cualquier persona podrá leerlo e importarlo sin importar el software de análisis de datos que utilice.
+		
+\begin{lstlisting}[style=RScript]
+`df_final` <- `df_crudo` |> filter(`:bn:edad` > `:nm:18`) |> drop_na()
+
+# Usá write_csv para separación gringa o write_csv2 para separación latina.
+# Por defecto Excel confunde las celdas vacías, podés forzar el valor de texto NA.
+write_csv2(`df_final`, `:ky:file` = "outputs/base_limpia_final.csv", `:ky:na` = "")
+\end{lstlisting}
+
+\begin{alertblock}{}
+¡Cuidado al guardar en \rscript{`.csv`}! Ese archivo de texto no es mágico. R acaba de borrar todos los tipos de datos sofisticados que usaste (los tibbles no viven adentro de un TXT). Tus \rscript{`factors`} y atributos ordenados volverán a convertirse en simples letras muertas la próxima vez que intentes abrirlos.
+\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{Exportar a un formato nativo de R (\texttt{write\_rds})}
+		A diferencia de los archivos de texto, el ecosistema de R posee un formato propio que te permite guardar objetos conservando exactamente su estructura original. Si el destinatario de tus datos \textbf{también utiliza R}, usar \rscript{write_rds()} agiliza el trabajo.
+		
+		\vspace{1em}
+		El archivo resultante (\rscript{`.rds`}) es de formato binario. Su principal ventaja es que guarda \textbf{una copia exacta de tu objeto en memoria} preservando los tipos de columna. Al abrirlo, todo el trabajo de formateo (\rscript{`factor`}, \rscript{Date}) se mantendrá intacto sin necesidad de reconfigurarlo.
+		
+\begin{lstlisting}[style=RScript]
+# Guardamos el tibble empaquetado y optimizado en su formato base
+write_rds(`df_final`, `:ky:file` = "outputs/base_lista.rds")
+
+# Al leer el archivo, la base conservará íntegramente todo el parseo o el 
+# orden customizado de los niveles de forcats que hayas procesado anoche.
+`df_preservado` <- read_rds("outputs/base_lista.rds")
+\end{lstlisting}
+	\end{frame}
+
+\end{document}

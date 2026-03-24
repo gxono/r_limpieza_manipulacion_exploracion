@@ -27,16 +27,16 @@
 			\begin{tblr}{
 					colspec = {l l l p{3.5cm}},
 					row{1} = {font=\bfseries},
-					column{2,3} = {font=\ttfamily\small}, % Fuente Cascadia para código
+					column{2,3} = {font=\ttfamily\small},
 					column{4} = {font=\small},
 					hline{1,2,Z} = {solid},
 					cell{2-Z}{2,3} = {cmd = \rscript}}
 				Operación & Función & Ejemplo de Uso & Resultado\\
 				Crear factor & factor() & factor(c("A", "B", "A")) & Niveles: A, B\\
 				Ordenado & factor() & factor(c("B", "A"), ordered = T) & A B\\
-				Ver niveles & levels() & levels(mi\_factor) & Nombres de categorías\\
-				Contar & nlevels() & nlevels(mi\_factor) & Cantidad de niveles\\
-				Frecuencias & table() & table(mi\_factor) & Conteo por categoría\\
+				Ver niveles & levels() & levels(mi_factor) & Nombres de categorías\\
+				Contar & nlevels() & nlevels(mi_factor) & Cantidad de niveles\\
+				Frecuencias & table() & table(mi_factor) & Conteo por categoría\\
 				Renombrar & levels() & levels(f) <- c("N1", "N2") & Niveles cambiados\\
 				A numérico & as.numeric() & as.numeric(f) & Códigos internos (1, 2)\\
 				A carácter & as.character() & as.character(f) & Vector de texto\\
@@ -134,10 +134,10 @@ El paquete \texttt{forcats} (parte del ecosistema tidyverse) ofrece herramientas
 		cell{2-Z}{1} = {cmd = \rscript}
 	}
 	Función & Descripción\\
-	fct\_reorder() & Reordena niveles según otra variable (útil para gráficos).\\
-	fct\_relevel() & Cambia manualmente el orden de los niveles.\\
-	fct\_lump()    & Agrupa los niveles menos frecuentes en \quotation{Otros}.\\
-	fct\_infreq()  & Reordena niveles por frecuencia de aparición.\\
+	fct_reorder() & Reordena niveles según otra variable (útil para gráficos).\\
+	fct_relevel() & Cambia manualmente el orden de los niveles.\\
+	fct_lump()    & Agrupa los niveles menos frecuentes en \quotation{Otros}.\\
+	fct_infreq()  & Reordena niveles por frecuencia de aparición.\\
 \end{tblr}
 \end{table}
 	\end{frame}

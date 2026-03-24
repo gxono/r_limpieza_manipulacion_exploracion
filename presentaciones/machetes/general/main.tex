@@ -25,20 +25,19 @@
 				hlines,
 				vlines,
 				row{1} = {bg=gray9, font=\bfseries},
-				column{2} = {font=\ttfamily},
-				cells = {valign=m},
+				cell{2-Z}{2} = {cmd=\rscript},
 			}
 			Estado      & Variable         & Razón                                                   \\
-			Recomendado & ingreso\_total   & Descriptivo y usa \textit{sc}.                          \\
+			Recomendado & ingreso_total   & Descriptivo y usa \textit{sc}.                          \\
 			Correcto    & IngresoTotal     & Estilo \textit{UpperCamelCase}.                         \\
 			Correcto    & ingresoTotal     & Estilo \textit{LowerCamelCase}.                         \\
 			Correcto    & ingreso.total    & Estilo antiguo.                                         \\
-			Incorrecto  & 1ingreso         & Empieza con número.                                     \\
+			Incorrecto  & `1ingreso`         & Empieza con número.                                     \\
 			Incorrecto  & ingreso total    & Contiene espacios.                                      \\
 			Incorrecto  & ingreso-total    & El guion \texttt{-} es un operador.                     \\
 			Evitar      & c, t, df         & Nombres de funciones del sistema o ambiguos.            \\
 			Evitar      & x, cosa          & No describe el contenido del objeto.                    \\
-			Evitar      & prom\_edad\_2023 & Se prefiere un equilibrio como \texttt{promedio\_edad}.
+			Evitar      & `prom_edad_2023` & Se prefiere un equilibrio como \texttt{promedio\_edad}.
 		\end{tblr}
 	\end{table}
 \end{frame}
@@ -498,7 +497,7 @@ c(1, NA, 3) |> mean(na.rm = TRUE)
 			Eliminar esp.  & trimws()     & trimws(" texto ")         & "texto"           \\
 			Detectar (lóg) & grepl()      & grepl("o", c("yo", "tu")) & c(T, F)           \\
 			Detectar (pos) & grep()       & grep("o", c("yo", "tu"))  & 1                 \\
-			Formatear      & sprintf()    & sprintf("\%.2f", 3.14159) & "3.14"            \\
+			Formatear      & sprintf()    & sprintf("\%.2f", `:nm:3.14159`) & "3.14"      \\
 			Empieza con    & startsWith() & startsWith("Sur", "S")    & TRUE              \\
 			Termina con    & endsWith()   & endsWith("Sur", "r")      & TRUE
 		\end{tblr}
@@ -520,7 +519,7 @@ c(1, NA, 3) |> mean(na.rm = TRUE)
 			}
 			Operaci\'on & Funci\'on      & Ejemplo de Uso                     & Resultado  \\
 			Map caract. & chartr()       & chartr("\'ae\'i", "aei", "caf\'e") & "cafe"     \\
-			Formatear   & format()       & format(12345.6, big.mark=".")      & "12.345.6" \\
+			Formatear   & format()       & format(`:nm:12345.6`, big.mark = ".")      & "12.345.6" \\
 			Detectar    & str\_detect()  & str\_detect("Hola", "ol")          & TRUE       \\
 			Reemplazar  & str\_replace() & str\_replace("casa", "a", "o")     & "cosa"     \\
 			Extraer     & str\_extract() & str\_extract("abc123", "[0-9]+")   & "123"
@@ -757,7 +756,7 @@ ana
 			Detectar NA     & is.na()          & is.na(x)               & c(F, T, F) \\
 			Ignorar NA      & na.rm = TRUE     & sd(x, na.rm = T)         & 2          \\
 			Eliminar NA     & na.omit()        & na.omit(x)             & c(1, 3)    \\
-			Filas completas & complete.cases() & complete.cases(df)     & c(T, F, T) \\
+			Filas completas & complete.cases() & complete.cases(`df`)     & c(T, F, T) \\
 			Reemplazar NA   & ifelse()         & ifelse(is.na(x), 0, x) & c(1, 0, 3)
 		\end{tblr}
 	\end{table}

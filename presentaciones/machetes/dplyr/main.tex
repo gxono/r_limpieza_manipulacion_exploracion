@@ -1,0 +1,1015 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{dplyr}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+
+
+\begin{frame}[fragile]{El paquete \texttt{dplyr}}
+	\titleitem{Una gramática para la manipulación de datos}
+	\rscript{dplyr} es el paquete central del \emph{tidyverse} para transformar datos tabulares. Trabaja sobre \emph{data frames} y \emph{tibbles}.
+
+	\titleitem{Los 6 verbos fundamentales}
+	\begin{itemize}
+		\item \rscript{select()} --- Elegir columnas.
+		\item \rscript{filter()} --- Filtrar filas por condición.
+		\item \rscript{mutate()} --- Crear o modificar columnas.
+		\item \rscript{arrange()} --- Ordenar filas.
+		\item \rscript{summarise()} --- Resumir datos.
+		\item \rscript{group_by()} --- Agrupar para operar por grupo.
+	\end{itemize}
+
+	Todas comparten la misma estructura: el primer argumento es el data frame y el resultado es un nuevo data frame. Esto permite encadenarlas con el pipe \rscript{|>}.
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{glimpse: Vistazo rápido al dataset}
+	\rscript{glimpse()} es una alternativa a \rscript{str()} adaptada al \emph{tidyverse}. Muestra la estructura de la tabla transponiendo filas por columnas, ideal para un primer vistazo.
+\begin{lstlisting}[style=RScript]
+glimpse(starwars)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Rows: 87
+Columns: 14
+$ name       <chr> "Luke Skywalker", "C-3PO", "R2-D2", "Darth Vader"...
+$ height     <int> 172, 167, 96, 202, 150, 178, 165, 97, 183, 182...
+$ mass       <dbl> 77.0, 75.0, 32.0, 136.0, 49.0, 120.0, 75...
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{select: Elegir columnas}
+	\rscript{select()} elige, reordena o renombra columnas.
+\begin{lstlisting}[style=RScript]
+library(dplyr)
+
+starwars |> select(`:bn:name`, `:bn:height`, `:bn:mass`)
+\end{lstlisting}
+
+	\titleitem{Excluir columnas}
+\begin{lstlisting}[style=RScript]
+starwars |> select(-`:bn:hair_color`, -`:bn:skin_color`)
+\end{lstlisting}
+
+	\titleitem{Seleccionar rangos}
+\begin{lstlisting}[style=RScript]
+starwars |> select(`:bn:name`:`:bn:mass`)       # De name a mass
+starwars |> select(1:3)            	# Primeras 3 columnas
+\end{lstlisting}
+
+	\titleitem{Renombrar al seleccionar}
+\begin{lstlisting}[style=RScript]
+starwars |> select(`:bn:nombre` = `:bn:name`, `:bn:altura` = `:bn:height`)
+\end{lstlisting}
+
+	Para renombrar sin descartar columnas, usá \rscript{rename()}:
+\begin{lstlisting}[style=RScript]
+starwars |> rename(`:bn:nombre` = `:bn:name`)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Selectores auxiliares (\emph{tidyselect})}
+	Los selectores permiten elegir columnas por patrón, sin nombrarlas una a una.
+	
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] X[m]},
+				hlines,
+				vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cells = {valign=m},
+				cell{2-Z}{1} = {cmd = \rscript},
+			}
+			Selector             & Descripción                                          \\
+			starts\_with("x")    & Columnas que empiezan con \rscript{"x"}              \\
+			ends\_with("x")      & Columnas que terminan con \rscript{"x"}              \\
+			contains("x")        & Columnas que contienen \rscript{"x"}                 \\
+			matches("regex")     & Columnas que matchean una regex                      \\
+			num\_range("x", 1:3) & Columnas \rscript{`x1`, `x2`, `x3`}                  \\
+			everything()         & Todas las columnas restantes                         \\
+			last\_col()          & Última columna                                       \\
+			where(fn)            & Columnas donde \rscript{fn} devuelve \rscript{TRUE}  \\
+			all\_of(vector)      & Todas las columnas en el vector (error si falta una) \\
+			any\_of(vector)      & Las que existan del vector (no da error)
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Selectores: Ejemplos}
+\begin{lstlisting}[style=RScript]
+starwars |> select(starts_with("h"))
+# height, hair_color, homeworld
+
+starwars |> select(ends_with("color"))
+# hair_color, skin_color, eye_color
+\end{lstlisting}
+
+	\titleitem{Seleccionar por tipo o condición}
+\begin{lstlisting}[style=RScript]
+starwars |> select(where(is.numeric))
+starwars |> select(where(\(x) is.numeric(x) && mean(x, na.rm = T) > 100))
+\end{lstlisting}
+
+	\titleitem{Negar selectores (excluir)}
+\begin{lstlisting}[style=RScript]
+starwars |> select(!starts_with("h"))
+starwars |> select(!where(is.character))
+\end{lstlisting}
+
+	\titleitem{Combinar selectores}
+\begin{lstlisting}[style=RScript]
+# Nombre + todas las numéricas
+starwars |> select(`:bn:name`, where(is.numeric))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+		\titleitem{Seleccionar desde un vector de nombres}
+\begin{lstlisting}[style=RScript]
+cols <- c("name", "height", "mass")
+starwars |> select(all_of(cols))
+\end{lstlisting}
+
+\begin{alertblock}{}
+Los selectores también funcionan en \rscript{across()}, \rscript{rename\_with()}, \rscript{pivot\_longer()} y otras funciones del tidyverse.
+\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{filter: Filtrar filas}
+	\rscript{filter()} conserva las filas que cumplen una condición lógica.
+\begin{lstlisting}[style=RScript]
+starwars |> filter(`:bn:height` > 180)
+\end{lstlisting}
+
+	\titleitem{Múltiples condiciones}
+\begin{lstlisting}[style=RScript]
+# AND: separar con coma o &
+starwars |> filter(`:bn:height` > 180, `:bn:mass` < 100)
+starwars |> filter(`:bn:height` > 180 & `:bn:mass` < 100) # Equivalente
+
+# OR: usar |
+starwars |> filter(`:bn:species` == "Human" | `:bn:species` == "Droid")
+\end{lstlisting}
+
+	\titleitem{Filtrar con \rscript{\%in\%}}
+\begin{lstlisting}[style=RScript]
+starwars |> filter(`:bn:species` %in% c("Human", "Droid"))
+\end{lstlisting}
+
+	\titleitem{Negar condiciones}
+\begin{lstlisting}[style=RScript]
+starwars |> filter(!is.na(`:bn:height`))
+starwars |> filter(!(`:bn:species` %in% c("Human", "Droid")))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{filter: Con cadenas de texto}
+\begin{lstlisting}[style=RScript]
+# Filtrar filas que contengan un patrón
+starwars |> filter(str_detect(`:bn:name`, "Skywalker"))
+
+# Filtrar filas que NO contengan el patrón (negar)
+starwars |> filter(!str_detect(`:bn:name`, "Skywalker"))
+\end{lstlisting}
+
+	\titleitem{between(): Rango numérico}
+\begin{lstlisting}[style=RScript]
+starwars |> filter(between(`:bn:height`, 160, 180))
+\end{lstlisting}
+
+	\titleitem{near(): Comparación con tolerancia}
+\begin{lstlisting}[style=RScript]
+starwars |> filter(near(`:bn:mass`, 80, tol = 5))
+# Filas donde mass está entre 75 y 85
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{mutate: Crear y modificar columnas}
+	\rscript{mutate()} agrega nuevas columnas o modifica las existentes.
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:imc` = `:bn:mass` / (`:bn:height` / 100)^2,
+  `:bn:altura_m` = `:bn:height` / 100
+)
+\end{lstlisting}
+
+	\titleitem{Referir columnas recién creadas}
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:altura_m` = `:bn:height` / 100,
+  `:bn:imc` = `:bn:mass` / `:bn:altura_m`^2 # Usa altura_m, recién definida
+)
+\end{lstlisting}
+
+\titleitem{.before y .after: Posicionar la columna nueva}
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:imc` = `:bn:mass` / (`:bn:height` / 100)^2,
+  .after = `:bn:mass`
+)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Funciones de ventana: lag y lead}
+	Permiten mirar valores anteriores (\rscript{lag()}) o posteriores (\rscript{lead()}). Fundamentales en series de tiempo y datos ordenados secuencialmente.
+	\begin{lstlisting}[style=RScript]
+x <- c(1, 2, 3, 4, 5)
+\end{lstlisting}
+
+\begin{lstlisting}[style=RConsole]
+`:>:> lag(x)`
+[1] NA  1  2  3  4
+`:>:> lead(x)`
+[1]  2  3  4  5 NA
+\end{lstlisting}
+	
+\begin{lstlisting}[style=RScript]
+# Asumimos que la tabla de ventas está ordenada cronológicamente
+ventas |> mutate(
+  `:bn:monto_anterior` = lag(`:bn:monto`),
+  `:bn:crecimiento` = `:bn:monto` - lag(`:bn:monto`)
+)
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Si los aplicás sobre datos agrupados (\rscript{group_by()}), el rezago respetará los límites de cada grupo (ej: mes anterior \emph{del mismo cliente} o \emph{región}).
+	\end{alertblock}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+\titleitem{Sobreescribir una columna}
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(`:bn:height` = `:bn:height` / 100)
+\end{lstlisting}
+
+\titleitem{.keep: Controlar qué columnas conservar}
+\begin{lstlisting}[style=RScript]
+# .keep = "used": solo conserva las columnas usadas o creadas
+starwars |> mutate(
+	`:bn:imc` = `:bn:mass` / (`:bn:height` / 100)^2,
+	.keep = "used"
+)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{mutate con condicionales: if\_else y case\_when}
+	\titleitem{if\_else: Dos ramas}
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:categoria` = if_else(`:bn:height` > 180, "Alto", "Bajo")
+)
+\end{lstlisting}
+
+	\titleitem{case\_when: Múltiples condiciones}
+	Evalúa de arriba hacia abajo; la primera condición verdadera gana.
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:rango` = case_when(
+    `:bn:height` > 200 ~ "Muy alto",
+    `:bn:height` > 180 ~ "Alto",
+    `:bn:height` > 160 ~ "Medio",
+    .default = "Bajo"
+  )
+)
+\end{lstlisting}
+
+	\titleitem{case\_match: Recodificar valores exactos}
+\begin{lstlisting}[style=RScript]
+starwars |> mutate(
+  `:bn:especie` = case_match(`:bn:species`,
+    "Human"     ~ "Humano",
+    "Droid"     ~ "Droide",
+    "Wookiee"   ~ "Wookiee",
+    .default = "Otro"
+  )
+)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{arrange: Ordenar filas}
+	\rscript{arrange()} ordena las filas según una o más columnas.
+\begin{lstlisting}[style=RScript]
+# Ascendente (por defecto)
+starwars |> arrange(`:bn:height`)
+
+# Descendente
+starwars |> arrange(desc(`:bn:height`))
+
+# Múltiples criterios: primero por species, luego por height desc.
+starwars |> arrange(`:bn:species`, desc(`:bn:height`))
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Los \rscript{NA} siempre se colocan al final, sin importar el orden.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{summarise: Resumir datos}
+	\rscript{summarise()} colapsa el data frame a una fila resumen.
+	
+	Tambi\'en se puede colapsar una fila por grupo si se usa con \rscript{group_by()}.
+	
+\begin{lstlisting}[style=RScript]
+starwars |> summarise(
+  `:bn:media_altura` = mean(`:bn:height`, na.rm = TRUE),
+  `:bn:max_masa` = max(`:bn:mass`, na.rm = TRUE),
+  `:bn:n` = n()
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 1 x 3
+  media_altura max_masa     n
+         <dbl>    <dbl> <int>
+1         175.     1358    87
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]
+	\titleitem{Funciones de resumen útiles}
+\begin{table}[h]
+	\centering
+	\begin{tblr}{
+			colspec = {Q[m, font=\ttfamily] l},
+			hlines, vlines,
+			row{1} = {bg=gray!20, font=\bfseries},
+			cell{2-Z}{1} = {cmd = \rscript},
+		}
+		Función & Descripción \\
+		n()     & Cantidad de filas \\
+		n\_distinct(x) & Valores únicos \\
+		sum(x) `/` mean(x) & Suma / Promedio \\
+		min(x) `/` max(x) & Mínimo / Máximo \\
+		sd(x) `/` var(x) & Desvío estándar / Varianza \\
+		median(x) & Mediana \\
+		first(x) `/` last(x) & Primer / Último valor \\
+	\end{tblr}
+\end{table}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{group\_by + summarise}
+	\rscript{group_by()} define grupos; los verbos subsiguientes operan por grupo.
+\begin{lstlisting}[style=RScript]
+starwars |>
+  group_by(`:bn:species`) |>
+  summarise(
+    `:bn:n` = n(),
+    `:bn:altura_media` = mean(`:bn:height`, na.rm = TRUE)
+  ) |>
+  arrange(desc(`:bn:n`))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 38 x 3
+   species      n altura_media
+   <chr>    <int>        <dbl>
+ 1 Human       35         177.
+ 2 Droid        6         131.
+ 3 NA           4         175 
+ 4 Gungan       3         209.
+...
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Por defecto, \rscript{summarise()} elimina el \textbf{último nivel} de agrupamiento y lanza un mensaje. Para controlarlo explícitamente, usá el argumento \rscript{.groups}: \rscript{"drop"} (elimina todos), \rscript{"keep"} (mantiene todos) o \rscript{"drop_last"}.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Agrupación temporal con .by}
+	Desde \texttt{dplyr 1.1.0}, podés agrupar directamente dentro de \rscript{summarise()}, \rscript{mutate()} o \rscript{slice()} usando el argumento \rscript{.by}.
+	
+	Esto evita tener que hacer el \rscript{group_by()} previo y el \rscript{ungroup()} posterior, previniendo errores silenciosos.
+\begin{lstlisting}[style=RScript]
+# Mucho, mucho más seguro y directo
+starwars |> summarise(
+  `:bn:n` = n(),
+  `:bn:altura_media` = mean(`:bn:height`, na.rm = TRUE),
+  .by = `:bn:species`
+)
+
+# Con mutate
+ventas |> mutate(`:bn:pct_region` = `:bn:monto` / sum(`:bn:monto`), .by = `:bn:region`)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{group\_by + mutate}
+	Al usar \rscript{mutate()} sobre datos agrupados, las funciones de resumen operan \textbf{dentro de cada grupo} sin colapsar filas.
+\begin{lstlisting}[style=RScript]
+starwars |>
+  group_by(`:bn:species`) |>
+  mutate(
+    `:bn:altura_media` = mean(`:bn:height`, na.rm = TRUE),
+    `:bn:diff` = `:bn:height` - `:bn:altura_media`
+  ) |>
+  ungroup()
+\end{lstlisting}
+
+	Esto es muy útil para calcular proporciones dentro de cada grupo:
+\begin{lstlisting}[style=RScript]
+ventas |>
+  group_by(`:bn:region`) |>
+  mutate(
+    `:bn:pct` = `:bn:monto` / sum(`:bn:monto`) * 100
+  ) |>
+  ungroup()
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		Siempre llamá a \rscript{ungroup()} cuando termines de operar con grupos, para evitar comportamientos inesperados en operaciones posteriores.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Contar: count y tally}
+	\rscript{count()} es un atajo para \rscript{group_by() |> summarise(`n` = n())}.
+\begin{lstlisting}[style=RScript]
+starwars |> count(`:bn:species`, `sort` = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 38 x 2
+   species      n
+   <chr>    <int>
+ 1 Human       35
+ 2 Droid        6
+ 3 NA           4
+ 4 Gungan       3
+...
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con wt: en vez de contar filas, SUMA una columna
+starwars |> count(`:bn:species`, `wt` = `:bn:mass`, `sort` = TRUE,
+                  name = "masa_total")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 38 x 2
+   species  masa_total
+   <chr>         <dbl>
+ 1 Hutt           1358
+ 2 Human          1886
+ 3 Kaminoan        178
+...
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+	Sin \rscript{`wt`}, \rscript{count()} suma \rscript{1} por cada fila que pertenece al grupo (cuenta cantidad de observaciones).
+	
+	Con \rscript{`wt` = `:bn:mass`}, en lugar de sumar \rscript{1}, \textbf{suma el valor} de la columna \rscript{`:bn:mass`} para cada observación de ese grupo. Es el equivalente a hacer:
+	
+\begin{lstlisting}[style=RScript]
+starwars |>
+  group_by(`:bn:species`) |>
+  summarise(masa_total = sum(`:bn:mass`, na.rm = TRUE)) |>
+  arrange(desc(masa_total))
+\end{lstlisting}
+
+\rscript{add_count()} agrega la columna \rscript{`:bn:n`} sin colapsar filas. Hacer \rscript{starwars |> add_count(`:bn:species`)} es equivalente a:
+\begin{lstlisting}[style=RScript]
+starwars |>
+  group_by(`:bn:species`) |>
+  mutate(`:bn:n` = n()) |>
+  ungroup()
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+
+\begin{frame}[fragile]{across: Aplicar funciones a múltiples columnas}
+	\rscript{across()} permite aplicar una o más funciones a un conjunto de columnas seleccionadas con \emph{tidyselect}.
+\begin{lstlisting}[style=RScript]
+# Redondear todas las columnas numéricas
+starwars |> mutate(
+  	across(where(is.numeric), round, digits = 1)
+	)
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Modificar todas las columnas (everything)
+starwars |> mutate(
+  	across(everything(), as.character)
+	)
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Resumir mín y máx de las columnas numéricas
+starwars |> summarise(
+  	across(where(is.numeric),
+   	list(min = ~min(.x, na.rm = TRUE),
+        	max = ~max(.x, na.rm = TRUE)))
+	)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+		\titleitem{Funciones anónimas con \textasciitilde{} (fórmula) o \\}
+\begin{lstlisting}[style=RScript]
+# Con fórmula ~: .x es el placeholder
+starwars |> mutate(
+		across(where(is.character), ~str_to_title(.x))
+	)
+
+# Con función anónima \(x):
+starwars |> mutate(
+		across(where(is.character), \(x) str_to_title(x))
+	)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{across: Renombrar resultados}
+	Cuando se aplican múltiples funciones, \rscript{.names} controla el nombre de las columnas resultantes.
+\begin{lstlisting}[style=RScript]
+starwars |> summarise(
+  across(c(`:bn:height`, `:bn:mass`),
+    list(media = ~mean(.x, na.rm = TRUE),
+         sd = ~sd(.x, na.rm = TRUE)),
+    .names = "{.col}_{.fn}")
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 1 x 4
+  height_media height_sd mass_media mass_sd
+         <dbl>     <dbl>      <dbl>   <dbl>
+1         175.      34.8       97.3    169.
+\end{lstlisting}
+
+	\titleitem{across en filter}
+\begin{lstlisting}[style=RScript]
+# Filas donde TODAS las numéricas son no-NA
+starwars |> filter(
+  if_all(where(is.numeric), ~!is.na(.x))
+)
+
+# Filas donde ALGUNA numérica es > 100
+starwars |> filter(
+  if_any(where(is.numeric), ~.x > 100)
+)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{rowwise: Operaciones horizontales}
+	Por defecto, \rscript{mutate()} y \rscript{summarise()} operan por \emph{columna} (vectorialmente). Si necesitás operar a lo ancho (evaluar fila por fila), usá \rscript{rowwise()}.
+\begin{lstlisting}[style=RScript]
+# Imaginá un dataset con notas de 3 parciales: p1, p2, p3
+notas |> 
+  rowwise() |> 
+  mutate(
+    `:bn:promed` = mean(c_across(c(`:bn:p1`, `:bn:p2`, `:bn:p3`)), na.rm = TRUE)
+  ) |> 
+  ungroup() # Importante: remueve el modo "por fila"
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		\rscript{c_across()} sirve para seleccionar las columnas horizontales usando la misma sintaxis que \rscript{select()} (como \rscript{starts_with()} o \rscript{where(is.numeric)}).
+	\end{alertblock}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{slice: Seleccionar filas por posición}
+	Familia de funciones para elegir filas específicas.
+\begin{lstlisting}[style=RScript]
+starwars |> slice(1:5)  # Primeras 5 filas
+starwars |> slice_head(`n` = 3)
+starwars |> slice_tail(`n` = 3)
+\end{lstlisting}
+
+	\titleitem{slice\_min y slice\_max}
+\begin{lstlisting}[style=RScript]
+# Los 5 personajes más altos (trae más si hay empates)
+starwars |> slice_max(`:bn:height`, `n` = 5)
+
+# Omitir empates
+starwars |> slice_max(`:bn:height`, `n` = 5, with_ties = FALSE)
+\end{lstlisting}
+
+	\titleitem{Corte por grupos}
+\begin{lstlisting}[style=RScript]
+# Los 3 más livianos por especie
+starwars |>
+  group_by(`:bn:species`) |>
+  slice_min(`:bn:mass`, `n` = 3) |>
+  ungroup()
+\end{lstlisting}
+
+	\titleitem{slice\_sample: Muestra aleatoria}
+\begin{lstlisting}[style=RScript]
+starwars |> slice_sample(`n` = 10)
+starwars |> slice_sample(`prop` = 0.1)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{distinct: Valores únicos}
+\begin{lstlisting}[style=RScript]
+starwars |> distinct(`:bn:species`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 38 x 1
+   species
+   <chr>
+ 1 Human
+ 2 Droid
+ 3 Wookiee
+...
+\end{lstlisting}
+
+	Conservar las demás columnas:
+\begin{lstlisting}[style=RScript]
+starwars |> distinct(`:bn:species`, .keep_all = TRUE)
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]
+	\titleitem{pull: Extraer una columna como vector}
+Dejar solo la columna extraída:
+\begin{lstlisting}[style=RScript]
+starwars |>
+	filter(`:bn:species` == "Human") |>
+	pull(`:bn:name`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "Luke Skywalker"        "Darth Vader" ...
+\end{lstlisting}
+
+Extraer asignando nombres (vector con nombre):
+\begin{lstlisting}[style=RScript]
+starwars |>
+	filter(`:bn:species` == "Human") |>
+	pull(`:bn:height`, name = `:bn:name`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Luke Skywalker    Darth Vader ...
+172            202 ...
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{relocate y rename\_with}
+	\titleitem{relocate: Mover columnas}
+\begin{lstlisting}[style=RScript]
+starwars |> relocate(`:bn:species`, .before = `:bn:name`)
+starwars |> relocate(`:bn:homeworld`, .after = `:bn:name`)
+starwars |> relocate(where(is.numeric), .after = `:bn:name`)
+\end{lstlisting}
+
+	\titleitem{rename\_with: Renombrar con una función}
+\begin{lstlisting}[style=RScript]
+# Todo a minúsculas
+starwars |> rename_with(tolower)
+
+# Reemplazar puntos por guiones bajos
+iris |> rename_with(~str_replace_all(.x, "\\.", "_"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# Columnas: sepal_length, sepal_width, ...
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Solo renombrar las numéricas
+starwars |> rename_with(str_to_upper,
+                        .cols = where(is.numeric))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Joins: Unir tablas}
+	Las funciones \rscript{*_join()} combinan dos tablas por columnas en común.
+
+	\begin{table}[h]
+		\centering
+		\begin{tblr}{
+				colspec = {Q[m, font=\ttfamily] X[m]},
+				hlines, vlines,
+				row{1} = {bg=gray!20, font=\bfseries},
+				cell{2-Z}{1} = {cmd = \rscript},
+			}
+			Función & Descripción \\
+			left_join(x, y)  & Todas las filas de \texttt{x}, matcheando con \texttt{y} \\
+			right_join(x, y) & Todas las filas de \texttt{y}, matcheando con \texttt{x} \\
+			inner_join(x, y) & Solo filas con match en ambas tablas \\
+			full_join(x, y)  & Todas las filas de ambas tablas \\
+			semi_join(x, y)  & Filas de \texttt{x} que tienen match en \texttt{y} (sin agregar columnas) \\
+			anti_join(x, y)  & Filas de \texttt{x} que NO tienen match en \texttt{y} \\
+		\end{tblr}
+	\end{table}
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Joins: Ejemplos}
+\begin{lstlisting}[style=RScript]
+alumnos <- tibble(
+  id = 1:4,
+  nombre = c("Ana", "Luis", "María", "Pedro")
+)
+
+notas <- tibble(
+  id = c(1, 2, 2, 4, 5),
+  materia = c("Macro", "Micro", "Macro", "Macro",
+              "Estadística"),
+  nota = c(8, 7, 9, 6, 10)
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+alumnos |> left_join(notas, by = "id")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 5 x 4
+     id nombre materia nota
+  <int> <chr>  <chr>  <dbl>
+1     1 Ana    Macro      8
+2     2 Luis   Micro      7
+3     2 Luis   Macro      9
+4     3 María  NA        NA
+5     4 Pedro  Macro      6
+\end{lstlisting}
+	María (id=3) aparece con \rscript{NA} porque no tiene notas. El id=5 de notas no aparece porque \rscript{left_join} conserva solo las filas de la tabla izquierda.
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Joins: Claves diferentes y semi/anti}
+	\titleitem{Cuando las columnas tienen distinto nombre}
+\begin{lstlisting}[style=RScript]
+alumnos |>
+  left_join(notas, by = join_by(`:bn:id` == `:bn:alumno_id`))
+\end{lstlisting}
+
+	\titleitem{semi\_join: Filtrar sin agregar columnas}
+\begin{lstlisting}[style=RScript]
+# Alumnos que tienen al menos una nota
+alumnos |> semi_join(notas, by = "id")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 3 x 2
+     id nombre
+1     1 Ana
+2     2 Luis
+3     4 Pedro
+\end{lstlisting}
+
+	\titleitem{anti\_join: Encontrar lo que NO matchea}
+\begin{lstlisting}[style=RScript]
+# Alumnos sin notas
+alumnos |> anti_join(notas, by = "id")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 1 x 2
+     id nombre
+1     3 María
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Combinar tablas: bind y operaciones de conjunto}
+	\titleitem{bind\_rows: Apilar tablas verticalmente}
+\begin{lstlisting}[style=RScript]
+`cuatri_1` <- tibble(`:bn:materia` = "Macro", `:bn:nota` = c(7, 8))
+`cuatri_2` <- tibble(`:bn:materia` = "Micro", `:bn:nota` = c(9, 6))
+
+bind_rows(`cuatri_1`, `cuatri_2`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+# A tibble: 4 x 2
+  materia  nota
+  <chr>   <dbl>
+1 Macro       7
+2 Macro       8
+3 Micro       9
+4 Micro       6
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+# Con identificador de origen
+bind_rows(`cuatri_1`, `cuatri_2`, .id = "cuatrimestre")
+\end{lstlisting}
+	Si una tabla tiene columnas que la otra no, se rellenan con \rscript{NA}.
+
+	\titleitem{bind\_cols: Pegar columnas}
+\begin{lstlisting}[style=RScript]
+bind_cols(nombres, edades) # Deben tener mismo n de filas
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{El pipe: Encadenar operaciones}
+	El pipe \rscript{|>} pasa el resultado de la izquierda como primer argumento de la función de la derecha.
+\begin{lstlisting}[style=RScript]
+# Sin pipe (difícil de leer)
+arrange(
+  summarise(
+    group_by(
+      filter(starwars, !is.na(`:bn:height`)),
+      `:bn:species`),
+    `:bn:media` = mean(`:bn:height`)),
+  desc(`:bn:media`))
+
+# Con pipe (flujo natural)
+starwars |>
+  filter(!is.na(`:bn:height`)) |>
+  group_by(`:bn:species`) |>
+  summarise(`:bn:media` = mean(`:bn:height`)) |>
+  arrange(desc(`:bn:media`))
+\end{lstlisting}
+
+	\begin{alertblock}{}
+		\rscript{|>} es el pipe nativo de R (v4.1+). El tidyverse también ofrece \rscript{\%>\%} del paquete \rscript{magrittr}. Ambos funcionan igual para los usos más comunes.
+	\end{alertblock}
+\end{frame}
+
+
+
+
+
+\begin{frame}[fragile]{Manejo de NA en dplyr}
+	\titleitem{Filtrar NA}
+\begin{lstlisting}[style=RScript]
+# Eliminar filas con NA en una columna
+starwars |> filter(!is.na(`:bn:height`))
+
+# Eliminar filas con NA en cualquier columna seleccionada
+starwars |> filter(
+  if_all(c(`:bn:height`, `:bn:mass`), ~!is.na(.x))
+)
+\end{lstlisting}
+
+	\titleitem{drop\_na (de tidyr)}
+\begin{lstlisting}[style=RScript]
+starwars |> tidyr::drop_na(`:bn:height`, `:bn:mass`)
+\end{lstlisting}
+
+	\titleitem{Reemplazar NA con valores}
+\begin{lstlisting}[style=RScript]
+# Para una sola columna: coalesce (primer valor no-NA)
+starwars |> mutate(
+  `:bn:mass` = coalesce(`:bn:mass`, 0)
+)
+
+# Para múltiples columnas o usando tidyr
+starwars |> mutate(
+  across(where(is.numeric), ~coalesce(.x, 0))
+)
+# starwars |> tidyr::replace_na(list(`:bn:mass` = 0, `:bn:height` = 0))
+\end{lstlisting}
+\end{frame}
+
+
+
+
+
+
+\begin{frame}[fragile]{Resumen de verbos}
+	\titleitem{Inspección}
+	\rscript{glimpse()} (como un str() moderno).
+
+	\titleitem{Filas}
+	\rscript{filter()}, \rscript{arrange()}, \rscript{slice()}, \rscript{slice_head()},\\
+	\rscript{slice_tail()}, \rscript{slice_min()}, \rscript{slice_max()}, \rscript{slice_sample()},\\
+	\rscript{distinct()}.
+
+	\titleitem{Columnas}
+	\rscript{select()}, \rscript{rename()}, \rscript{rename_with()}, \rscript{relocate()},\\
+	\rscript{mutate()}, \rscript{pull()}.
+
+	\titleitem{Agrupación y resumen}
+	\rscript{group_by()}, \rscript{ungroup()}, \rscript{summarise()}, \rscript{count()},\\
+	\rscript{add_count()}, \rscript{tally()}. (Acordate del argumento \rscript{.by}!)
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+\titleitem{Condicionales y Ventanas}
+\rscript{if_else()}, \rscript{case_when()}, \rscript{case_match()}, \rscript{coalesce()}, \rscript{lag()}, \rscript{lead()}.
+
+\titleitem{Iteración y Operaciones Horizontales}
+\rscript{across()}, \rscript{if_all()}, \rscript{if_any()}, \rscript{rowwise()}, \rscript{c_across()}.
+
+\titleitem{Uniones}
+\rscript{left_join()}, \rscript{right_join()}, \rscript{inner_join()}, \rscript{full_join()},\\
+\rscript{semi_join()}, \rscript{anti_join()}, \rscript{bind_rows()}, \rscript{bind_cols()}.
+\end{frame}
+
+
+
+\end{document}

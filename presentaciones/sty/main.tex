@@ -31,7 +31,6 @@
 
 \colorlet{R_BOOLEAN}{violet}
 \colorlet{R_COMMENT}{gray}
-\colorlet{R_CONSOLE}{darkgray}
 \colorlet{R_OPERATOR}{magenta}
 \colorlet{R_MISSING}{violet}
 \colorlet{R_STRING}{dkgreen}
@@ -43,9 +42,11 @@
 \colorlet{R_KEY}{R_NORMAL}
 \colorlet{R_FUNCTION}{blue}
 
+\colorlet{R_CONSOLE}{darkgray}
+\colorlet{R_CONSOLE_INPUT}{unlfce}
+
 \makeatletter
 	\def\lst@r@booleanstyle		{\color{R_BOOLEAN}\bfseries}
-	\def\lst@r@consolestyle		{\color{R_CONSOLE}\bfseries}
 	\def\lst@r@operatorstyle	{\color{R_OPERATOR}\bfseries}
 	\def\lst@r@missingstyle		{\color{R_MISSING}\bfseries}
 	\def\lst@r@stringstyle		{\color{R_STRING}\bfseries}
@@ -57,6 +58,9 @@
 	\def\lst@r@symbolstyle		{\color{R_SYMBOL}\bfseries}
 	\def\lst@r@keystyle				{\color{R_KEY}\bfseries}
 	\def\lst@r@functionstyle	{\color{R_FUNCTION}\bfseries}
+
+	\def\lst@r@consolestyle		{\color{R_CONSOLE}\bfseries}
+	\def\lst@r@consoleinputstyle	{\color{R_CONSOLE_INPUT}\bfseries}
 \makeatother
 
 
@@ -121,26 +125,27 @@
 		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith, n, first, last,
 		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse, regmatches,
 		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between,
-		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date,
+		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date, regex, fixed, coll, boundary,
+		ymd_hms, dmy_hm, make_date, make_datetime, as_datetime, as_date, today, now, mday, yday, wday, hour, tz, floor_date, ceiling_date, round_date, years, months, days, hours, dyears, ddays, dhours, dweeks, with_tz, force_tz,
 		% dplyr
 		group_by, if_else, case_when, case_match, coalesce,
 		left_join, right_join, inner_join, full_join,
 		semi_join, anti_join, join_by,
-		bind_rows, bind_cols,
+		bind_rows, bind_cols, desc,
 		count, add_count, tally, n_distinct, distinct,
 		across, if_all, if_any,
 		slice, slice_head, slice_tail, slice_min, slice_max, slice_sample,
 		pull, relocate, rename, rename_with,
-		last_col, drop_na, where,
+		last_col, drop_na, where, rowwise, c_across,
 		% tidyr
 		pivot_longer, pivot_wider,
 		% ggplot2
 		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot,
 		facet_wrap, facet_grid,
-		% readr / readxl
-		read_csv, read_csv2, read_excel,
+		% readr / readxl / googlesheets4
+		read_csv, read_csv2, read_excel, write_csv, write_csv2, write_rds, read_rds, read_sheet, gs4_deauth,
 		% forcats
-		fct_reorder, fct_relevel, fct_lump, fct_infreq,
+		fct_reorder, fct_relevel, fct_lump, fct_infreq, fct_recode, fct_rev, fct_count, fct_collapse, fct_lump_n, fct_lump_prop, fct_expand, fct_drop,
 		% tidyselect
 		all_of, any_of, contains, matches, everything,
 		starts_with, ends_with, num_range,
@@ -160,7 +165,7 @@
 		% verificación de tipo
 		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor
 	},
-	otherkeywords={},
+	otherkeywords={paste0, read_csv2, gs4_deauth, write_csv2},
 	moredelim=[is][\lst@r@normalstyle]{`}{`},
 	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename
 	moredelim=[is][\lst@r@consolestyle]{`:cn:}{`}, %<- console
@@ -195,6 +200,7 @@
 	{!}         {{\lst@r@operatorstyle {!}}}                            1
 	{|>}        {{\lst@r@operatorstyle {|>}}}                           2
 	{\%in\%}    {{\lst@r@operatorstyle {\%in\negthinspace\%}}}          4
+	{\%within\%}{{\lst@r@operatorstyle {\%within\negthinspace\%}}}      8
 	{<-}        {{\lst@r@operatorstyle {<-}}}                           2
 	{<<-}        {{\lst@r@operatorstyle {<<-}}}                         2
 	{->}        {{\lst@r@operatorstyle {->}}}                           2
@@ -206,6 +212,7 @@
 	{\%\%}      {{\lst@r@operatorstyle{\%\negthinspace\%}}}             2
 	{\%/\%}     {{\lst@r@operatorstyle{\%/\negthinspace\%}}}            3
 	{\%>\%}     {{\lst@r@operatorstyle{\texttt{\%>\negthinspace\%}}}}   3
+	{\%--\%}     {{\lst@r@operatorstyle{\texttt{\%--\negthinspace\%}}}} 4
 	{NA}        {{\lst@r@missingstyle {NA}}}                            2
 	{0}         {{\lst@r@numberstyle {0}}}                              1
 	{1}         {{\lst@r@numberstyle {1}}}                              1
@@ -226,6 +233,7 @@
 	basicstyle=\footnotesize\ttfamily\color{darkgray},
 	numbers=none,
 	tabsize=2,
+	moredelim=[is][\lst@r@consoleinputstyle]{`:in:}{`},
 	literate=
 	{|>}{{|>}}2 
 	{<-}{{<-}}2 
@@ -383,5 +391,5 @@
 
 \author{Jonat\'an Perren}
 \title{R: limpieza, manipulaci\'on y exploraci\'on de datos}
-\logo{\lower1cm\hbox{\includegraphics[width=0.3cm]{\stydir/sign.pdf}}}
+\logo{\lower1cm\hbox{\href{https://github.com/gxono}{\includegraphics[width=0.3cm]{\stydir/sign.pdf}}}}
 

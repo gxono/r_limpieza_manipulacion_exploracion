@@ -1,0 +1,207 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{forcats}}
+	\author{Jonat\'an Perren \emoji{black-cat}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+	\begin{frame}[fragile]{Introducción a forcats}
+		En R, las variables categóricas fijas se manejan como factores (\rscript{`factor`}). A diferencia de un texto libre (\rscript{`character`}), un factor tiene un conjunto predefinido y cerrado de valores posibles llamados niveles (\rscript{`levels`}).
+		
+\begin{figure}[h!]
+	\href{https://rstudio.github.io/cheatsheets/factors.pdf}{\includegraphics[width = 0.15\textwidth]{img/forcats.png}}
+\end{figure}
+		
+		\begin{exampleblock}{\emoji{smirk-cat}}
+			\rscript{forcats} es parte del entorno \quotation{tidy} de R y resuelve todos los problemas que solían ser un dolor de cabeza al ordenar o agrupar variables categóricas, especialmente a la hora de graficar con \rscript{`:pk:ggplot2`}.
+		\end{exampleblock}
+
+\begin{lstlisting}[style=RScript]
+library(tidyverse) # Viene incluido y se carga por defecto
+# o de forma explícita:
+library(forcats)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Inspección y creación base}
+		Cuando convertimos un texto a factor, R ordenará sus niveles alfabéticamente por defecto. Para los humanos, los datos parecen texto, pero R los ve internamente como números enteros indexados (1, 2, 3...).
+		
+\begin{lstlisting}[style=RScript]
+`f` <- factor(c("Manzana", "Pera", "Manzana", "Banana"))
+
+# Veamos qué niveles descubrió R automáticamente:
+levels(f)
+
+# Inspección integral tipo tabla de frecuencias
+fct_count(f, `:ky:sort` = TRUE) # (sort = TRUE ordena de mayor a menor frecuencia)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> levels(f)`
+[1] "Banana"  "Manzana" "Pera"   
+`:in:> fct_count(f, sort = TRUE)`
+# A tibble: 3 x 2
+  f           n
+  <fct>   <int>
+1 Manzana     2
+2 Banana      1
+3 Pera        1
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Cambiar el orden}
+		El objetivo de cambiar el orden de los niveles \textbf{no} es cambiar los datos de tus filas, sino alterar el orden en que las categorías y barras aparecen listadas en un gráfico o en una tabla.
+		
+\begin{lstlisting}[style=RScript]
+# Movimiento manual estricto: forzar "Pera" y "Banana" al frente de la fila
+`f_manual` <- fct_relevel(f, "Pera", "Banana")
+
+# Ordenar automáticamente de mayor a menor frecuencia de aparición
+`f_frecuencia` <- fct_infreq(f)
+
+# Dar vuelta cualquier factor (invertir sus niveles de fin a principio)
+`f_invertido` <- fct_rev(f_frecuencia)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> levels(f_manual)`
+[1] "Pera"    "Banana"  "Manzana"
+`:in:> levels(f_frecuencia)`
+[1] "Manzana" "Banana"  "Pera"   
+`:in:> levels(f_invertido)`
+[1] "Pera"    "Banana"  "Manzana"
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{fct\_reorder}}
+		La función más útil de todo \rscript{forcats}. Permite ordenar un factor (\rscript{`f`}) según los valores numéricos de \textbf{otra} variable matemática (\rscript{`x`}). Es lo que necesitás para crear un gráfico de barras pero que tus barras queden crecientes según el promedio de ingresos.
+		
+\begin{lstlisting}[style=RScript]
+`grupo`   <- factor(c("A", "B", "C", "A", "B", "C"))
+`ingreso` <- c(100, 200, 50, 110, 210, 60)
+
+# Por defecto, grupo se ordenó alfabéticamente: A, B, C.
+# Forcemos el orden de "grupo" según la MEDIANA (default) del "ingreso":
+`grupo_ordenado` <- fct_reorder(grupo, ingreso, `:ky:.fun` = median)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> levels(grupo)`
+[1] "A" "B" "C"
+`:in:> levels(grupo_ordenado)`
+[1] "C" "A" "B"
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Cambiar los valores de las etiquetas (Recodificación)}
+		Si usás \rscript{fct_recode()} podés reescribir los nombres de las categorías manualmente, ideal para corregir faltas de ortografía o códigos crípticos. Se pasa primero el vector crudo, y luego las traducciones asumiendo la forma \rscript{`"Nuevo"` = `"Viejo"`}.
+		
+\begin{lstlisting}[style=RScript]
+`f_mal` <- factor(c("arg", "br", "br", "ch", "arg"))
+
+# Recodificar nombre a nombre de forma ultra explícita
+`f_bien` <- fct_recode(f_mal, 
+  "Argentina" = "arg",
+  "Brasil"    = "br",
+  "Chile"     = "ch"
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> f_bien`
+[1] Argentina Brasil    Brasil    Chile     Argentina
+Levels: Argentina Brasil Chile
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Agrupar categorías conocidas (\texttt{fct\_collapse})}
+		Si querés colapsar muchos niveles distintos en uno solo que funcione de \quotation{padre} lógico (ejemplo: agrupar pases provinciales en regiones macro), usás \rscript{fct_collapse()}.
+		
+\begin{lstlisting}[style=RScript]
+`provs` <- factor(c("Neuquén", "Santa Fe", "Chubut", "Córdoba", "Salta"))
+
+# Recibe vectores para definir qué viejos entran en The Nuevo
+`regiones` <- fct_collapse(provs,
+  "Patagonia" = c("Neuquén", "Chubut"),
+  "Centro"    = c("Santa Fe", "Córdoba"),
+  "Norte"     = "Salta"
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> regiones`
+[1] Patagonia Centro    Patagonia Centro    Norte    
+Levels: Centro Norte Patagonia
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Agrupar la minoría}
+		A veces tu factor tiene docenas de categorías y, a los fines del gráfico comercial, solo te importan las 3 principales. El resto querés que vayan sumadas a un tacho común bajo el nombre genérico \quotation{Otros}.
+		
+\begin{lstlisting}[style=RScript]
+`partidos` <- factor(c(rep("Azul", 50), rep("Rojo", 40), rep("Verde", 5), "Gris", "Rosa"))
+
+# Quedarse estrictamente con los 2 partidos top y el excedente arrojarlo a "Otro"
+`partidos_top2` <- fct_lump_n(partidos, `:ky:n` = `:nm:2`, `:ky:other_level` = "Otro partido")
+
+# O quedarse solo con las categorías cuya proporción supere el 10% del total
+`partidos_prop` <- fct_lump_prop(partidos, `:ky:prop` = `:nm:0.10`, `:ky:other_level` = "Minorías")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> fct_count(partidos_top2)`
+# A tibble: 3 x 2
+  f                n
+  <fct>        <int>
+1 Azul            50
+2 Rojo            40
+3 Otro partido     7
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{5. Añadir y quitar niveles}
+		Si partimos de un dataset global gigante y usamos \rscript{filter()} en la clase 5 para quedarnos solo con la gente de la provincia de Santa Fe, vas a notar que la columna de provincia ¡sigue guardando y mostrando todas las demás provincias de Argentina en tu tabla/gráfico (con barras vacías)!
+		
+\begin{lstlisting}[style=RScript]
+`color` <- factor(c("Rojo", "Azul", "Blanco"))
+
+# Supongamos que perdemos la fila de datos "Blanco" por culpa de un filtro ciego:
+`color_filtrado` <- color[1:2] 
+
+# Para purgar permanentemente los niveles vacíos zombis y curar el diccionario:
+`color_purgado` <- fct_drop(color_filtrado)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> levels(color_filtrado)`
+[1] "Azul"   "Blanco" "Rojo"  
+`:in:> levels(color_purgado)`
+[1] "Azul" "Rojo"
+\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Añadir niveles ciegos (\texttt{fct\_expand})}
+		El caso radicalmente contrario también existe: a veces necesitás garantizar contractualmente que un nivel aparezca impreso en tu gráfico y en su leyenda, aunque en la realidad tu base de datos recopilada hoy esté transitoriamente vacía de esa categoría.
+		
+\begin{lstlisting}[style=RScript]
+`turnos_hoy` <- factor(c("Mañana", "Tarde"))
+
+# Si la clínica tiene también turno "Noche" pero justo hoy nadie sacó, 
+# R no va a dibujar la barra de la noche. Vamos a crear el fantasma forzosamente.
+`turnos_totales` <- fct_expand(turnos_hoy, "Noche")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> levels(turnos_totales)`
+[1] "Mañana" "Tarde"  "Noche" 
+\end{lstlisting}
+	\end{frame}
+
+
+
+\begin{frame}[fragile]
+Las funciones puras de \rscript{forcats} operan sobre \textbf{vectores}. Si querés aplicar estos cambios a escala industrial sobre una columna de tu tabla de datos real, tenés que usarlas encadenadas adentro de un verbo \rscript{mutate()}, reemplazando tu antigua columna con el nuevo \rscript{`fct`} arreglado.
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.3\textwidth]{img/forcats2.png}
+\end{figure}
+\end{frame}
+
+\end{document}

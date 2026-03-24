@@ -1,0 +1,242 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+
+
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{lubridate}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+	
+	\begin{frame}[fragile]{Introducción a lubridate}
+		Trabajar con fechas en programación suele ser frustrante: diferentes formatos, años bisiestos, franjas horarias y horarios de verano. \rscript{lubridate} simplifica enormemente el trabajo con fechas (Date) y fechas-hora (POSIXct). En este documento solo veremos un extracto de lo que se puede hacer pero, para saber m\'as, no olvides consultar el cheatsheet.
+		
+\begin{figure}[h!]
+	\href{https://rstudio.github.io/cheatsheets/lubridate.pdf}{\includegraphics[width = 0.15\textwidth]{img/lubridate.png}}
+\end{figure}
+		
+		\begin{alertblock}{}
+			Asegúrate de cargarlo junto con tidyverse, o explícitamente si usás R base.
+		\end{alertblock}
+
+\begin{lstlisting}[style=RScript]
+library(tidyverse) # Viene incluido pero no se carga automaticamente a veces
+# o de forma explícita:
+library(lubridate)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{1. Convertir cadenas a Fechas/Horas (Parsing)}
+		\rscript{lubridate} adivina el formato siempre que le indiques el orden de Año (Y), Mes (M), Día (D), Hora (H), Minuto (M) y Segundo (S).
+		
+\begin{lstlisting}[style=RScript]
+# Año, Mes, Día
+ymd("2026-03-24")
+
+# Día, Mes, Año
+dmy("24/03/2026")
+
+# Mes, Día, Año
+mdy("March 24th, 2026")
+
+# Fecha y Hora (Year, Month, Day, Hour, Minute, Second)
+ymd_hms("20260324 15:30:00")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> ymd("2026-03-24")`
+[1] "2026-03-24"
+`:in:> dmy("24/03/2026")`
+[1] "2026-03-24"
+`:in:> mdy("March 24th, 2026")`
+[1] "2026-03-24"
+`:in:> ymd_hms("20260324 15:30:00")`
+[1] "2026-03-24 15:30:00 UTC"
+\end{lstlisting}
+		
+		\begin{block}{Nota sobre zonas horarias}
+			Cuando usás funciones de fecha-hora (como \rscript{ymd_hms()}), podés especificar la zona horaria añadiendo el parámetro \rscript{`:ky:tz` = "America/Argentina/Buenos_Aires"}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Crear a partir de componentes individuales}
+		Si tenés el año, el mes y el día en columnas separadas de tu dataframe, podés ensamblar una fecha con \rscript{make_date()} o \rscript{make_datetime()}.
+		
+\begin{lstlisting}[style=RScript]
+# A partir de año, mes, día y hora explícitos
+make_date(2026, 3, 24)
+make_datetime(2026, 3, 24, 15)
+
+# O extrayendo de la fecha y hora actual del sistema
+as_date(now())
+as_datetime(today())
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> make_datetime(2026, 3, 24, 15)`
+[1] "2026-03-24 15:00:00 UTC"
+`:in:> as_date(now())`
+[1] "2026-03-24"
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{2. Obtener y configurar componentes}
+		Podemos extraer información específica de un objeto Date o POSIXct.
+		
+\begin{lstlisting}[style=RScript]
+fecha <- ymd_hms("2026-03-24 15:45:30")
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+year(fecha)
+month(fecha, label = TRUE)
+mday(fecha)               # Día del mes (1-31)
+yday(fecha)               # Día del año (1-365)
+wday(fecha, label = TRUE) # Día de la semana
+
+hour(fecha)
+tz(fecha)                 # Zona Horaria
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> month(fecha, label = TRUE)`
+[1] Mar
+Levels: Jan < Feb < Mar < Apr < May < Jun < Jul < Aug < Sep < Oct < Nov < Dec
+`:in:> yday(fecha)`
+[1] 83
+`:in:> wday(fecha, label = TRUE)`
+[1] Tue
+Levels: Sun < Mon < Tue < Wed < Thu < Fri < Sat
+\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Modificar componentes}
+		Lo increíble de estas funciones es que también sirven para \textbf{sobreescribir} el dato (configurar o setear un componente individual sin alterar el resto).
+		
+\begin{lstlisting}[style=RScript]
+fecha <- ymd("2026-03-24")
+
+year(fecha)  <- 2030  # Modificamos solo el año a 2030
+month(fecha) <- 10    # Modificamos solo el mes a octubre
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> fecha`
+[1] "2030-10-24"
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{3. Redondeo de fechas}
+		Agrupar fechas es fundamental cuando querés hacer resúmenes por hora, día, semana, mes, o año. \rscript{floor_date} siempre mueve hacia abajo, \rscript{ceiling_date} hacia arriba y \rscript{round_date} al más cercano.
+		
+\begin{lstlisting}[style=RScript]
+fh <- ymd_hms("2026-03-24 15:45:00")
+
+floor_date(fh, "month")   # Abajo al 1er día del mes
+ceiling_date(fh, "hour")  # Arriba a la próxima hora
+round_date(fh, "year")    # Redondeo al año más cercano
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> floor_date(fh, "month")`
+[1] "2026-03-01 00:00:00 UTC"
+`:in:> ceiling_date(fh, "hour")`
+[1] "2026-03-24 16:00:00 UTC"
+`:in:> round_date(fh, "year")`
+[1] "2026-01-01 00:00:00 UTC"
+\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{4. Aritmética del tiempo}
+		\rscript{lubridate} diferencia entre el tiempo percibido por los humanos (Periods) y el tiempo cronométrico en segundos exactos (Durations).
+		
+			\titleitem{Periods} Conocen las reglas del calendario y responden al reloj humano (años bisiestos, horario de verano DLT). Sus funciones son en plural: \rscript{years()}, \rscript{months()}, \rscript{days()}, \rscript{hours()}.\\
+			
+			\titleitem{Durations} Representan siempre una cantidad exacta de segundos inmutables (un día para duration tiene estrictamente 86400 segundos). Arrancan con \quotation{d}: \rscript{dyears()}, \rscript{ddays()}, \rscript{dhours()}.
+
+\begin{lstlisting}[style=RScript]
+fecha <- ymd("2026-10-01")
+
+fecha + months(2)      # Period: suma 2 meses físicos del almanaque
+fecha + days(15)       # Period: suma quince días calendarios del almanaque
+
+fecha + dweeks(3)      # Duration: Suma exactamente (3 * 7 * 24 * 60 * 60) segundos
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{Comportamiento avanzado: Periods vs Durations}
+		Las diferencias son más evidentes al atravesar eventos como años bisiestos:
+		
+\begin{lstlisting}[style=RScript]
+bisiesto <- ymd("2024-01-01")
+
+# Periodo en calendario: da la vuelta exacta de almanaque y respeta bisiesto.
+bisiesto + years(1)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2025-01-01"
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Duration en segundos: 1 dyear() siempre equivale a (365 * 24 * 60 * 60) segundos.
+# ¡Como 2024 fue bisiesto y duró 366 días, este año duration se quedó sin días!
+bisiesto + dyears(1) 
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2024-12-31"
+\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{Intervalos de tiempo}
+		Un intervalo (\rscript{Interval}) es el lapso geofísico de tiempo que ocurre entre dos fechas específicas.
+		\rscript{lubridate} utiliza el operador especial \rscript{\%--\%} para crear el intervalo, y podemos usar \rscript{\%within\%} para chequear pertenencia a un intervalo.
+		
+\begin{lstlisting}[style=RScript]
+inicio <- ymd("2026-01-01")
+fin    <- ymd("2026-12-31")
+
+# Creamos el intervalo
+mi_intervalo <- inicio %--% fin
+
+# Preguntamos si el cumpleaños cae dentro de ese intervalo
+cumple <- ymd("2026-03-24")
+
+cumple %within% mi_intervalo
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] TRUE
+\end{lstlisting}
+	\end{frame}
+	
+	\begin{frame}[fragile]{5. Zonas horarias}
+		Los datos temporales suelen estar atados a una ubicación física.
+		\begin{itemize}
+			\item \rscript{with_tz()}: Convierte un instante a la zona horaria dada. ¡Las agujas del reloj cambian, pero el instante físico (los segundos desde 1970) sigue siendo él mismo!
+			\item \rscript{force_tz()}: Mantiene estático las agujas del reloj, pero te \quotation{teletransporta} y cambia de forma subyacente el momento exacto que ocurrió el evento.
+		\end{itemize}
+		
+\begin{lstlisting}[style=RScript]
+f_arg <- ymd_hms("2026-03-24 15:00:00", `:ky:tz` = "America/Argentina/Buenos_Aires")
+
+# ¡Mismo instante, otro reloj! ¿Qué hora marcan las agujas de Londres?
+with_tz(f_arg, "Europe/London")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2026-03-24 18:00:00 GMT"
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Error corregido: La máquina ya estaba en Inglaterra. Grabó "15:00" y 
+# le inyectamos que era Argentina erróneamente. Forzar los segundos correctos.
+force_tz(f_arg, "Europe/London")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+[1] "2026-03-24 15:00:00 GMT"
+\end{lstlisting}
+	\end{frame}
+
+
+\end{document}
