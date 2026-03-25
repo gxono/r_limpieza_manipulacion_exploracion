@@ -2,6 +2,42 @@
 
 Repositorio del curso **R para limpieza, manipulación y exploración de datos**, dictado en la **Facultad de Ciencias Económicas** de la **Universidad Nacional del Litoral**.
 
+## Archivos de este repositorio.
+
+### Clases
+
+| # | Encuentro | Presentación |
+|---|-----------|:---:|
+| 1 | Instalación y primeros pasos | [PDF](presentaciones/clases/clase-01/main.pdf) |
+| 2 | Estructuras de control y datos | [PDF](presentaciones/clases/clase-02/main.pdf) |
+| 3 | Carga de datos y gráficos sencillos | [PDF](presentaciones/clases/clase-03/main.pdf) |
+| 4 | Manipulación de datos I | [PDF](presentaciones/clases/clase-04/main.pdf) |
+| 5 | Manipulación de datos II | [PDF](presentaciones/clases/clase-05/main.pdf) |
+| 6 | 🚧 Pendiente | — |
+| 7 | 🚧 Pendiente | — |
+| 8 | 🚧 Pendiente | — |
+| 9 | 🚧 Pendiente | — |
+| 10 | 🚧 Pendiente | — |
+| 11 | 🚧 Pendiente | — |
+| 12 | 🚧 Pendiente | — |
+| 13 | 🚧 Pendiente | — |
+
+### Machetes
+
+Incursiones por cada uno de los paquetes.
+
+| Paquete | Descripción | Machete |
+|---------|-------------|:---:|
+| `dplyr` | Verbos para manipular tablas: filtrar, seleccionar, mutar, resumir | [PDF](presentaciones/machetes/dplyr/main.pdf) |
+| `tidyr` | Reestructuración de datos: pivoteo, anidado y separación de columnas | [PDF](presentaciones/machetes/tidyr/main.pdf) |
+| `readr` | Importación de archivos CSV, Excel y Google Sheets | [PDF](presentaciones/machetes/readr/main.pdf) |
+| `janitor` | Limpieza de nombres de columnas y detección de duplicados | [PDF](presentaciones/machetes/janitor/main.pdf) |
+| `lubridate` | Parseo y aritmética de fechas y horas | [PDF](presentaciones/machetes/lubridate/main.pdf) |
+| `stringr` | Operaciones sobre cadenas de texto | [PDF](presentaciones/machetes/stringr/main.pdf) |
+| `forcats` | Manejo y reordenamiento de factores | [PDF](presentaciones/machetes/forcats/main.pdf) |
+| `regex` | Expresiones regulares aplicadas en R | [PDF](presentaciones/machetes/regex/main.pdf) |
+| General | Operadores y operaciones básicas de R | [PDF](presentaciones/machetes/general/main.pdf) |
+
 ## Descripción
 
 El curso introduce a los estudiantes en el uso de R como lenguaje de programación y entorno estadístico orientado al análisis de datos. R fue concebido específicamente para el análisis estadístico, lo que lo distingue de lenguajes de propósito general como Python o de alto rendimiento numérico como Julia, ofreciendo una sintaxis más amigable para este propósito.
