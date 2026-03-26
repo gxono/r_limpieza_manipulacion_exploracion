@@ -77,7 +77,7 @@ datos |> pivot_longer(`:ky:cols` = starts_with("export_"),
 pbi |> pivot_longer(
   `:ky:cols`            = `2021`:`2023`,
   `:ky:names_to`        = "anio",
-  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> 2021L
+  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> `:nm:2021L`
   `:ky:values_drop_na`  = TRUE             # descarta filas donde el valor es NA
 )
 \end{lstlisting}

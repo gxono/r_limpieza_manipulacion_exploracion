@@ -1,0 +1,574 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+
+\begin{document}
+	\subtitle{6to encuentro: Manipulación de datos III}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		Seguimos construyendo sobre la gramática de datos. En este encuentro completamos las herramientas que extienden lo que ya sabemos de \rscript{mutate()}, y arrancamos con el tratamiento especializado de fechas.
+
+		\titleitem{¿Qué vemos hoy?}
+		\begin{itemize}
+			\item \textbf{Operaciones condicionales vectorizadas:} \rscript{if_else()}, \rscript{case_when()}, \rscript{case_match()}
+			\item \textbf{Operar sobre múltiples columnas a la vez:} \rscript{across()}
+			\item \textbf{Fechas en R:} el paquete \rscript{`:pk:lubridate`}
+		\end{itemize}
+
+		Todo esto vive dentro de \rscript{mutate()} y \rscript{summarise()}, así que el punto de partida es exactamente lo que ya sabemos hacer.
+	\end{frame}
+
+
+
+	\begin{frame}[fragile]{\texttt{if\_else()}: la versión tidyverse de \texttt{ifelse()}}
+		Ya vimos \rscript{ifelse()} de base R en el segundo encuentro. \rscript{dplyr::if_else()} hace lo mismo con dos ventajas importantes:
+
+		\begin{itemize}
+			\item \textbf{Tipado estricto:} los valores para \rscript{TRUE} y \rscript{FALSE} deben ser del mismo tipo. Previene errores silenciosos.
+			\item \textbf{Argumento \rscript{`:ky:missing`}:} permite especificar explícitamente qué devolver cuando la condición es \rscript{NA}.
+		\end{itemize}
+
+		\begin{alertblock}{}
+			\rscript{ifelse(TRUE, `:nm:1L`, "texto")} devuelve \rscript{"1"} sin ningún aviso. \rscript{if_else()} da error directamente para que no pase desapercibido.
+		\end{alertblock}
+
+\begin{lstlisting}[style=RScript]
+if_else(`:ky:condition`, `:ky:true`, `:ky:false`, `:ky:missing` = NULL)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		Creemos un dataset de empleados y apliquemos \rscript{if_else()}.
+\begin{lstlisting}[style=RScript]
+empleados <- tibble(
+  nombre     = c("Ana", "Carlos", "María", "Juan", "Laura", "Pedro"),
+  area       = c("ventas", "sistemas", "ventas", "rrhh", "sistemas", "rrhh"),
+  provincia  = c("Santa Fe", "Buenos Aires", "Córdoba",
+                 "Mendoza", "Buenos Aires", "Santa Fe"),
+  sueldo     = c(85000, 120000, 92000, 78000, 135000, 71000),
+  antiguedad = c(3, 7, 2, 5, 10, 1)
+)
+
+empleados |>
+  mutate(`:bn:categoria` = if_else(`:bn:sueldo` > 100000, "Senior", "Junior"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> empleados |> mutate(categoria = if_else(sueldo > 100000, ...))`
+# A tibble: 6 x 6
+  nombre sueldo  categoria
+  <chr>   <dbl>  <chr>
+1 Ana     85000  Junior
+2 Carlos 120000  Senior
+3 María   92000  Junior
+4 Juan    78000  Junior
+5 Laura  135000  Senior
+6 Pedro   71000  Junior
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{case\_when()}: múltiples condiciones}
+		Cuando tenemos más de dos categorías, anidar \rscript{if_else()} se vuelve ilegible. \rscript{case_when()} es el reemplazo elegante: evalúa condiciones en orden y devuelve el primer resultado que sea \rscript{TRUE}.
+
+\begin{lstlisting}[style=RScript]
+mutate(`:bn:nueva_col` = case_when(
+  `condicion_1` ~ `resultado_1`,
+  `condicion_2` ~ `resultado_2`,
+  `condicion_3` ~ `resultado_3`,
+  .default    = `resultado_resto`  # equivale al "else" final
+))
+\end{lstlisting}
+
+		\begin{block}{}
+			Las condiciones se evalúan de arriba hacia abajo: la primera que sea \rscript{TRUE} gana. Los casos no cubiertos devuelven \rscript{NA} salvo que uses \rscript{.default}. En versiones anteriores de dplyr, el equivalente era \rscript{TRUE ~ resultado}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+empleados |>
+  mutate(`:bn:banda` = case_when(
+    `:bn:sueldo` >= 120000 ~ "A",
+    `:bn:sueldo` >=  90000 ~ "B",
+    `:bn:sueldo` >=  70000 ~ "C",
+    .default         = "D"
+  ))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> empleados |> mutate(banda = case_when(...))`
+# A tibble: 6 x 6
+  nombre sueldo  banda
+  <chr>   <dbl>  <chr>
+1 Ana     85000  C
+2 Carlos 120000  A
+3 María   92000  B
+4 Juan    78000  C
+5 Laura  135000  A
+6 Pedro   71000  C
+\end{lstlisting}
+
+		También podemos combinar condiciones sobre múltiples columnas en una misma expresión:
+\begin{lstlisting}[style=RScript]
+empleados |>
+  mutate(`:bn:bono` = case_when(
+    `:bn:area` == "sistemas" & `:bn:antiguedad` >= 5 ~ `:bn:sueldo` * `:nm:0.20`,
+    `:bn:antiguedad` >= 5                      ~ `:bn:sueldo` * `:nm:0.10`,
+    .default                             = 0
+  ))
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{case\_match()}: recodificar por valor exacto}
+		Cuando la condición es solo \rscript{variable == "valor"}, \rscript{case_match()} es más conciso. En lugar de escribir la comparación completa, se lista directamente el valor a matchear.
+
+\begin{lstlisting}[style=RScript]
+# Con case_when (repetitivo)
+mutate(`:bn:region` = case_when(
+  `:bn:provincia` == "Buenos Aires" ~ "Centro",
+  `:bn:provincia` == "Santa Fe"     ~ "Centro",
+  `:bn:provincia` == "Córdoba"      ~ "Centro",
+  `:bn:provincia` == "Mendoza"      ~ "Cuyo",
+  .default  									= "Otra"
+))
+
+# Con case_match (equivalente y más compacto)
+mutate(`:bn:region` = case_match(
+  `:bn:provincia`,
+  c("Buenos Aires", "Santa Fe", "Córdoba") ~ "Centro",
+  "Mendoza"                                ~ "Cuyo",
+  .default = "Otra"
+))
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+empleados |>
+  mutate(`:bn:region` = case_match(
+    `:bn:provincia`,
+    c("Buenos Aires", "Santa Fe", "Córdoba") ~ "Centro",
+    "Mendoza"                                ~ "Cuyo",
+    .default = "Otra"
+  )) |>
+  select(`:bn:nombre`, `:bn:provincia`, `:bn:region`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> empleados |> mutate(region = case_match(provincia, ...))`
+# A tibble: 6 x 3
+  nombre provincia    region
+  <chr>  <chr>        <chr>
+1 Ana    Santa Fe     Centro
+2 Carlos Buenos Aires Centro
+3 María  Córdoba      Centro
+4 Juan   Mendoza      Cuyo
+5 Laura  Buenos Aires Centro
+6 Pedro  Santa Fe     Centro
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			\rscript{case_match()} es ideal para tablas de recodificación: países a regiones, códigos a etiquetas, abreviaturas a nombres completos.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{across()}: la misma operación en múltiples columnas}
+		Situación muy común: aplicar la misma transformación a varias columnas. Sin \rscript{across()} habría que repetir el código columna por columna.
+
+\begin{lstlisting}[style=RScript]
+mediciones <- tibble(
+  id = c(1, 2, 3),
+  x  = c(`:nm:1.234`, `:nm:2.567`, `:nm:3.891`),
+  y  = c(`:nm:4.112`, `:nm:5.436`, `:nm:6.789`),
+  z  = c(`:nm:7.001`, `:nm:8.345`, `:nm:9.678`)
+)
+
+# Sin across: repetitivo y propenso a errores de tipeo
+mediciones |> mutate(`:bn:x` = round(`:bn:x`, 2), `:bn:y` = round(`:bn:y`, 2), `:bn:z` = round(`:bn:z`, 2))
+
+# Con across: una sola línea
+mediciones |> mutate(across(c(`:bn:x`, `:bn:y`, `:bn:z`), ~round(.x, 2)))
+\end{lstlisting}
+
+		\rscript{across()} recibe dos argumentos:
+		\begin{itemize}
+			\item \textbf{Columnas:} un vector de nombres, o selectores como \rscript{where(is.numeric)}, \rscript{starts_with()}, etc.
+			\item \textbf{Función:} puede ser una función nombrada (\rscript{mean}, \rscript{round}) o una función anónima (incluso con la sintaxis \rscript{\~round(.x, 2)}). Si no sab\'es qu\'e es una funci\'on an\'onima o las formas de escribirlas, revis\'a el \href{https://github.com/gxono/r_limpieza_manipulacion_exploracion/blob/main/presentaciones/machetes/funciones-anonimas/main.pdf}{\textbf{machete de funciones y funciones an\'onimas}}.
+		\end{itemize}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\titleitem{\texttt{across()} dentro de \texttt{mutate()}}
+\begin{lstlisting}[style=RScript]
+# Redondear todas las columnas numéricas a 1 decimal
+iris |> mutate(across(where(is.numeric), ~round(.x, 1)))
+
+# Generar columnas nuevas sin pisar las originales, usando .names
+empleados |>
+  mutate(across(`:bn:sueldo`, ~.x / 1050, `.names` = "{.col}_usd"))
+\end{lstlisting}
+
+		\titleitem{\texttt{across()} dentro de \texttt{summarise()}}
+\begin{lstlisting}[style=RScript]
+# Promedio de todas las columnas numéricas, por área
+empleados |>
+  group_by(`:bn:area`) |>
+  summarise(across(where(is.numeric), mean))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> empleados |> group_by(area) |> summarise(across(where(is.numeric), mean))`
+# A tibble: 3 x 3
+  area      sueldo antiguedad
+  <chr>      <dbl>      <dbl>
+1 rrhh      74500           3
+2 sistemas 127500           8.5
+3 ventas    88500           2.5
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\titleitem{Múltiples funciones con \texttt{across()}}
+		Si querés aplicar más de una función, pasás una lista nombrada. Los nombres de la lista se usan para construir los nombres de las columnas resultantes.
+
+\begin{lstlisting}[style=RScript]
+empleados |>
+  summarise(across(
+    where(is.numeric),
+    list(`:bn:promedio` = mean, `:bn:maximo` = max, `:bn:minimo` = min)
+  ))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> empleados |> summarise(across(where(is.numeric), list(...)))`
+# A tibble: 1 x 6
+  sueldo_promedio sueldo_maximo sueldo_minimo antiguedad_promedio ...
+            <dbl>         <dbl>         <dbl>               <dbl>
+1           96833        135000         71000                4.67
+\end{lstlisting}
+
+		\begin{block}{}
+			El nombre de cada columna nueva combina el nombre original con el nombre de la función: \texttt{sueldo\_promedio}, \texttt{sueldo\_maximo}, etc. Esto se puede personalizar con el argumento \texttt{.names}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Fechas en R: el problema}
+		Las fechas son uno de los tipos de datos más engañosos. Si cargás una base del INDEC, del Banco Mundial o de AFIP, las fechas pueden llegar como texto (\rscript{"01/01/2023"}), como número (\rscript{44927}, el formato interno de Excel), o en distintos formatos según el idioma del sistema.
+
+		\begin{alertblock}{}
+			Una fecha guardada como texto es solo texto: no podés calcular diferencias, extraer el mes, ni ordenar cronológicamente de forma confiable.
+		\end{alertblock}
+
+		R tiene dos tipos nativos para representar fechas:
+		\begin{itemize}
+			\item \rscript{Date}: solo fecha (año, mes, día). Suficiente para la mayoría del análisis económico.
+			\item \rscript{POSIXct}: fecha \textbf{y} hora. Para datos de alta frecuencia (precios intradiarios, registros horarios).
+		\end{itemize}
+
+		Internamente, un \rscript{Date} es simplemente un entero: la cantidad de días desde el 1 de enero de 1970. Esto lo hace apto para operaciones aritméticas directas.
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El paquete \texttt{lubridate}: parsear fechas}
+		\rscript{`:pk:lubridate`} simplifica el trabajo con fechas. Sus funciones de parseo se nombran según el orden de los componentes (\textbf{y}ear, \textbf{m}onth, \textbf{d}ay) y toleran distintos separadores. Pod\'es encontrar un machete de lubridate \href{https://github.com/gxono/r_limpieza_manipulacion_exploracion/blob/main/presentaciones/machetes/lubridate/main.pdf}{\textbf{ac\'a}} o el cheatsheet oficial en la figura.
+
+\begin{figure}[h!]
+\href{https://rstudio.github.io/cheatsheets/lubridate.pdf}
+{\includegraphics[width=0.15\textwidth]{img/lubridate.png}}
+\end{figure}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:lubridate`)
+
+ymd("2023-07-15")     # año-mes-día: formato ISO (APIs, bases internacionales)
+dmy("15/07/2023")     # día/mes/año: formato argentino
+mdy("July 15, 2023")  # mes día, año: formato anglosajón
+ymd(20230715)         # sin separadores: también funciona
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> dmy("15/07/2023")`
+[1] "2023-07-15"
+`:in:> class(dmy("15/07/2023"))`
+[1] "Date"
+\end{lstlisting}
+
+		\begin{block}{}
+			Elegí la función según cómo llegan tus datos, no según cómo querés que se muestren. El formato de salida siempre es \rscript{YYYY-MM-DD} (\href{https://www.iso.org/iso-8601-date-and-time-format.html}{ISO 8601}) independientemente del input.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		Creemos un dataset de precios minoristas con fechas reales:
+\begin{lstlisting}[style=RScript]
+ipc <- tibble(
+  fecha     = dmy(c("01/01/2023", "01/02/2023", "01/03/2023",
+                     "01/04/2023", "01/05/2023", "01/06/2023")),
+  indice    = c(`:nm:248.3`, `:nm:276.5`, `:nm:300.7`,
+                `:nm:330.4`, `:nm:358.6`, `:nm:394.2`),
+  categoria = c("alimentos", "alimentos", "indumentaria",
+                "alimentos", "indumentaria", "alimentos")
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> ipc`
+# A tibble: 6 x 3
+  fecha       indice categoria
+  <date>       <dbl> <chr>
+1 2023-01-01   248.  alimentos
+2 2023-02-01   277.  alimentos
+3 2023-03-01   301.  indumentaria
+4 2023-04-01   330.  alimentos
+5 2023-05-01   359.  indumentaria
+6 2023-06-01   394.  alimentos
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Extraer componentes de una fecha}
+		Una vez que la columna es de tipo \rscript{Date}, podemos extraer cualquier componente con funciones específicas. Son especialmente útiles dentro de \rscript{mutate()} para crear variables de agrupamiento temporal.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				column{1} = {font=\ttfamily\small},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd=\rscript}
+			}
+				Función & Devuelve & Notas\\
+				year() & Año & 2023\\
+				month() & Mes (número) & 1 a 12\\
+				month(label = TRUE) & Mes (abreviado) & \texttt{"ene."}, \texttt{"feb."}, ...\\
+				day() & Día del mes & 1 a 31\\
+				wday() & Día de la semana & 1 = domingo\\
+				quarter() & Trimestre & 1 a 4\\
+				yday() & Día del año & 1 a 365\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+ipc |>
+  mutate(
+    `:bn:anio`      = year(`:bn:fecha`),
+    `:bn:mes`       = month(`:bn:fecha`),
+    `:bn:trimestre` = quarter(`:bn:fecha`)
+  )
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Aritmética de fechas}
+		Como las fechas son números enteros internamente, las operaciones aritméticas funcionan de forma natural.
+
+		\titleitem{Diferencia entre fechas}
+\begin{lstlisting}[style=RScript]
+fecha_ingreso <- dmy("15/03/2018")
+fecha_hoy     <- today()
+
+fecha_hoy - fecha_ingreso      # resultado en días (class "difftime")
+as.numeric(fecha_hoy - fecha_ingreso) / 365  # en años aproximados
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> fecha_hoy - fecha_ingreso`
+Time difference of 2933 days
+\end{lstlisting}
+
+		\titleitem{Variación periódica con \texttt{lag()}}
+		Uno de los usos más frecuentes en economía: calcular la variación porcentual respecto al período anterior.
+\begin{lstlisting}[style=RScript]
+ipc |>
+  arrange(`:bn:fecha`) |>
+  mutate(`:bn:var_mensual` = (`:bn:indice` / lag(`:bn:indice`) - 1) * 100)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RConsole]
+`:in:> ipc |> arrange(fecha) |> mutate(var_mensual = (indice / lag(indice) - 1) * 100)`
+# A tibble: 6 x 4
+  fecha       indice var_mensual
+  <date>       <dbl>       <dbl>
+1 2023-01-01   248.           NA
+2 2023-02-01   277.         11.4
+3 2023-03-01   301.          8.7
+4 2023-04-01   330.          9.9
+5 2023-05-01   359.          8.5
+6 2023-06-01   394.          9.9
+\end{lstlisting}
+
+		\titleitem{Redondear y truncar fechas}
+		\rscript{floor_date()} y \rscript{ceiling_date()} truncan o redondean la fecha a la unidad de tiempo indicada. Muy útil para agrupar datos diarios en meses o trimestres.
+
+\begin{lstlisting}[style=RScript]
+d <- dmy("17/07/2023")
+
+floor_date(d, unit = "month")    # -> 2023-07-01  (inicio del mes)
+floor_date(d, unit = "quarter")  # -> 2023-07-01  (inicio del trimestre)
+ceiling_date(d, unit = "month")  # -> 2023-08-01  (inicio del mes siguiente)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejemplo integrador}
+		Juntemos todo. Queremos un resumen trimestral de la inflación por categoría, clasificando cada mes según la intensidad de la variación.
+
+\begin{lstlisting}[style=RScript]
+ipc |>
+  arrange(`:bn:categoria`, `:bn:fecha`) |>
+  group_by(`:bn:categoria`) |>
+  mutate(
+    `:bn:var_mensual`  = (`:bn:indice` / lag(`:bn:indice`) - 1) * 100,
+    `:bn:trimestre`    = quarter(`:bn:fecha`),
+    `:bn:nivel`        = case_when(
+      `:bn:var_mensual` >= 10 ~ "Alta",
+      `:bn:var_mensual` >=  5 ~ "Moderada",
+      .default          = "Baja"
+    )
+  ) |>
+  ungroup() |>
+  group_by(`:bn:categoria`, `:bn:trimestre`) |>
+  summarise(
+    across(`:bn:var_mensual`, list(`:bn:promedio` = mean, `:bn:max` = max),
+           `:ky:na.rm` = TRUE),
+    .groups = "drop"
+  )
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RConsole]
+`:in:> ipc |> arrange(categoria, fecha) |> group_by(categoria) |> mutate(...) |> ...`
+# A tibble: 4 x 4
+  categoria    trimestre var_mensual_promedio var_mensual_max
+  <chr>            <int>                <dbl>           <dbl>
+1 alimentos            1                 11.4            11.4
+2 alimentos            2                 19.4            19.5
+3 indumentaria         1                NaN              -Inf
+4 indumentaria         2                 19.3            19.3
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			La fila 3 tiene \rscript{NaN} y \rscript{-Inf} porque indumentaria solo tiene una observación en el Q1, y esa observación tiene \rscript{NA} en \rscript{var_mensual} (es el primer valor del grupo, no tiene lag). Al aplicar \rscript{`:ky:na.rm` = TRUE} sobre un vector de puros \rscript{NA}, \rscript{mean()} devuelve \rscript{NaN} y \rscript{max()} devuelve \rscript{-Inf}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		\begin{enumerate}
+			\item En \rscript{starwars}, agregá una columna \rscript{grande} que valga \rscript{"sí"} si el personaje mide más de 180 cm, \rscript{"no"} si mide menos, y \rscript{"desconocido"} si la altura es \rscript{NA}.
+
+			\item En \rscript{mtcars}, agregá una columna \rscript{tipo_motor} que distinga los autos con 8 cilindros del resto.
+
+			\item En \rscript{starwars}, clasificá la altura en tres categorías: \rscript{"bajo"} (menos de 160 cm), \rscript{"medio"} (160--190 cm) y \rscript{"alto"} (más de 190 cm). Los \rscript{NA} deben quedar como \rscript{NA}.
+
+			\item En \rscript{mtcars}, clasificá el consumo en: \rscript{"económico"} (mpg > 25), \rscript{"normal"} (mpg entre 15 y 25) y \rscript{"consumidor"} (mpg < 15).
+
+			\item En \rscript{starwars}, creá una columna \rscript{zona_galactica} asignando al menos 5 planetas a distintas zonas. Los planetas no asignados deben quedar como \rscript{"Desconocida"}.
+
+			\item Creá un tibble con 8 provincias argentinas y agregá una columna \rscript{region} que las clasifique en NOA, NEA, Cuyo, Centro o Patagonia.
+
+			\item En \rscript{starwars}, recodificá \rscript{species} para quedarte solo con \rscript{"Human"}, \rscript{"Droid"} y \rscript{"Otro"} (todos los demás).
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=8]
+			\item En \rscript{iris}, redondeá todas las columnas numéricas a 1 decimal.
+
+			\item En \rscript{starwars}, eliminá las filas con \rscript{NA} en \rscript{height} o \rscript{mass}, y luego estandarizá ambas columnas (restando la media y dividiendo por el desvío estándar).
+
+			\item Calculá el promedio y la mediana de todas las variables numéricas de \rscript{mtcars} en una sola operación.
+
+			\item En \rscript{iris}, calculá el promedio de cada variable numérica para cada especie.
+
+			\item En \rscript{iris}, creá versiones escaladas de todas las variables numéricas. Los nombres de las nuevas columnas deben terminar en \rscript{_scaled}.
+
+			\item Convertí los siguientes textos a fechas y verificá que R las reconozca correctamente: \rscript{"2023-03-25"}, \rscript{"25/03/2023"}, \rscript{"March 25 2023"}.
+
+			\item Convertí el vector \rscript{c("01012022", "15062023", "31122024")} a fechas. ¿Cuál es el orden de los componentes?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=15]
+			\item Retomá el dataset \rscript{ipc} de la clase y extraé el año, el mes y el trimestre de cada observación en columnas separadas.
+
+			\item ¿Cuántos días pasaron entre el 25 de mayo de 1810 y el 9 de julio de 1816? ¿Y cuántos años aproximados?
+
+			\item Creá un tibble con 12 filas que represente el IPC mensual de 2023 (valores inventados) y calculá la variación respecto al mes anterior.
+
+			\item Sobre el dataset anterior, calculá también la variación respecto al mismo mes del año anterior.
+
+			\item ¿Cuántos días faltan para el 25 de mayo de 2026?
+
+			\item Agregá al dataset \rscript{ipc} una columna con el primer día del trimestre al que pertenece cada observación.
+
+			\item En \rscript{starwars}, clasificá el año de nacimiento (\rscript{birth_year}) en décadas: \rscript{"0-50 DBY"}, \rscript{"50-100 DBY"}, \rscript{"100+ DBY"}. Los \rscript{NA} deben quedar como \rscript{NA}.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=22]
+			\item En \rscript{mtcars}, clasificá los autos según la cantidad de cilindros en \rscript{"chico"}, \rscript{"mediano"} o \rscript{"grande"}, y luego calculá el promedio de todas las variables numéricas para cada categoría.
+
+			\item Creá un dataset de exportaciones con columnas \rscript{fecha} (texto en formato \rscript{"dd/mm/aaaa"}), \rscript{producto}, \rscript{toneladas} y \rscript{precio_usd}. A partir de él:
+			\begin{enumerate}
+				\item Convertí la fecha al tipo correcto.
+				\item Extraé el mes y el trimestre.
+				\item Calculá el ingreso total por fila.
+				\item Clasificá el ingreso en categorías.
+				\item Resumí el ingreso por trimestre.
+			\end{enumerate}
+
+			\item Retomá el dataset de variación mensual del ejercicio 17. Clasificá cada mes según si la inflación se aceleró o desaceleró respecto al mes anterior. Pista: necesitás comparar la variación actual con la del período previo.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=25]
+			\item Del dataset \rscript{starwars}, quedáte solo con los personajes humanos que tengan altura y masa conocidas. Calculá el IMC, clasificálo en categorías (\quotation{bajo peso}, \quotation{normal}, \quotation{sobrepeso}, \quotation{obesidad}), y obtené el IMC promedio y la cantidad de personajes por categoría, ordenado de mayor a menor IMC.
+
+			\item En \rscript{mtcars}, convertí el consumo a km/l, clasificá cada auto según su eficiencia, y encontrá los 3 autos más eficientes dentro de cada grupo de cilindros.
+
+			\item Creá un dataset de 10 empleados con columnas \rscript{nombre}, \rscript{area}, \rscript{fecha_ingreso} (texto en formato argentino) y \rscript{sueldo}. Convertí la fecha, calculá la antigüedad en años, clasificá a cada empleado según su antigüedad, y obtené el sueldo promedio por área y categoría de antigüedad.
+
+			\item En \rscript{iris}, filtrá las flores con pétalos más largos que el promedio general, y calculá el promedio de todas las variables numéricas para cada especie dentro de ese subconjunto.
+
+			\item En \rscript{starwars}, filtrá los personajes con año de nacimiento conocido. Clasificálos por década de nacimiento y, para cada década, calculá el promedio de altura y masa. Mostrá solo las décadas con al menos 3 personajes.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=30]
+			\item En \rscript{mtcars}, clasificá los autos según cilindros. Luego, para cada categoría, calculá el promedio, máximo y mínimo de todas las variables numéricas en una sola operación. Ordená el resultado por consumo promedio descendente.
+
+			\item Creá un dataset de precios mensuales de tres productos durante 2023 (36 filas en total: 12 meses × 3 productos). Convertí las fechas, calculá la variación mensual de cada producto, clasificá cada mes como \quotation{suba}, \quotation{baja} o \quotation{estable}, y resumí cuántos meses cayó en cada categoría por producto.
+
+			\item En \rscript{starwars}, seleccioná nombre, especie, altura, masa y mundo natal. Filtrá los personajes con altura entre 150 y 200 cm y masa conocida. Clasificá la especie en \quotation{Human}, \quotation{Droid} u \quotation{Otro}. Contá cuántos personajes hay por especie y clasificación de altura, y quedáte solo con las combinaciones que tengan más de un personaje.
+
+			\item Creá un dataset de ventas diarias durante el primer trimestre de 2024 (al menos 30 filas). Convertí las fechas, extraé el mes y la semana del año, calculá la variación diaria respecto al día anterior, y resumí el ingreso total y la variación promedio por mes.
+
+			\item En \rscript{mtcars}, clasificá cada auto en \quotation{potente} (más de 200 hp) o \quotation{estándar}. Para cada grupo, calculá el promedio, el máximo y el mínimo de todas las variables numéricas en una sola operación, y ordená los resultados por consumo promedio descendente.
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}

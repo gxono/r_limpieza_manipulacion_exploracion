@@ -13,7 +13,7 @@ Repositorio del curso **R para limpieza, manipulación y exploración de datos**
 | 3 | Carga de datos y gráficos sencillos | [PDF](presentaciones/clases/clase-03/main.pdf) |
 | 4 | Manipulación de datos I | [PDF](presentaciones/clases/clase-04/main.pdf) |
 | 5 | Manipulación de datos II | [PDF](presentaciones/clases/clase-05/main.pdf) |
-| 6 | 🚧 Pendiente | — |
+| 6 | Manipulación de datos III | [PDF](presentaciones/clases/clase-06/main.pdf) |
 | 7 | 🚧 Pendiente | — |
 | 8 | 🚧 Pendiente | — |
 | 9 | 🚧 Pendiente | — |

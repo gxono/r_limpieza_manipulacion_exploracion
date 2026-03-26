@@ -262,7 +262,7 @@ round_half_up(`:nm:2.5`)  # 3  <- el resultado que esperabas
 		Antes de usar \rscript{bind_rows()} para apilar dos tablas, \rscript{compare_df_cols()} detecta incompatibilidades de columnas o tipos que causarían errores o pérdida silenciosa de información.
 
 \begin{lstlisting}[style=RScript]
-`trimestre_1` <- tibble(nombre = c("Ana", "Beto"), nota = c(8L, 7L))
+`trimestre_1` <- tibble(nombre = c("Ana", "Beto"), nota = c(`:nm:8L`, `:nm:7L`))
 `trimestre_2` <- tibble(nombre = c("Carlos"),      nota = c(`:nm:9.5`))
 
 compare_df_cols(`trimestre_1`, `trimestre_2`)
