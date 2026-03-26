@@ -969,7 +969,7 @@ starwars |> mutate(
 starwars |> mutate(
   across(where(is.numeric), ~coalesce(.x, 0))
 )
-# starwars |> tidyr::replace_na(list(`:bn:mass` = 0, `:bn:height` = 0))
+# starwars |> tidyr::replace_na(list(mass = 0, height = 0))
 \end{lstlisting}
 \end{frame}
 

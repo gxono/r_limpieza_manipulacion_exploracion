@@ -32,13 +32,13 @@ library(tidyverse) # tidyr ya viene incluido
 \begin{lstlisting}[style=RScript]
 pbi <- tibble(
   pais   = c("Argentina", "Brasil", "Chile"),
-  `2021` = c(487, 1649, 317),
-  `2022` = c(633, 1920, 301),
-  `2023` = c(622, 2174, 345)
+  \`2021\` = c(487, 1649, 317),
+  \`2022\` = c(633, 1920, 301),
+  \`2023\` = c(622, 2174, 345)
 )
 
 pbi |> pivot_longer(
-  cols      = `2021`:`2023`,       # columnas que se van a pivotar
+  cols      = \`2021\`:\`2023\`,       # columnas que se van a pivotar
   `:ky:names_to`  = "anio",              # nombre de la nueva columna de categorías
   `:ky:values_to` = "pbi_miles_mdd"      # nombre de la nueva columna de valores
 )
@@ -75,9 +75,9 @@ datos |> pivot_longer(`:ky:cols` = starts_with("export_"),
 		Por defecto, los nombres de columna se convierten en texto (\rscript{character}). Usando \rscript{`:ky:names_transform`} se puede convertir el año directamente a entero.
 \begin{lstlisting}[style=RScript]
 pbi |> pivot_longer(
-  `:ky:cols`            = `2021`:`2023`,
+  `:ky:cols`            = \`2021\`:\`2023\`,
   `:ky:names_to`        = "anio",
-  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> `:nm:2021L`
+  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> 2021L
   `:ky:values_drop_na`  = TRUE             # descarta filas donde el valor es NA
 )
 \end{lstlisting}

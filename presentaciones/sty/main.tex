@@ -122,11 +122,11 @@
 		% base
 		select, filter, arrange, mutate, summarise, ungroup,
 		ggplot, aes, theme, labs, factorial,
-		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith, n, first, last,
-		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse, regmatches,
-		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between,
-		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date, regex, fixed, coll, boundary, readRDS,
-		ymd_hms, dmy_hm, make_date, make_datetime, as_datetime, as_date, today, now, mday, yday, wday, hour, tz, floor_date, ceiling_date, round_date, years, months, days, hours, dyears, ddays, dhours, dweeks, with_tz, force_tz, quarter, 
+		ymd, mdy, dmy, year, month, day, lag, lead, tail, grepl, sprintf, startsWith, endsWith, n, first, last, map_int, map_vec, map_df, map_dfr, map_dfc, list_rbind, list_cbind,
+		tibble, c, str, tolower, toupper, trimws, rowSums, colMeans, head, in, tribble, install.packages, glimpse, regmatches, pwalk, walk, compact, safely, possibly, every, some, none, detect, detect_index, list.files, reduce, accumulate, set_names,
+		isTrue, isFalse, chartr, vapply, Map, isTRUE, isFALSE, near, between, write.csv,
+		data.frame, paste0, log10, which.max, which.min, na.omit, complete.cases, all.equal, Sys.Date, regex, fixed, coll, boundary, readRDS, keep, discard, imap, imap_chr, pmap_chr,
+		ymd_hms, dmy_hm, make_date, make_datetime, as_datetime, as_date, today, now, mday, yday, wday, hour, tz, floor_date, ceiling_date, round_date, years, months, days, hours, dyears, ddays, dhours, dweeks, with_tz, force_tz, quarter, map, map_dbl, map_chr, map_lgl,
 		% dplyr
 		group_by, if_else, case_when, case_match, coalesce,
 		left_join, right_join, inner_join, full_join,
@@ -167,7 +167,7 @@
 		% verificación de tipo
 		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor
 	},
-	otherkeywords={paste0, read_csv2, gs4_deauth, write_csv2},
+	otherkeywords={paste0, read_csv2, gs4_deauth, write_csv2, map2, map2_dbl, walk2},
 	moredelim=[is][\lst@r@normalstyle]{`}{`},
 	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename
 	moredelim=[is][\lst@r@consolestyle]{`:cn:}{`}, %<- console
@@ -227,6 +227,9 @@
 	{8}         {{\lst@r@numberstyle {8}}}                              1
 	{9}         {{\lst@r@numberstyle {9}}}                              1
 	{::}        {{\lst@r@operatorstyle {:\negthinspace:}}}              1
+	{\\`}       {{\lst@r@normalstyle {`}}}								              1
+	{`:\:`}     {{\lst@r@normalstyle {\textbackslash}}}		   						1
+	{`:~:`}     {{\lst@r@operatorstyle{\textasciitilde}}}               1
 }
 
 
@@ -242,7 +245,8 @@
 	{==}{{==}}2 
 	{!=}{{!=}}2
 	{>=}{{>=}}2
-	{<=}{{<=}}2,
+	{<=}{{<=}}2
+	{\\`}{{{`}}}1,
 }
 \makeatother
 

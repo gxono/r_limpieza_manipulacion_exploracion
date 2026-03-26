@@ -10,5 +10,452 @@
 	\end{frame}
 
 
+	\begin{frame}[fragile]{Agenda}
+		Hasta ahora trabajamos con una sola tabla a la vez. En este encuentro aprendemos a cambiar la \textbf{forma} de una tabla y a \textbf{combinar} múltiples tablas en un único dataset listo para analizar.
+
+		\titleitem{¿Qué vemos hoy?}
+		\begin{itemize}
+			\item \textbf{Reshaping:} \rscript{pivot_longer()} y \rscript{pivot_wider()} para transformar la estructura de una tabla sin perder información
+			\item \textbf{Joins:} \rscript{left_join()}, \rscript{inner_join()}, \rscript{right_join()}, \rscript{full_join()}, \rscript{semi_join()} y \rscript{anti_join()} para combinar tablas por una clave común
+			\item \textbf{Apilar tablas:} \rscript{bind_rows()} y \rscript{bind_cols()}
+		\end{itemize}
+
+		\rscript{`:pk:tidyr`} provee las funciones de reshaping; \rscript{`:pk:dplyr`} las de joins. Ambos vienen incluidos en \rscript{`:pk:tidyverse`}.
+		\begin{figure}[h!]
+			\hfill
+			\href{https://github.com/rstudio/cheatsheets/blob/main/tidyr.pdf}{\includegraphics[width = 0.15\textwidth]{img/tidyr.png}}
+			\hfill
+			\href{https://github.com/rstudio/cheatsheets/blob/main/data-transformation.pdf}{\includegraphics[width = 0.15\textwidth]{img/dplyr.png}}
+			\hfill\hfill
+		\end{figure}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Datos ordenados (\textit{tidy data})}
+		Como ya hemos visto, dataset está \textbf{ordenado} cuando sigue tres reglas: cada variable ocupa una columna, cada observación una fila, y cada unidad observacional forma una tabla separada.
+
+		El problema es que la mayoría de los datos llegan en formato \textbf{ancho}: una columna por año, por período o por categoría. Esto es cómodo para leer a simple vista pero dificulta el análisis con \rscript{`:pk:dplyr`} y la visualización con \rscript{`:pk:ggplot2`}.
+
+		\begin{exampleblock}{}
+			\rscript{`:pk:tidyr`} viene incluido en \rscript{`:pk:tidyverse`}. Sus dos funciones centrales son \rscript{pivot_longer()} (de ancho a largo) y \rscript{pivot_wider()} (de largo a ancho). Podés encontrar el machete de \rscript{`:pk:tidyr`} \href{https://github.com/gxono/r_limpieza_manipulacion_exploracion/blob/main/presentaciones/machetes/tidyr/main.pdf}{\textbf{acá}}.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()}: de formato ancho a largo}
+		Los datos del Banco Mundial, INDEC y OCDE suelen llegar con una columna por año. Para analizarlos necesitamos una columna para el año y otra para el valor.
+
+\begin{lstlisting}[style=RScript]
+pbi <- tibble(
+  pais   = c("Argentina", "Brasil", "Chile", "Uruguay"),
+  \`2021\` = c(487, 1649, 317, 61),
+  \`2022\` = c(633, 1920, 301, 73),
+  \`2023\` = c(622, 2174, 345, 78)
+)
+
+pbi |> pivot_longer(
+  `:ky:cols`       = \`2021\`:\`2023\`,  # columnas que se pivotan
+  `:ky:names_to`   = "anio",         # nombre de la nueva col. de categorías
+  `:ky:values_to`  = "pbi_mmd"       # nombre de la nueva col. de valores
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> pbi |> pivot_longer(cols = \`2021\`:\`2023\`, names_to = "anio", values_to = "pbi_mmd")`
+# A tibble: 12 x 3
+   pais      anio  pbi_mmd
+   <chr>     <chr>   <dbl>
+1  Argentina 2021      487
+2  Argentina 2022      633
+3  Argentina 2023      622
+4  Brasil    2021     1649
+5  Brasil    2022     1920
+...
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()}: opciones avanzadas}
+		\titleitem{Convertir el tipo del nombre y descartar \texttt{NA}s}
+		Por defecto, los nombres de columna se convierten en texto. Con \rscript{`:ky:names_transform`} los convertimos directamente a entero; con \rscript{`:ky:values_drop_na`} descartamos las filas sin dato.
+\begin{lstlisting}[style=RScript]
+pbi |> pivot_longer(
+  `:ky:cols`            = `2021`:`2023`,
+  `:ky:names_to`        = "anio",
+  `:ky:names_transform` = list(`:bn:anio` = as.integer), # "2021" -> 2021L
+  `:ky:values_drop_na`  = TRUE
+)
+\end{lstlisting}
+
+		\titleitem{Cuando los nombres tienen prefijo común}
+		Si las columnas se llaman \rscript{"export\_2021"}, \rscript{"export\_2022"}, etc., \rscript{`:ky:names_prefix`} quita el prefijo automáticamente.
+\begin{lstlisting}[style=RScript]
+datos |> pivot_longer(
+  `:ky:cols`         = starts_with("export_"),
+  `:ky:names_to`     = "anio",
+  `:ky:names_prefix` = "export_",
+  `:ky:values_to`    = "exportaciones"
+)
+\end{lstlisting}
+
+		\begin{block}{}
+			Para seleccionar columnas también podés usar \rscript{where(is.numeric)}, \rscript{ends_with()}, \rscript{matches()} y otros helpers de \rscript{`:pk:dplyr`}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()}: de formato largo a ancho}
+		Operación inversa: los valores únicos de una columna pasan a ser los nuevos nombres de columna. Útil para comparar indicadores lado a lado, exportar a Excel o alimentar ciertos modelos.
+
+\begin{lstlisting}[style=RScript]
+macro <- tibble(
+  anio      = c(2022, 2022, 2023, 2023),
+  indicador = c("inflacion", "desempleo", "inflacion", "desempleo"),
+  valor     = c(`:nm:94.8`, `:nm:6.8`, `:nm:211.4`, `:nm:5.7`)
+)
+
+macro |> pivot_wider(
+  `:ky:names_from`  = `:bn:indicador`,  # valores de esta col. -> nombres de col.
+  `:ky:values_from` = `:bn:valor`       # valores de esta col. -> celdas
+)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> macro |> pivot_wider(names_from = indicador, values_from = valor)`
+# A tibble: 2 x 3
+   anio inflacion desempleo
+  <dbl>     <dbl>     <dbl>
+1  2022      94.8       6.8
+2  2023     211.4       5.7
+\end{lstlisting}
+
+		\begin{block}{}
+			Si hay combinaciones sin dato en los datos originales, se rellenan con \rscript{NA}. Usá \rscript{`:ky:values_fill` = 0} para reemplazar esos \rscript{NA} por cero automáticamente.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Datos relacionales: múltiples tablas}
+		En la práctica, la información rara vez viene en una sola tabla. Lo normal es tener varias tablas vinculadas por una \textbf{clave común} (fijate sino en \href{https://developer.imdb.com/non-commercial-datasets/}{\textbf{dataset de IMDB}}). Esa arquitectura se llama \textbf{base de datos relacional}.
+
+		Ejemplos típicos en economía:
+		\begin{itemize}
+			\item Una tabla de \textbf{países} con id, nombre y región, y otra de \textbf{indicadores} con id\_país, año, PBI e inflación
+			\item Una tabla de \textbf{empresas} con id y sector, y otra de \textbf{empleados} con id\_empresa, nombre y sueldo
+			\item Una tabla de \textbf{productos} con id y categoría, y otra de \textbf{ventas} con id\_producto, fecha y monto
+		\end{itemize}
+
+		Un \textbf{join} combina filas de dos tablas basándose en los valores de una o más columnas clave. En \rscript{`:pk:dplyr`}, la familia \rscript{`:fn:*_join()`} implementa todos los tipos del álgebra relacional.
+
+		\begin{alertblock}{}
+			Hay que distinguir entre \textbf{mutating joins} (agregan columnas de la segunda tabla: \rscript{left_join()}, \rscript{inner_join()}, \rscript{right_join()}, \rscript{full_join()}) y \textbf{filtering joins} (filtran filas sin agregar columnas: \rscript{semi_join()}, \rscript{anti_join()}).
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Tipos de joins}
+		Trabajaremos con estas dos tablas. \rscript{paises} tiene cuatro entradas; \rscript{datos} tiene indicadores solo para tres de ellas, más un \rscript{id} que no tiene país.
+
+\begin{lstlisting}[style=RScript]
+paises <- tibble(id = 1:4,
+  pais   = c("Argentina", "Brasil", "Chile", "Uruguay"),
+  region = c("Cono Sur", "Sudamérica", "Cono Sur", "Cono Sur"))
+
+datos <- tibble(id = c(1, 2, 3, 5),
+  pbi_usd   = c(633, 1920, 301, 73),
+  inflacion = c(`:nm:211.4`, `:nm:4.6`, `:nm:12.8`, `:nm:8.3`))
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{4.8cm}},
+				row{1}   = {font=\bfseries},
+				column{1} = {font=\ttfamily\small},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd=\rscript}
+			}
+				Función & Conserva & Nota\\
+				left\_join() & todas las filas de la izquierda & rellena con \texttt{NA} donde no hay match\\
+				inner\_join() & solo las filas con match en ambas & descarta toda fila sin coincidencia\\
+				right\_join() & todas las filas de la derecha & simétrico al \rscript{left\_join()}\\
+				full\_join() & todas las filas de ambas tablas & máxima conservación, rellena con \texttt{NA}\\
+				semi\_join() & filas de la izquierda con match & no agrega columnas\\
+				anti\_join() & filas de la izquierda sin match & diagnóstico de pérdida de datos\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{left\_join()}: el join más frecuente}
+		Conserva \textbf{todas} las filas de la tabla izquierda y agrega las columnas de la derecha donde haya coincidencia. Si no hay match, rellena con \rscript{NA}.
+
+\begin{lstlisting}[style=RScript]
+paises |> left_join(datos, `:ky:by` = "id")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> paises |> left_join(datos, by = "id")`
+# A tibble: 4 x 5
+     id pais      region     pbi_usd inflacion
+  <dbl> <chr>     <chr>        <dbl>     <dbl>
+1     1 Argentina Cono Sur       633     211.4
+2     2 Brasil    Sudamérica    1920       4.6
+3     3 Chile     Cono Sur       301      12.8
+4     4 Uruguay   Cono Sur        NA        NA
+\end{lstlisting}
+
+		Uruguay queda con \rscript{NA} porque su \rscript{id} (4) no existe en \rscript{datos}. El \rscript{id = 5} de \rscript{datos} se descarta porque no tiene país correspondiente.
+
+		\begin{block}{}
+			\rscript{left_join()} es el join por defecto en análisis: preserva la tabla base completa y enriquecés con la información disponible.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{inner\_join()} y \texttt{full\_join()}}
+		\titleitem{\texttt{inner\_join()}: solo el cruce}
+		Conserva únicamente las filas que tienen coincidencia en \textbf{ambas} tablas. Toda fila sin match desaparece.
+\begin{lstlisting}[style=RScript]
+paises |> inner_join(datos, `:ky:by` = "id")
+# -> 3 filas: Argentina, Brasil, Chile. Uruguay e id=5 desaparecen.
+\end{lstlisting}
+
+		\titleitem{\texttt{full\_join()}: la unión completa}
+		Conserva todas las filas de ambas tablas. Las combinaciones sin match se rellenan con \rscript{NA}.
+\begin{lstlisting}[style=RScript]
+paises |> full_join(datos, `:ky:by` = "id")
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> paises |> full_join(datos, by = "id")`
+# A tibble: 5 x 5
+     id pais      region     pbi_usd inflacion
+  <dbl> <chr>     <chr>        <dbl>     <dbl>
+1     1 Argentina Cono Sur       633     211.4
+2     2 Brasil    Sudamérica    1920       4.6
+3     3 Chile     Cono Sur       301      12.8
+4     4 Uruguay   Cono Sur        NA        NA
+5     5 NA        NA              73       8.3
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{semi\_join()} y \texttt{anti\_join()}: joins de filtrado}
+		Estos joins \textbf{no agregan columnas}: solo filtran filas de la tabla izquierda según si hay o no coincidencia en la derecha.
+
+		\titleitem{\texttt{semi\_join()}: filtrar por coincidencia}
+		Conserva las filas de la izquierda que tienen match en la derecha, sin agregar columnas.
+\begin{lstlisting}[style=RScript]
+# ¿Qué países tienen datos económicos?
+paises |> semi_join(datos, `:ky:by` = "id")
+# -> Argentina, Brasil, Chile  (Uruguay no aparece)
+\end{lstlisting}
+
+		\titleitem{\texttt{anti\_join()}: filtrar por ausencia}
+		Conserva las filas de la izquierda que \textbf{no tienen} match en la derecha.
+\begin{lstlisting}[style=RScript]
+# ¿Qué países no tienen datos?
+paises |> anti_join(datos, `:ky:by` = "id")
+# -> Uruguay (id=4 no está en datos)
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Antes de hacer un \rscript{left_join()} importante, usá \rscript{anti_join()} para ver exactamente qué filas quedarán con \rscript{NA}. Es mucho mejor saberlo de antemano que descubrirlo en el resumen final.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Especificar la clave del join}
+		El argumento \rscript{`:ky:by`} controla qué columnas se usan como clave de unión.
+
+		\titleitem{Columnas con el mismo nombre en ambas tablas}
+\begin{lstlisting}[style=RScript]
+# join por una columna
+paises |> left_join(datos, `:ky:by` = "id")
+
+# join por múltiples columnas
+ventas |> left_join(metas, `:ky:by` = c("region", "producto"))
+\end{lstlisting}
+
+		\titleitem{Columnas con distinto nombre}
+\begin{lstlisting}[style=RScript]
+# "id" en paises se llama "cod_pais" en la otra tabla
+paises |> left_join(otra, `:ky:by` = c("id" = "cod_pais"))
+
+# sintaxis moderna con join_by() (más legible)
+paises |> left_join(otra, `:ky:by` = join_by(`:bn:id` == `:bn:cod_pais`))
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Si omitís \rscript{`:ky:by`}, dplyr usará todas las columnas con nombres en común. Esto puede generar joins incorrectos de forma silenciosa. Siempre especificá la clave explícitamente.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{bind\_rows()} y \texttt{bind\_cols()}: apilar tablas}
+		\titleitem{\texttt{bind\_rows()}: apilar filas}
+		Une tablas con la misma estructura colocando una debajo de la otra. Si una columna no existe en algún tibble, la rellena con \rscript{NA}.
+\begin{lstlisting}[style=RScript]
+`sem1` <- tibble(trimestre = "S1", producto = c("Soja", "Maíz"),  monto = c(1200, 980))
+`sem2` <- tibble(trimestre = "S2", producto = c("Soja", "Trigo"), monto = c(1350, 520))
+
+bind_rows(`sem1`, `sem2`)
+
+# también acepta una lista: útil al leer varios archivos
+bind_rows(list(`sem1`, `sem2`))
+\end{lstlisting}
+
+		\titleitem{\texttt{bind\_cols()}: apilar columnas}
+		Une tablas con la misma cantidad de filas colocando una al lado de la otra. No verifica ninguna clave: simplemente pega por posición.
+\begin{lstlisting}[style=RScript]
+identificadores <- tibble(id = 1:3, nombre = c("Ana", "Beto", "Carlos"))
+mediciones      <- tibble(altura = c(165, 180, 172), peso = c(60, 85, 70))
+
+bind_cols(identificadores, mediciones)
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			\rscript{bind_cols()} no verifica que las filas correspondan: si los tibbles no están en el mismo orden, los datos quedan mezclados sin ningún aviso. Preferí un join cuando haya una clave disponible.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejemplo integrador}
+		Partimos de un dataset de PBI en formato ancho (como llega del Banco Mundial), lo combinamos con una tabla de metadatos de países, y producimos un resumen regional.
+
+\begin{lstlisting}[style=RScript]
+pbi_ancho <- tibble(
+  codigo = c("ARG", "BRA", "CHL", "URY", "PRY"),
+  \`2021\` = c(487, 1649, 317,  61,  38),
+  \`2022\` = c(633, 1920, 301,  73,  41),
+  \`2023\` = c(622, 2174, 345,  78,  43)
+)
+
+metadatos <- tibble(
+  codigo = c("ARG", "BRA", "CHL", "URY"),
+  pais   = c("Argentina", "Brasil", "Chile", "Uruguay"),
+  region = c("Cono Sur", "Sudamérica", "Cono Sur", "Cono Sur")
+)
+
+pbi_ancho |>
+  pivot_longer(
+    `:ky:cols`      = `2021`:`2023`,
+    `:ky:names_to`  = "anio",
+    `:ky:values_to` = "pbi"
+  ) |>
+  left_join(metadatos, `:ky:by` = "codigo") |>
+  group_by(`:bn:region`, `:bn:anio`) |>
+  summarise(`:bn:pbi_total` = sum(`:bn:pbi`, `:ky:na.rm` = TRUE), .groups = "drop") |>
+  arrange(`:bn:region`, `:bn:anio`)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RConsole]
+`:in:> pbi_ancho |> pivot_longer(...) |> left_join(metadatos, by = "codigo") |> ...`
+# A tibble: 9 x 3
+  region     anio  pbi_total
+  <chr>      <chr>     <dbl>
+1 Cono Sur   2021        865
+2 Cono Sur   2022       1007
+3 Cono Sur   2023       1045
+4 Sudamérica 2021       1649
+5 Sudamérica 2022       1920
+6 Sudamérica 2023       2174
+7 NA         2021         38
+8 NA         2022         41
+9 NA         2023         43
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Paraguay (\rscript{"PRY"}) no está en \rscript{metadatos}, así que su \rscript{region} queda como \rscript{NA} tras el \rscript{left_join()}. Un \rscript{anti_join(pbi_ancho, metadatos, by = "codigo")} antes del pipeline nos habría advertido esto.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		\begin{enumerate}
+			\item Tomá el dataset \rscript{pbi} del ejemplo y convertilo a formato largo con \rscript{anio} como entero. Verificá los tipos de columna del resultado.
+
+			\item Creá un tibble con 3 países y 4 años de datos económicos en formato ancho (una columna por año). Convertilo a formato largo.
+
+			\item Partiendo del resultado del ejercicio anterior, volvé al formato original.
+
+			\item En el dataset \rscript{relig_income} (incluido en \rscript{`:pk:tidyr`}), todas las columnas excepto \rscript{religion} representan rangos de ingresos. Convertilo a formato largo. ¿Cuántas filas tiene el resultado?
+
+			\item Creá un tibble de exportaciones con columnas \rscript{producto}, \rscript{`trim_1`}, \rscript{`trim_2`}, \rscript{`trim_3`} y \rscript{`trim_4`}. Convertilo a formato largo de forma que el número de trimestre aparezca limpio, sin el prefijo.
+
+			\item Creá el dataset \rscript{macro} del ejemplo pero agregale una segunda fila con el mismo año e indicador. ¿Qué hace \rscript{pivot_wider()} con esa duplicación?
+
+			\item En el dataset \rscript{us_rent_income} (incluido en \rscript{`:pk:tidyr`}), cada variable (\rscript{income} y \rscript{rent}) aparece como una fila. Convertilo a formato ancho para que cada variable sea una columna.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=8]
+			\item Creá \rscript{paises} y \rscript{datos} del ejemplo. Combiná las tablas preservando todos los países. ¿Cuál queda con \rscript{NA} y por qué?
+
+			\item Sobre las mismas tablas, conservá solo los países que tienen información en ambas tablas.
+
+			\item Encontrá qué \rscript{id}s de \rscript{datos} no tienen un país correspondiente en \rscript{paises}.
+
+			\item Creá dos tibbles: \rscript{alumnos} con \rscript{legajo} y \rscript{nombre}, y \rscript{notas} con \rscript{legajo} y \rscript{nota}. No todos los alumnos tienen nota. Realizá los cuatro tipos de mutating join y describí qué devuelve cada uno.
+
+			\item El paquete \rscript{`:pk:dplyr`} incluye \rscript{band_members} y \rscript{band_instruments}. Explorálos con \rscript{left_join()}, \rscript{inner_join()} y \rscript{full_join()}.
+
+			\item Creá dos tibbles de exportaciones de distintos semestres del año con la misma estructura. Apilá los dos y verificá que el resultado tiene la cantidad correcta de filas.
+
+			\item Agregá una columna \rscript{descuento} solo al tibble del segundo semestre del ejercicio anterior. Apilá los dos nuevamente. ¿Cómo maneja \rscript{bind_rows()} la columna que solo existe en uno de los tibbles?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}[start=15]
+			\item Creá un dataset de empleo en formato largo (provincia, sector, trimestre, tasa). Convertilo a formato ancho con una columna por trimestre.
+
+			\item Partiendo del resultado anterior en formato ancho, volvé al largo y verificá que recuperás exactamente los datos originales.
+
+			\item Creá un tibble con 6 provincias argentinas y sus PBI para 2020, 2021, 2022 y 2023 en formato ancho. Convertilo a largo y calculá el crecimiento porcentual promedio anual de cada provincia.
+
+			\item Creá un tibble de precios de 3 productos en 4 supermercados en formato ancho (una columna por supermercado). Convertilo a largo y encontrá el supermercado más barato para cada producto.
+
+			\item Creá dos tibbles de exportaciones de distintos años con las mismas columnas. Apilá los dos y calculá el total exportado por producto entre ambos años.
+
+			\item Tenés dos tablas: \rscript{empresas} (id\_empresa, nombre, cantidad\_empleados) y \rscript{contratos} (id\_empresa, monto). Encontrá los contratos firmados por empresas con más de 50 empleados, sin modificar la tabla de contratos.
+
+			\item Tenés \rscript{clientes} (id\_cliente, nombre, ciudad) y \rscript{compras} (id\_cliente, producto, monto). Calculá el gasto total por ciudad, considerando solo las ciudades donde al menos un cliente realizó una compra.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios integradores}
+		\begin{enumerate}[start=22]
+			\item Tenés un dataset de PBI de 5 países en formato ancho (una columna por año) y una tabla separada con la región de cada país. Transformá el PBI a largo, uní con los metadatos, y calculá el PBI total por región y año. ¿Qué país no tiene región asignada?
+
+			\item Creá un dataset de ventas mensuales de 5 productos durante 2023 en formato largo. Convertilo a ancho, calculá el total anual por producto como columna adicional y ordená de mayor a menor.
+
+			\item Tenés dos tablas: \rscript{salarios} (legajo, area, sueldo\_base) y \rscript{presentismo} (legajo, dias\_trabajados). No todos los empleados tienen registro de presentismo. Calculá el sueldo final como \rscript{sueldo\_base * dias\_trabajados / 22} para quienes tienen registro, y el sueldo base sin modificación para el resto.
+
+			\item Creá un dataset de IPC en formato ancho con categorías como columnas y meses como filas. Convertilo a largo, calculá la variación mensual por categoría y clasificá cada mes según la intensidad de la variación. Resumí la cantidad de meses en cada categoría por producto.
+
+			\item Tenés tres tibbles de exportaciones de los tres primeros trimestres de 2023 con la misma estructura. Apilá los tres, unilos con una tabla de precios por producto, calculá el ingreso estimado y resumí por trimestre y producto.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios integradores}
+		\begin{enumerate}[start=27]
+			\item Creá un dataset de empleados con columnas \rscript{nombre}, \rscript{`ventas\_q1`}, \rscript{`ventas\_q2`}, \rscript{`ventas\_q3`} y \rscript{`ventas\_q4`}. Convertilo a largo, identificá el trimestre de mayor venta por empleado, uní con una tabla de comisiones (trimestre, porcentaje) y calculá el bono anual de cada empleado.
+
+			\item Creá un dataset de inflación mensual de 4 países en formato ancho (una columna por mes). Convertilo a largo, calculá la inflación acumulada del año para cada país, clasificá cada mes como \quotation{alta} (>8\%), \quotation{media} o \quotation{baja}, y contá cuántos meses cayó en cada categoría por país.
+
+			\item Tenés dos tablas: \rscript{proyectos} (id, nombre, fecha\_inicio, fecha\_fin\_prevista) y \rscript{avances} (id\_proyecto, fecha\_reporte, porcentaje\_completado). Calculá los días transcurridos desde el inicio de cada proyecto, el avance más reciente reportado y si el proyecto está en tiempo o retrasado.
+
+			\item Tenés una encuesta con columnas \rscript{id}, \rscript{`p_01`} a \rscript{`p_08`} con respuestas del 1 al 5. Convertí las preguntas a formato largo, clasificá las respuestas en \quotation{en desacuerdo} (1--2), \quotation{neutral} (3) y \quotation{de acuerdo} (4--5), calculá el porcentaje de cada categoría por pregunta y volvé a formato ancho para reportar.
+
+			\item En \rscript{mtcars}, convertí los nombres de fila a una columna \rscript{modelo}. Creá dos tablas separadas: \rscript{especificaciones} (modelo, cyl, hp, wt) y \rscript{rendimiento} (modelo, mpg, qsec). Unilas de vuelta con un join y clasificá cada auto según su relación potencia/peso en tres grupos.
+		\end{enumerate}
+	\end{frame}
+
 
 \end{document}

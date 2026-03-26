@@ -14,7 +14,7 @@ Repositorio del curso **R para limpieza, manipulación y exploración de datos**
 | 4 | Manipulación de datos I | [PDF](presentaciones/clases/clase-04/main.pdf) |
 | 5 | Manipulación de datos II | [PDF](presentaciones/clases/clase-05/main.pdf) |
 | 6 | Manipulación de datos III | [PDF](presentaciones/clases/clase-06/main.pdf) |
-| 7 | 🚧 Pendiente | — |
+| 7 | Manipulación de datos IV | [PDF](presentaciones/clases/clase-07/main.pdf) |
 | 8 | 🚧 Pendiente | — |
 | 9 | 🚧 Pendiente | — |
 | 10 | 🚧 Pendiente | — |
@@ -30,12 +30,14 @@ Incursiones por cada uno de los paquetes.
 |---------|-------------|:---:|
 | `dplyr` | Verbos para manipular tablas: filtrar, seleccionar, mutar, resumir | [PDF](presentaciones/machetes/dplyr/main.pdf) |
 | `tidyr` | Reestructuración de datos: pivoteo, anidado y separación de columnas | [PDF](presentaciones/machetes/tidyr/main.pdf) |
+| `purrr` | Programación funcional: iteración sobre listas y vectores sin bucles | [PDF](presentaciones/machetes/purrr/main.pdf) |
 | `readr` | Importación de archivos CSV, Excel y Google Sheets | [PDF](presentaciones/machetes/readr/main.pdf) |
 | `janitor` | Limpieza de nombres de columnas y detección de duplicados | [PDF](presentaciones/machetes/janitor/main.pdf) |
 | `lubridate` | Parseo y aritmética de fechas y horas | [PDF](presentaciones/machetes/lubridate/main.pdf) |
 | `stringr` | Operaciones sobre cadenas de texto | [PDF](presentaciones/machetes/stringr/main.pdf) |
 | `forcats` | Manejo y reordenamiento de factores | [PDF](presentaciones/machetes/forcats/main.pdf) |
 | `regex` | Expresiones regulares aplicadas en R | [PDF](presentaciones/machetes/regex/main.pdf) |
+| Funciones | Definición de funciones, argumentos y funciones anónimas | [PDF](presentaciones/machetes/funciones-anonimas/main.pdf) |
 | General | Operadores y operaciones básicas de R | [PDF](presentaciones/machetes/general/main.pdf) |
 
 ## Descripción

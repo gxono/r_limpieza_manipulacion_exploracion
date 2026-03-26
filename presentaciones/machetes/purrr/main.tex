@@ -1,0 +1,350 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \texttt{purrr}}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Introducción: iteración funcional}
+		\rscript{`:pk:purrr`} reemplaza los bucles \rscript{for} con funciones que aplican una operación a cada elemento de una lista o vector. El código resultante es más conciso, predecible y sin estado mutable.
+
+		\begin{figure}[h!]
+			\href{https://purrr.tidyverse.org/}{\includegraphics[width=0.15\textwidth]{img/purrr.png}}
+		\end{figure}
+
+		\begin{exampleblock}{}
+			\rscript{`:pk:purrr`} viene incluido en \rscript{`:pk:tidyverse`} y se carga automáticamente.
+		\end{exampleblock}
+	\end{frame}
+	
+	
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+inflaciones <- list(
+	arg = c(`:nm:94.8`, `:nm:211.4`, `:nm:118.9`),
+	bra = c(`:nm:5.8`, `:nm:5.8`, `:nm:4.8`),
+	chi = c(`:nm:11.6`, `:nm:12.8`, `:nm:4.7`)
+)
+
+# Con bucle for (imperativo):
+resultado <- vector("double", length(inflaciones))
+for (i in seq_along(inflaciones)) resultado[[i]] <- mean(inflaciones[[i]])
+
+# Con purrr (funcional):
+map_dbl(inflaciones, mean)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> map_dbl(inflaciones, mean)`
+arg      bra      chi
+141.7000   5.4667   9.7000
+\end{lstlisting}
+	\end{frame}
+	
+
+
+	\begin{frame}[fragile]{La familia \texttt{map()}: variantes por tipo de output}
+		Todas reciben \textbf{un input} (\rscript{.x}) y una función (\rscript{.f}), pero difieren en el tipo del resultado. Si la función no devuelve el tipo esperado, purrr lanza un error claro.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Tipo de retorno & Cuándo usarla\\
+				map(.x, .f) & lista & para resultados heterogéneos o complejos\\
+				map\_lgl(.x, .f) & logical & la función retorna TRUE/FALSE\\
+				map\_int(.x, .f) & integer & la función retorna entero\\
+				map\_dbl(.x, .f) & double & la función retorna número real\\
+				map\_chr(.x, .f) & character & la función retorna texto\\
+				map\_vec(.x, .f) & vector (infiere tipo) & desde purrr 1.0.0 (2022)\\
+			\end{tblr}
+		\end{center}
+
+		\begin{alertblock}{}
+			Por si las ves por ah\'i, \rscript{map\_df()}, \rscript{map\_dfr()} y \rscript{map\_dfc()} están \textbf{deprecadas} desde purrr 1.0.0. En su lugar, usá
+			\begin{itemize}
+				\item \rscript{map() |> list\_rbind()} o 
+				\item \rscript{map() |> list\_cbind()}.
+			\end{itemize} 
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{map()}: formas de pasar la función}
+		La función \rscript{.f} puede ser un nombre, una función anónima o una fórmula purrr. Para más detalles sobre las tres formas sintácticas, ver el machete de funciones anónimas.
+
+\begin{lstlisting}[style=RScript]
+# Función nombrada: solo el nombre, sin paréntesis
+map_dbl(inflaciones, mean)
+
+# Función anónima \() — permite argumentos extra
+map_dbl(inflaciones, \(`:ky:x`) mean(`:ky:x`, na.rm = TRUE))
+
+# Fórmula purrr (~): .x es el placeholder
+map_dbl(inflaciones, ~mean(.x, na.rm = TRUE))
+
+# map() retorna lista (output heterogéneo o de longitud variable)
+map(inflaciones, summary)
+
+# map_chr() para obtener texto
+map_chr(inflaciones, \(`:ky:x`) paste0(round(mean(`:ky:x`), `:nm:1`), "%"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> map_chr(inflaciones, \(x) paste0(round(mean(x), 1), "%"))`
+      arg       bra       chi
+"141.7%"    "5.5%"    "9.7%"
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{map2()} y \texttt{pmap()}: múltiples inputs}
+		\titleitem{\texttt{map2()}: dos vectores en paralelo}
+		\rscript{.x} es el primer vector, \rscript{.y} el segundo. Se recorren elemento a elemento. Tiene las mismas variantes de tipo que \rscript{map()}: \rscript{map2\_dbl()}, \rscript{map2\_chr()}, etc.
+
+\begin{lstlisting}[style=RScript]
+pib  <- c(arg = `:nm:500`, bra = `:nm:1800`, chi = `:nm:300`)   # miles de millones USD
+pobl <- c(arg = `:nm:46`,  bra = `:nm:215`,  chi = `:nm:19`)    # millones de hab.
+
+map2_dbl(pib, pobl, \(`:ky:p`, `:ky:n`) round(`:ky:p` / `:ky:n`, `:nm:1`))
+# arg: 10.9   bra: 8.4   chi: 15.8   (PBI per cápita en miles USD)
+\end{lstlisting}
+
+		\titleitem{\texttt{pmap()}: lista de múltiples inputs}
+		\rscript{pmap()} recibe una lista donde cada elemento es un argumento de la función. Los nombres de la lista deben coincidir con los argumentos de \rscript{.f}.
+
+\begin{lstlisting}[style=RScript]
+params <- list(
+  pais = c("Argentina", "Brasil", "Chile"),
+  pib  = c(`:nm:500`, `:nm:1800`, `:nm:300`),
+  pobl = c(`:nm:46`,  `:nm:215`,  `:nm:19`)
+)
+
+pmap_chr(params, \(`:ky:pais`, `:ky:pib`, `:ky:pobl`)
+  paste0(`:ky:pais`, ": USD ", round(`:ky:pib` / `:ky:pobl`, `:nm:1`), "k pc"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> pmap_chr(params, \(pais, pib, pobl) paste0(...))`
+[1] "Argentina: USD 10.9k pc" "Brasil: USD 8.4k pc"
+[3] "Chile: USD 15.8k pc"
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{imap()}: iteración con nombre o índice}
+		\rscript{imap(.x, .f)} aplica \rscript{.f(valor, nombre\_o\_indice)} a cada elemento. Si \rscript{.x} tiene nombres, el segundo argumento es el nombre (character); si no, es el índice numérico. Tiene las mismas variantes de tipo que \rscript{map()}.
+
+\begin{lstlisting}[style=RScript]
+# .x = valor del elemento, .y = nombre (o índice)
+imap_chr(inflaciones,
+  \(`:ky:x`, `:ky:nm`) paste0(`:ky:nm`, ": ", round(mean(`:ky:x`), `:nm:1`), "%"))
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> imap_chr(inflaciones, \(x, nm) paste0(nm, ": ", round(mean(x), 1), "%"))`
+         arg          bra          chi
+"arg: 141.7%" "bra:  5.5%"  "chi: 9.7%"
+\end{lstlisting}
+
+\begin{lstlisting}[style=RScript]
+# Con vector sin nombres: .y es el índice numérico
+imap_chr(c("a", "b", "c"), \(`:ky:x`, `:ky:i`) paste0("[", `:ky:i`, "] ", `:ky:x`))
+# -> "[1] a"   "[2] b"   "[3] c"
+\end{lstlisting}
+
+		\begin{block}{}
+			\rscript{imap(x, f)} es equivalente a \rscript{map2(x, names(x), f)}. Úsalo cuando el nombre o posición del elemento es parte de la lógica (etiquetas, nombres de archivo, identificadores).
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{walk()}: efectos secundarios sin valor de retorno}
+		\rscript{walk(.x, .f)} aplica \rscript{.f} a cada elemento por sus \textbf{efectos secundarios} (imprimir, guardar, graficar) y devuelve \rscript{.x} invisiblemente. Tiene variantes \rscript{walk2()} y \rscript{pwalk()} para múltiples inputs.
+
+\begin{lstlisting}[style=RScript]
+# Imprimir el promedio de cada país
+walk(inflaciones, \(`:ky:x`) cat(round(mean(`:ky:x`), `:nm:1`), "%\n"))
+
+# Guardar un CSV por país (walk 2: nombres + datos en paralelo)
+walk2(
+  names(inflaciones),
+  inflaciones,
+  \(`:ky:nm`, `:ky:x`) write.csv(
+    data.frame(inflacion = `:ky:x`),
+    paste0("datos/", `:ky:nm`, ".csv")
+  )
+)
+
+# Equivalente con pwalk() usando lista de parámetros
+pwalk(
+  list(`:ky:nm` = names(inflaciones), `:ky:x` = inflaciones),
+  \(`:ky:nm`, `:ky:x`) write.csv(data.frame(inflacion = `:ky:x`), paste0(`:ky:nm`, ".csv"))
+)
+\end{lstlisting}
+
+		\begin{block}{}
+			Diferencia clave: \rscript{map()} cuando \textbf{necesitás el resultado}; \rscript{walk()} cuando solo importan los \textbf{efectos secundarios}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{keep()}, \texttt{discard()} y \texttt{compact()}: filtrar listas}
+		\titleitem{\texttt{keep()} y \texttt{discard()}: filtro por predicado}
+		Devuelven la sublista de elementos que \textbf{cumplen} (keep) o \textbf{no cumplen} (discard) una condición lógica. El predicado \rscript{.p} debe retornar un único \rscript{TRUE} o \rscript{FALSE} por elemento.
+
+\begin{lstlisting}[style=RScript]
+# Conservar solo los países con inflación promedio mayor al 20%
+keep(inflaciones, \(`:ky:x`) mean(`:ky:x`) > `:nm:20`)
+# -> lista con solo "arg"
+
+# Descartar países con algún valor faltante
+discard(inflaciones, \(`:ky:x`) any(is.na(`:ky:x`)))
+
+# Mantener solo las columnas numéricas de un data frame
+keep(datos, is.numeric)
+\end{lstlisting}
+
+		\titleitem{\texttt{compact()}: eliminar NULLs}
+		Equivalente a \rscript{discard(.x, is.null)}. Muy útil para limpiar los resultados de \rscript{safely()} o \rscript{possibly()}.
+
+\begin{lstlisting}[style=RScript]
+resultados <- list(`:nm:1`, NULL, `:nm:3`, NULL, `:nm:5`)
+compact(resultados)   # -> list(1, 3, 5)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{every()}, \texttt{some()} y \texttt{detect()}: predicados globales}
+		Comprueban condiciones sobre los elementos de una lista o vector y devuelven un escalar.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Retorna & Qué hace\\
+				every(.x, .p) & logical & TRUE si \textbf{todos} los elementos cumplen .p\\
+				some(.x, .p) & logical & TRUE si \textbf{algún} elemento cumple .p\\
+				none(.x, .p) & logical & TRUE si \textbf{ningún} elemento cumple .p\\
+				detect(.x, .p) & elemento & primer elemento que cumple .p (o NULL)\\
+				detect\_index(.x, .p) & integer & índice del primer elemento que cumple .p\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+# ¿Todos los países tienen inflación promedio positiva?
+every(inflaciones, \(`:ky:x`) mean(`:ky:x`) > `:nm:0`)     # -> TRUE
+
+# ¿Alguno supera el 100% en promedio?
+some(inflaciones, \(`:ky:x`) mean(`:ky:x`) > `:nm:100`)    # -> TRUE
+
+# ¿Cuál es el primero que supera el 100%?
+detect(inflaciones, \(`:ky:x`) mean(`:ky:x`) > `:nm:100`)
+# -> c(94.8, 211.4, 118.9)  (el vector "arg")
+
+detect_index(inflaciones, \(`:ky:x`) mean(`:ky:x`) > `:nm:100`)
+# -> 1
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{safely()} y \texttt{possibly()}: manejo de errores}
+		Cuando se itera sobre muchos inputs, algunos pueden fallar. Estas funciones envuelven otra función para que un error no interrumpa todo el proceso.
+
+		\titleitem{\texttt{safely()}: separa resultados y errores}
+		Devuelve una función que siempre retorna \rscript{list(result = ..., error = ...)}.
+
+\begin{lstlisting}[style=RScript]
+leer_safe <- safely(read_csv)
+
+archivos  <- list.files("datos/", full.names = TRUE)
+resultado <- map(archivos, `:fn:leer_safe`)
+
+exitos  <- map(resultado, "result") |> compact()  # solo los exitosos
+errores <- map(resultado, "error")  |> compact()  # solo los errores
+\end{lstlisting}
+
+		\titleitem{\texttt{possibly()}: reemplaza el error con un valor por defecto}
+
+\begin{lstlisting}[style=RScript]
+leer_posible <- possibly(read_csv, otherwise = NULL)
+
+tablas <- map(archivos, `:fn:leer_posible`) |> compact()  # descarta los NULL
+\end{lstlisting}
+
+		\begin{block}{}
+			Regla práctica: usá \rscript{possibly()} para continuar silenciosamente; \rscript{safely()} cuando necesitás saber \textbf{qué falló y por qué}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{reduce()} y \texttt{accumulate()}: reducción}
+		\titleitem{\texttt{reduce()}: combina una lista en un solo valor}
+		Aplica \rscript{.f(acumulado, elemento)} de izquierda a derecha hasta obtener un solo resultado.
+
+\begin{lstlisting}[style=RScript]
+# Unir múltiples data frames con left_join
+tablas <- list(pib, inflacion, desempleo)   # cada uno con columna "pais"
+reduce(tablas, left_join, `:ky:by` = "pais")
+
+# Precio tras períodos de 5%, 10% y 15% de inflación
+reduce(c(`:nm:0.05`, `:nm:0.10`, `:nm:0.15`),
+  \(`:ky:acc`, `:ky:x`) `:ky:acc` * (`:nm:1` + `:ky:x`),
+  `:ky:.init` = `:nm:100`)
+# -> 132.825
+\end{lstlisting}
+
+		\titleitem{\texttt{accumulate()}: como reduce, pero guarda los intermedios}
+
+\begin{lstlisting}[style=RScript]
+# Ver la evolución paso a paso del precio
+accumulate(c(`:nm:0.05`, `:nm:0.10`, `:nm:0.15`),
+  \(`:ky:acc`, `:ky:x`) `:ky:acc` * (`:nm:1` + `:ky:x`),
+  `:ky:.init` = `:nm:100`)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> accumulate(c(0.05, 0.10, 0.15), \(acc, x) acc * (1 + x), .init = 100)`
+[1] 100.000 105.000 115.500 132.825
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{list\_rbind()} y \texttt{list\_cbind()}: combinar resultados}
+		Combinan una lista de data frames en uno solo. Son la alternativa moderna a las deprecadas \rscript{map\_dfr()} y \rscript{map\_dfc()}.
+
+\begin{lstlisting}[style=RScript]
+# Workflow típico: leer muchos archivos y combinarlos en un solo data frame
+archivos <- list.files("datos/", pattern = "\\.csv$", full.names = TRUE)
+
+# Sin identificador de origen:
+tabla_final <- map(archivos, read_csv) |> list_rbind()
+
+# Con nombre del archivo como columna identificadora:
+tabla_con_origen <- archivos |>
+  set_names(basename(archivos)) |>   # nombra la lista con el nombre del archivo
+  map(read_csv) |>
+  list_rbind(`:ky:names_to` = "archivo")
+\end{lstlisting}
+
+		\titleitem{\texttt{list\_cbind()}: combinar por columnas}
+
+\begin{lstlisting}[style=RScript]
+# Cada data frame debe tener el mismo número de filas
+list_cbind(lista_de_df)
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			\rscript{set\_names()} asigna nombres a un vector o lista. Combinada con \rscript{names\_to}, permite saber de qué archivo proviene cada fila: clave para trabajar con series de datos por país, período o fuente.
+		\end{exampleblock}
+	\end{frame}
+
+
+\end{document}

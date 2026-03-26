@@ -2,15 +2,359 @@
 \input{../../sty/main}
 
 
-
 \begin{document}
-	\subtitle{Cheatsheet de funciones y funciones an\'onimas}
+	\subtitle{Cheatsheet de funciones y funciones anónimas}
 
 	\begin{frame}[plain]
 		\maketitle
 	\end{frame}
 
 
+	\begin{frame}[fragile]{¿Qué es una función?}
+		Una función es un bloque de código con nombre que recibe entradas (\textbf{argumentos}), ejecuta operaciones y devuelve un resultado. Permiten reutilizar lógica sin repetir código.
+
+\begin{lstlisting}[style=RScript]
+nombre <- function(`:ky:arg1`, `:ky:arg2`) {
+  # cuerpo: lo que la función hace
+  resultado  # último valor evaluado = valor de retorno
+}
+\end{lstlisting}
+
+		\titleitem{Ejemplo}
+\begin{lstlisting}[style=RScript]
+tasa_variacion <- function(`:ky:actual`, `:ky:anterior`) {
+  (`:ky:actual` / `:ky:anterior` - 1) * 100
+}
+
+tasa_variacion(`:ky:actual` = 120, `:ky:anterior` = 100)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> tasa_variacion(actual = 120, anterior = 100)`
+[1] 20
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Argumentos}
+		\titleitem{Posicionales vs nombrados}
+		Los argumentos se pueden pasar por \textbf{posición} (el orden importa) o por \textbf{nombre} (el orden no importa). Mezclar ambos estilos es válido; los nombrados van al final por convención.
+\begin{lstlisting}[style=RScript]
+tasa_variacion(120, 100)                              # posicional
+tasa_variacion(`:ky:actual` = 120, `:ky:anterior` = 100)  # nombrado
+tasa_variacion(120, `:ky:anterior` = 100)             # mixto
+\end{lstlisting}
+
+		\titleitem{Valores por defecto}
+		Un argumento puede tener un valor predeterminado. Si el usuario no lo pasa, se usa el default.
+\begin{lstlisting}[style=RScript]
+redondear <- function(`:ky:x`, `:ky:digitos` = 2) {
+  round(`:ky:x`, `:ky:digitos`)
+}
+
+redondear(`:nm:3.14159`)   	# usa digitos = 2 -> 3.14
+redondear(`:nm:3.14159`, `:nm:4`) # usa digitos = 4 -> 3.1416
+\end{lstlisting}
+	\end{frame}
+	
+	
+	
+	
+	\begin{frame}[fragile]
+				\titleitem{\texttt{...}: argumentos adicionales}
+		\rscript{...} (dots) captura cualquier argumento extra y lo reenvía a otra función. Permite crear funciones \textit{wrapper} sin conocer de antemano todos los parámetros.
+\begin{lstlisting}[style=RScript]
+mi_mean <- function(`:ky:x`, ...) {
+	mean(`:ky:x`, ...)   # ... se pasa directo a mean()
+}
+
+mi_mean(c(1, 2, NA), na.rm = TRUE)  # -> 1.5
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Cuerpo y valor de retorno}
+		\titleitem{Return implícito}
+		En R, el valor de retorno de una función es la \textbf{última expresión evaluada}, sin necesidad de escribir \rscript{return()}.
+\begin{lstlisting}[style=RScript]
+doble <- function(`:ky:x`) `:ky:x` * 2   # retorna x * 2 implícitamente
+
+doble(`:nm:5`)   # -> 10
+\end{lstlisting}
+
+		\titleitem{Return explícito}
+		\rscript{return()} es útil para salir de la función antes del final, típicamente en condicionales. No es necesario al final del cuerpo.
+\begin{lstlisting}[style=RScript]
+clasificar_pib <- function(`:ky:pib`) {
+  if (is.na(`:ky:pib`)) return("Sin datos")
+  if (`:ky:pib` > 1000) return("Alto")
+  if (`:ky:pib` >  300) return("Medio")
+  "Bajo"   # return implícito si no se cumplió ninguna condición anterior
+}
+\end{lstlisting}
+	\end{frame}
+	
+	
+	
+\begin{frame}[fragile]
+		\titleitem{Scope: las variables locales no se filtran}
+Las variables creadas dentro de una función \textbf{no existen} fuera de ella. Esto evita efectos secundarios no deseados.
+\begin{lstlisting}[style=RScript]
+f <- function() { temporal <- 42; temporal }
+f()       # -> 42
+temporal  # -> Error: object 'temporal' not found
+\end{lstlisting}
+\end{frame}
+	
+
+
+	\begin{frame}[fragile]{Funciones como objetos}
+		En R las funciones son \textbf{objetos de primera clase}: se pueden guardar en variables, pasarlas como argumentos a otras funciones, y devolverlas como resultado. Esto es la base del estilo funcional de programación.
+
+\begin{lstlisting}[style=RScript]
+# guardar en una variable (ya lo hacemos siempre)
+doble <- function(`:ky:x`) `:ky:x` * 2
+
+# pasar como argumento a otra función
+sapply(1:5, doble)   # -> 2 4 6 8 10
+
+# la función "operacion" recibe otra función como argumento
+aplicar <- function(`:ky:x`, `:ky:fun`) `:ky:fun`(`:ky:x`)
+aplicar(`:nm:9`, sqrt)   # -> 3
+aplicar(`:nm:9`, doble)  # -> 18
+\end{lstlisting}
+
+		\begin{block}{}
+			Funciones como \rscript{sapply()}, \rscript{lapply()}, \rscript{map()}, \rscript{across()} y \rscript{summarise()} reciben otras funciones como argumento. Que la función sea nombrada o anónima es indistinto para ellas: lo que importa es que sea \textbf{invocable}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Funciones anónimas}
+		Una función anónima es una función \textbf{sin nombre}, definida y usada en el mismo lugar. No se guarda en el entorno: se crea, se aplica y desaparece.
+
+		\titleitem{¿Cuándo usarlas?}
+		\begin{itemize}
+			\item Cuando la lógica es simple y se usa \textbf{una sola vez}
+			\item Dentro de \rscript{map()}, \rscript{across()}, \rscript{sapply()}, etc.
+			\item Para evitar contaminar el entorno con funciones de uso único
+		\end{itemize}
+
+		\titleitem{¿Cuándo NO usarlas?}
+		\begin{itemize}
+			\item Si la función tiene más de 2--3 líneas: mejor nombrarla y documentarla
+			\item Si la usás en más de un lugar: nombrala para no repetir el cuerpo
+			\item Si la lógica no es evidente: un nombre descriptivo comunica la intención
+		\end{itemize}
+
+		\begin{exampleblock}{}
+			Regla práctica: si tenés que pensar más de 3 segundos en entender qué hace la función anónima, probablemente merezca un nombre \emoji{wink}
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Las tres formas de escribir funciones anónimas}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l l p{3.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Sintaxis & Desde & Contexto & Nota\\
+				function(x) ... & siempre & base R y tidyverse & más explícita\\
+				`:\:`(x) ... & R 4.1.0 (2021) & base R y tidyverse & equivalente a la anterior\\
+				`:~:`.x & \texttt{purrr} & solo tidyverse & más compacta; \texttt{.x} es el placeholder\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+# Las tres formas hacen exactamente lo mismo en tidyverse:
+map(1:3, function(`:ky:x`) 1 - `:ky:x` ^ 2)
+map(1:3, \(`:ky:x`) 1 - `:ky:x` ^ 2)
+map(1:3, ~ 1 - .x ^ 2)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> map(1:3, ~ 1 - .x ^ 2)`
+[[1]]
+[1] 0
+[[2]]
+[1] -3
+[[3]]
+[1] -8
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Forma 1 y 2: \texttt{function(x)} y \texttt{\textbackslash(x)}}
+		Son \textbf{idénticas} en comportamiento. La única diferencia es sintáctica: \texttt{\textbackslash(x)} es azúcar sintáctico introducido en R 4.1.0 para reducir el verbosismo.
+
+\begin{lstlisting}[style=RScript]
+# Forma 1: clásica
+function(`:ky:x`) `:ky:x` + 1
+function(`:ky:x`, `:ky:y`) `:ky:x` + `:ky:y`
+
+# Forma 2: moderna (R >= 4.1.0)
+\(`:ky:x`) `:ky:x` + 1
+\(`:ky:x`, `:ky:y`) `:ky:x` + `:ky:y`
+
+# Cuerpo multilínea con llaves
+\(`:ky:x`) {
+  normalizado <- (`:ky:x` - min(`:ky:x`)) / (max(`:ky:x`) - min(`:ky:x`))
+  round(normalizado, `:nm:3`)
+}
+\end{lstlisting}
+
+		\titleitem{En base R (\texttt{sapply} / \texttt{lapply})}
+\begin{lstlisting}[style=RScript]
+sapply(1:5, \(`:ky:x`) `:ky:x` ^ 2)           # -> 1 4 9 16 25
+lapply(c(4, 9, 16), \(`:ky:x`) sqrt(`:ky:x`)) # lista con raíces
+
+# equivalente con function():
+sapply(1:5, function(`:ky:x`) `:ky:x` ^ 2)
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Ambas formas son válidas en \textbf{cualquier contexto}: base R, tidyverse, purrr. Son la elección segura cuando la portabilidad importa.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Forma 3: \texttt{\textasciitilde.x} (fórmula purrr)}
+		La notación \rscript{\~} crea una \textbf{fórmula} que \rscript{`:pk:purrr`} y \rscript{`:pk:dplyr`} interpretan como función anónima. \textbf{No es base R}: solo funciona en funciones del tidyverse que la soporten.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				column{1} = {font=\ttfamily\small},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd=\rscript}
+			}
+				Placeholder & Equivalente & Cuándo se usa\\
+				.x & el primer argumento & siempre (map, across, etc.)\\
+				.y & el segundo argumento & map2(), imap()\\
+				. & alias de .x & histórico, pero preferir .x\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+map(1:5, ~.x * 2)            # .x toma cada valor de 1:5
+map2(1:3, 4:6, ~.x + .y)     # .x = primer vector, .y = segundo
+
+# con across() dentro de mutate/summarise:
+iris |> mutate(across(where(is.numeric), ~round(.x, 1)))
+iris |> summarise(across(where(is.numeric), ~mean(.x, na.rm = TRUE)))
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			\rscript{\~.x^2} es equivalente a \rscript{function(.x) .x^2}. El \rscript{\~} convierte la expresión en una fórmula de una cara (\textit{one-sided formula}) que purrr sabe convertir en función. Fuera de purrr/dplyr, esto no funciona.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{En \texttt{across()}: las tres formas}
+		\rscript{across()} es el contexto más frecuente para funciones anónimas en el análisis de datos. Las tres sintaxis son equivalentes; la elección es cuestión de estilo.
+
+\begin{lstlisting}[style=RScript]
+# Forma 1: function()
+starwars |> mutate(across(where(is.numeric),
+  function(`:ky:x`) round(`:ky:x`, 1)))
+
+# Forma 2: \() - recomendada fuera de purrr
+starwars |> mutate(across(where(is.numeric),
+  \(`:ky:x`) round(`:ky:x`, 1)))
+
+# Forma 3: ~ (la más compacta)
+starwars |> mutate(across(where(is.numeric), ~round(.x, 1)))
+\end{lstlisting}
+
+		\titleitem{Con múltiples funciones en una lista}
+\begin{lstlisting}[style=RScript]
+# Las funciones nombradas no necesitan ser anónimas
+starwars |> summarise(across(
+  where(is.numeric),
+  list(promedio = mean, desvio = sd),
+  na.rm = TRUE
+))
+
+# Función anónima en una lista (cuando la lógica es personalizada)
+starwars |> summarise(across(
+  where(is.numeric),
+  list(promedio = \(`:ky:x`) mean(`:ky:x`, na.rm = TRUE),
+       rango    = \(`:ky:x`) diff(range(`:ky:x`, na.rm = TRUE)))
+))
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{En \texttt{purrr}: \texttt{map()} y familia}
+		\rscript{`:pk:purrr`} implementa la programación funcional en el tidyverse. Todas sus funciones aceptan las tres formas de función anónima.
+
+		\titleitem{Familia \texttt{map()}: un input}
+\begin{lstlisting}[style=RScript]
+map(`:ky:lista`, `:ky:fun`)       # devuelve lista
+map_dbl(`:ky:lista`, `:ky:fun`)   # devuelve vector numérico
+map_chr(`:ky:lista`, `:ky:fun`)   # devuelve vector de texto
+map_lgl(`:ky:lista`, `:ky:fun`)   # devuelve vector lógico
+
+# Ejemplos
+map_dbl(c(4, 9, 16), sqrt)               # función nombrada
+map_dbl(c(4, 9, 16), \(`:ky:x`) sqrt(`:ky:x`) + 1)  # anónima
+map_dbl(c(4, 9, 16), ~sqrt(.x) + 1)     # fórmula
+\end{lstlisting}
+
+		\titleitem{Familia \texttt{map2()}: dos inputs}
+\begin{lstlisting}[style=RScript]
+# .x = primer vector, .y = segundo
+map2_dbl(c(1, 2, 3), c(10, 20, 30), ~.x / .y * 100)
+map2_dbl(c(1, 2, 3), c(10, 20, 30), \(`:ky:x`, `:ky:y`) `:ky:x` / `:ky:y` * 100)
+\end{lstlisting}
+
+		\titleitem{\texttt{pmap()}: múltiples inputs}
+\begin{lstlisting}[style=RScript]
+# pmap recibe una lista de vectores; .[[1]], .[[2]], ... acceden a cada uno
+pmap_dbl(list(c(1,2), c(3,4), c(5,6)), \(`:ky:a`,`:ky:b`,`:ky:c`) `:ky:a` + `:ky:b` + `:ky:c`)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Cuándo usar cada forma}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{3cm} p{4.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Y}{2} = {cmd = \rscript}
+			}
+				Situación & Recomendación & Motivo\\
+				Solo en tidyverse/purrr & `:~:`.x & máxima concisión\\
+				Mezclando base R y tidyverse & `:\:`(x) ... & funciona en ambos contextos\\
+				Cuerpo multilínea & `:\:`(x) \{...\} & más legible que \texttt{function()}\\
+				Código que debe ser legible para todos & function(x) & máxima claridad\\
+				Función usada más de una vez & darle un nombre & evitar repetición\\
+			\end{tblr}
+		\end{center}
+
+		\titleitem{Errores frecuentes}
+\begin{lstlisting}[style=RScript]
+# ERROR: usar ~ fuera de purrr/dplyr
+sapply(1:5, ~.x ^ 2)   # no funciona, devuelve la formula sin evaluar
+
+# CORRECTO:
+sapply(1:5, \(`:ky:x`) `:ky:x` ^ 2)
+
+# ERROR: olvidar .x en la formula
+iris |> mutate(across(where(is.numeric), ~round(x, 1)))  # x no existe
+
+# CORRECTO:
+iris |> mutate(across(where(is.numeric), ~round(.x, 1)))
+\end{lstlisting}
+	\end{frame}
 
 
 \end{document}
