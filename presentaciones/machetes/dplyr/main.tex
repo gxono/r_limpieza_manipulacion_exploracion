@@ -108,8 +108,8 @@ starwars |> rename(`:bn:nombre` = `:bn:name`)
 			everything()         & Todas las columnas restantes                         \\
 			last\_col()          & Última columna                                       \\
 			where(fn)            & Columnas donde \rscript{fn} devuelve \rscript{TRUE}  \\
-			all\_of(vector)      & Todas las columnas en el vector (error si falta una) \\
-			any\_of(vector)      & Las que existan del vector (no da error)
+			all\_of(`vector`)      & Todas las columnas en el vector (error si falta una) \\
+			any\_of(`vector`)      & Las que existan del vector (no da error)
 		\end{tblr}
 	\end{table}
 \end{frame}
