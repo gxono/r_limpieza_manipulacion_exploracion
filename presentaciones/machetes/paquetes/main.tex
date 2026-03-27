@@ -1,0 +1,336 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de paquetes de R}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{¿Qué es un paquete?}
+		Un paquete es una colección organizada de \textbf{funciones}, \textbf{datos} y \textbf{documentación} que extiende las capacidades de R. R base trae un conjunto limitado de funcionalidades; los paquetes permiten hacer todo lo demás.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Capa & Contenido\\
+				R base & $\sim$30 paquetes incluidos con R: \rscript{`:pk:base`}, \rscript{`:pk:stats`}, \rscript{`:pk:utils`}, \rscript{`:pk:methods`}...\\
+				Paquetes externos & más de 21.000 en CRAN; miles más en GitHub y Bioconductor\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+# ¿Qué paquetes tengo instalados?
+rownames(installed.packages())
+
+# ¿Cuántos?
+length(rownames(installed.packages()))
+\end{lstlisting}
+
+		\begin{block}{}
+			Por ejemplo, la funci\'on \rscript{mean()} viene en el paquete \rscript{`:pk:base`} y está disponible siempre. La funci\'on \rscript{mutate()} viene de \rscript{`:pk:dplyr`}: hay que instalarlo y cargarlo. \rscript{read\_dta()} viene de \rscript{`:pk:haven`}: permite leer archivos de Stata.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}{Repositorios: ¿de dónde vienen los paquetes?}
+		Los paquetes se distribuyen desde repositorios. El origen determina cómo se instalan y qué nivel de revisión tienen.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{2} = {cmd = \rscript}
+			}
+				Repositorio & Cómo instalar & Características\\
+				CRAN & install.packages() & oficial; revisado; $>$21.000 paquetes\\
+				GitHub & pak::pkg_install() & desarrollo; no revisado; más actualizado\\
+				Bioconductor & BiocManager::install() & bioinformática y genómica\\
+				R-universe & install.packages() & CRAN alternativo sin revisión formal\\
+			\end{tblr}
+		\end{center}
+
+		\begin{exampleblock}{}
+			Para análisis de datos económicos, CRAN es suficiente en prácticamente todos los casos. GitHub es útil para versiones de desarrollo de paquetes del tidyverse antes de su publicación oficial.
+		\end{exampleblock}
+
+		\begin{block}{}
+			CRAN exige que cada paquete pase una revisión técnica automática y manual. Esto garantiza cierto nivel de calidad pero también retrasa la publicación de actualizaciones.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Instalar paquetes}
+		La instalación es \textbf{permanente}: descarga el paquete al disco y solo hay que hacerla una vez. 
+		\begin{alertblock}{}
+		No va en el script de análisis; va en la consola o en un script separado de configuración.
+		\end{alertblock}
+		
+
+\begin{lstlisting}[style=RConsole]
+# Instalar un paquete desde CRAN:
+`:in:> install.packages("dplyr")`
+
+# Instalar varios a la vez:
+`:in:> install.packages(c("dplyr", "ggplot2", "tidyr", "haven"))`
+
+# Instalar desde GitHub (formato "usuario/repositorio"):
+`:in:> pak::pkg_install("tidyverse/dplyr")`         # con pak (recomendado)
+`:in:> remotes::install_github("tidyverse/dplyr")`  # con remotes
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			\rscript{install.packages()} recibe el nombre del paquete \textbf{entre comillas}: el paquete todavía no está cargado, así que R no puede referenciarlo como objeto. \rscript{library()} en cambio no lleva comillas (aunque también las acepta).
+		\end{alertblock}
+
+		\begin{block}{}
+			Al instalar, R descarga también las \textbf{dependencias} automáticamente: otros paquetes que el paquete necesita para funcionar. No requiere intervención manual.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Cargar paquetes: \texttt{library()} y \texttt{require()}}
+		Instalar un paquete \textbf{no} lo hace disponible automáticamente. Hay que cargarlo al inicio de cada sesión de R.
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:dplyr`)    # carga el paquete; ERROR si no está instalado
+require(`:pk:dplyr`)    # carga el paquete; devuelve FALSE si no instalado
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Si no instalado & Cuándo usarla\\
+				library() & error; detiene ejecución & scripts de análisis (siempre)\\
+				require() & warning; devuelve FALSE & condicionales dentro de funciones\\
+			\end{tblr}
+		\end{center}
+
+		\titleitem{Verificar disponibilidad sin cargar}
+\begin{lstlisting}[style=RScript]
+# Comprueba si está instalado sin adjuntarlo al espacio de búsqueda
+if (requireNamespace("haven", quiet = TRUE)) {
+  haven::read_dta("datos.dta")
+}
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Todos los \rscript{library()} deben ir \textbf{al comienzo del script}. Esto hace explícitas las dependencias del análisis desde el primer momento, antes de ejecutar una sola línea de código.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El paquete \texttt{pacman}}
+		\rscript{`:pk:pacman`} simplifica la gestión de paquetes combinando instalación y carga en un solo paso. Es especialmente útil para scripts que se comparten o ejecutan en máquinas distintas.
+
+\begin{lstlisting}[style=RConsole]
+`:in:> install.packages("pacman")`
+\end{lstlisting}
+
+		\titleitem{\texttt{p\_load()}: instala si es necesario, luego carga}
+		Si el paquete \textbf{no está instalado}, lo instala desde CRAN y lo carga. Si ya está instalado, solo lo carga. Reemplaza el par \rscript{install.packages()} + \rscript{library()}.
+
+\begin{lstlisting}[style=RScript]
+`:pk:pacman`::p_load(`:pk:dplyr`, `:pk:ggplot2`, `:pk:tidyr`, `:pk:haven`)
+
+# Equivalente tradicional:
+install.packages("dplyr"); library(`:pk:dplyr`)   # instala AUNQUE ya esté
+`:pk:pacman`::p_load(`:pk:dplyr`)                 			 # instala SOLO si hace falta
+\end{lstlisting}
+
+		\titleitem{Otras funciones de \texttt{pacman}}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{6cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Qué hace\\
+				p\_load\_gh("user/repo") & instala desde GitHub si es necesario y carga\\
+				p\_unload(dplyr) & descarga el paquete del espacio de búsqueda\\
+				p\_update(dplyr) & actualiza el paquete\\
+				p\_delete(dplyr) & desinstala el paquete\\
+				p\_isinstalled(dplyr) & \rscript{TRUE} si el paquete está instalado\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El operador \texttt{::}: acceso al espacio de nombres}
+		\rscript{`:pk:paquete`::`:fn:funcion`()} accede a una función de un paquete \textbf{sin necesidad de cargarlo} con \rscript{library()}. El paquete debe estar instalado.
+
+\begin{lstlisting}[style=RScript]
+# Usar una función sin cargar el paquete:
+`:pk:dplyr`::filter(starwars, species == "Human")
+`:pk:stringr`::str_to_upper("economía")
+`:pk:haven`::read_dta("encuesta.dta")
+
+# Ser explícito sobre el origen de una función:
+`:pk:dplyr`::select(datos, anio, pbi, inflacion)
+\end{lstlisting}
+
+		\titleitem{\texttt{:::}: acceso a funciones internas (no exportadas)}
+\begin{lstlisting}[style=RScript]
+# ::: accede a funciones que el paquete no expone públicamente
+# Solo para exploración y debugging; no usar en análisis
+`:pk:dplyr`:::check_grouped(datos)
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Usar \rscript{::} sistemáticamente en código para compartir o publicar mejora la legibilidad: quien lea el script sabe inmediatamente de qué paquete proviene cada función, sin necesidad de rastrear los \rscript{library()} del encabezado.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Conflictos entre paquetes}
+		Cuando un paquete define una función con el mismo nombre que una ya cargada, la \textbf{enmascara}: la versión nueva toma precedencia. R informa de esto al cargar.
+
+\begin{lstlisting}[style=RConsole]
+`:in:> library(dplyr)`
+Attaching package: 'dplyr'
+The following objects are masked from 'package:stats':
+    filter, lag
+The following objects are masked from 'package:base':
+    intersect, setdiff, setequal, union
+\end{lstlisting}
+
+		A partir de ese momento, \rscript{filter()} ejecuta \rscript{`:pk:dplyr`::filter()}, no \rscript{`:pk:stats`::filter()}.
+
+\begin{lstlisting}[style=RScript]
+# Problema: querer stats::filter() pero ejecutar dplyr::filter()
+filter(serie_temporal, rep(1/3, 3))   # error o resultado incorrecto
+
+# Solución: usar :: para ser explícito
+`:pk:stats`::filter(serie_temporal, rep(1/3, 3))  # filtro de media móvil
+`:pk:dplyr`::filter(datos, `:bn:anio` > 2020)           # filtrar filas
+\end{lstlisting}
+
+		\begin{block}{}
+			El paquete \rscript{`:pk:conflicted`} convierte los enmascaramientos en errores: obliga a usar \rscript{::} en cada ambigüedad, eliminando la posibilidad de llamar a la función equivocada por error.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{¿Dónde se instalan los paquetes?}
+		R busca e instala paquetes en las rutas devueltas por \rscript{.libPaths()}. Hay dos tipos: la biblioteca del \textbf{usuario} y la del \textbf{sistema}.
+
+\begin{lstlisting}[style=RScript]
+.libPaths()   # rutas de búsqueda, en orden de prioridad
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> .libPaths()`
+[1] "C:/Users/usuario/AppData/Local/R/win-library/4.4"
+[2] "C:/Program Files/R/R-4.4.2/library"
+\end{lstlisting}
+
+		Los paquetes del usuario van a la primera ruta; los del sistema (como \rscript{`:pk:base`} y \rscript{`:pk:stats`}) van a la segunda. \textbf{Siempre se instala en la primera ruta disponible con permisos de escritura.}
+
+		\begin{alertblock}{}
+			Al actualizar R a una \textbf{versión mayor} (de 4.4 a 4.5), la ruta del usuario cambia y los paquetes instalados no están disponibles en la nueva versión. Hay que reinstalarlos (ver machete de instalación y actualización).
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actualizar y desinstalar paquetes}
+		\titleitem{Actualizar}
+		Se pueden actualizar desde la interfaz de RStudio o tambi\'en
+\begin{lstlisting}[style=RScript]
+update.packages(ask = FALSE)    # actualiza todos los paquetes instalados
+install.packages("dplyr")       # actualiza uno reinstalando la última versión
+old.packages()                  # lista paquetes con versiones más nuevas
+\end{lstlisting}
+
+		\titleitem{Desinstalar}
+\begin{lstlisting}[style=RScript]
+remove.packages("dplyr")        # desinstala el paquete 
+\end{lstlisting}
+
+		\titleitem{Consultar versión}
+\begin{lstlisting}[style=RScript]
+packageVersion("dplyr")         # versión del paquete instalado
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> packageVersion("dplyr")`
+[1] '1.1.4'
+\end{lstlisting}
+
+		\begin{block}{}
+			Las actualizaciones \textbf{no son automáticas}. Un paquete instalado permanece en la versión instalada hasta que se actualiza explícitamente. Conviene actualizar periódicamente para recibir correcciones de errores.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Explorar un paquete instalado}
+
+\begin{lstlisting}[style=RScript]
+# Ayuda de una función:
+?mutate
+help("mutate")
+help("mutate", `:ky:package` = "dplyr")   # especificar paquete si hay conflicto
+
+# Índice completo de funciones del paquete:
+help(`:ky:package` = "dplyr")
+
+# Vignettes: tutoriales incluidos en el paquete
+vignette(`:ky:package` = "dplyr")    # listar vignettes disponibles
+vignette("dplyr")              # abrir una vignette específica
+
+# Información del paquete:
+packageDescription("dplyr")   # descripción, versión, autores, licencia
+citation("dplyr")             # cómo citar el paquete en publicaciones
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Las vignettes son la mejor forma de empezar con un paquete nuevo: son documentos completos que explican el propósito y el flujo de trabajo con ejemplos reales. También están disponibles en los sitios web de cada paquete (\texttt{dplyr.tidyverse.org}, etc.).
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Errores frecuentes}
+		\titleitem{El paquete no está instalado}
+\begin{lstlisting}[style=RConsole]
+`:in:> library(dplyr)`
+Error in library(dplyr) : there is no package called 'dplyr'
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> install.packages("dplyr")`
+\end{lstlisting}
+
+		\titleitem{La función no existe (paquete no cargado)}
+\begin{lstlisting}[style=RConsole]
+`:in:> mutate(datos, nueva = x * 2)`
+Error in mutate(datos, nueva = x * 2) : could not find function "mutate"
+\end{lstlisting}
+\begin{lstlisting}[style=RScript]
+library(`:pk:dplyr`)   # faltaba cargar el paquete al inicio del script
+\end{lstlisting}
+
+		\titleitem{Los paquetes desaparecieron al actualizar R}
+		Después de instalar una versión mayor de R (ej. de 4.4 a 4.5), los paquetes de usuario dejan de estar disponibles porque la ruta de biblioteca cambió.
+\begin{lstlisting}[style=RConsole]
+`:in:> library(tidyverse)`
+Error in library(tidyverse) : there is no package called 'tidyverse'
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> install.packages("tidyverse")`
+\end{lstlisting}
+	\end{frame}
+
+
+\end{document}

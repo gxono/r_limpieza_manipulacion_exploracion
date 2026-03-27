@@ -1,0 +1,234 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de instalación y actualización}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}{Orden correcto de instalación}
+		Instalar los tres componentes en este orden evita problemas de compatibilidad:
+
+		\begin{enumerate}
+			\item \textbf{R} --- el intérprete del lenguaje
+			\item \textbf{Rtools} --- herramientas de compilación (solo Windows)
+			\item \textbf{RStudio} --- el entorno de desarrollo (IDE)
+		\end{enumerate}
+
+		\begin{alertblock}{}
+			RStudio \textbf{depende de R}: si no hay una instalación de R, RStudio no funciona. Rtools se necesita para compilar paquetes desde el código fuente; sin él, la instalación de algunos paquetes de CRAN falla con un error de compilación.
+		\end{alertblock}
+
+		\begin{block}{}
+			Mac y Linux no requieren Rtools. En esas plataformas las herramientas de compilación necesarias (\texttt{Xcode Command Line Tools} en Mac, \texttt{build-essential} en Ubuntu/Debian) se instalan a través del sistema operativo.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Instalar R}
+		\titleitem{Descargar el instalador}
+		Ir a \href{https://cran.r-project.org/bin/windows/base/}{\texttt{cran.r-project.org}} y descargar el instalador para Windows. Hacer doble clic y seguir el asistente con la configuración predeterminada.
+
+		\titleitem{Verificar la instalación}
+\begin{lstlisting}[style=RScript]
+R.version.string   # versión instalada
+.libPaths()        # rutas donde R busca paquetes
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+`:in:> R.version.string`
+[1] "R version 4.4.2 (2024-10-31)"
+`:in:> .libPaths()`
+[1] "C:/Users/usuario/AppData/Local/R/win-library/4.4"
+[2] "C:/Program Files/R/R-4.4.2/library"
+\end{lstlisting}
+
+		\begin{block}{}
+			Se recomienda instalar R en la ruta predeterminada y \textbf{no} agregar R al PATH manualmente: RStudio lo detecta automáticamente. Si se instalan varias versiones de R, RStudio usa siempre la más reciente (configurable en \texttt{Tools > Global Options > R General}).
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Instalar Rtools (solo Windows)}
+		Rtools provee el compilador de C/C++ y Fortran que R usa para instalar paquetes desde código fuente. \textbf{La versión de Rtools debe coincidir con la versión mayor de R instalada}.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Versión de R & Rtools requerido\\
+				4.0 -- 4.1 & Rtools40\\
+				4.2 & Rtools42\\
+				4.3 & Rtools43\\
+				4.4 & Rtools44\\
+			\end{tblr}
+		\end{center}
+
+		\titleitem{Instalación con \texttt{installr} (recomendado)}
+\begin{lstlisting}[style=RScript]
+install.packages("installr")
+library(`:pk:installr`)
+`:pk:installr`::install.Rtools()   # detecta e instala la versión correcta
+\end{lstlisting}
+
+		\titleitem{Instalación manual}
+		Descargar desde \href{https://cran.r-project.org/bin/windows/Rtools/}{\texttt{cran.r-project.org/bin/windows/Rtools/}} e instalar con la configuración predeterminada.
+	\end{frame}
+	
+	
+	
+	\begin{frame}[fragile]
+		\titleitem{Verificar que R detecta Rtools}
+\begin{lstlisting}[style=RScript]
+pkgbuild::has_build_tools(`:ky:debug` = TRUE)
+\end{lstlisting}
+\begin{lstlisting}[style=RConsole]
+Trying to compile a simple C file
+Running "C:/PROGRA~1/R/R-45~1.2/bin/x64/Rcmd.exe" SHLIB foo.c
+-using C compiler: 'gcc.exe (GCC) 14.3.0'
+\gcc  -I"C:/PROGRA~1/R/R-45~1.2/include" -DNDEBUG     -I"C:/rtools45/x86_64-w64-mingw32.static.posix/include"      -O2 -Wall -std=gnu2x  -mfpmath=sse -msse2 -mstackrealign   -c foo.c -o foo.o
+|gcc -shared -s -static-libgcc -o foo.dll tmp.def foo.o -LC:/rtools45/x86_64-w64-mingw32.static.posix/lib/x64 -LC:/rtools45/x86_64-w64-mingw32.static.posix/lib -LC:/PROGRA~1/R/R-45~1.2/bin/x64 -lR
+/- 
+[1] TRUE
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}{Instalar RStudio}
+		RStudio es el IDE más usado para trabajar con R. Descargar la versión \textbf{Desktop} gratuita desde \href{https://posit.co/download/rstudio-desktop/}{\texttt{posit.co/download/rstudio-desktop/}}.
+
+		\titleitem{Configuración recomendada tras la instalación}
+		Ir a \texttt{Tools > Global Options} y ajustar:
+
+		\begin{itemize}
+			\item \texttt{General > Workspace}: desactivar \quotation{Restore .RData into workspace at startup}
+			\item \texttt{General > Workspace}: cambiar \quotation{Save workspace to .RData on exit} a \textbf{Never}
+			\item \texttt{Code > Editing}: activar \quotation{Use native pipe operator}
+			\item \texttt{Code > Display}: activar \quotation{Show margin} en 80 caracteres
+		\end{itemize}
+
+		\begin{exampleblock}{}
+			Desactivar la restauración del workspace asegura que cada sesión comienza desde cero. Si el código no funciona en una sesión limpia, el análisis no es reproducible: depende de objetos que no están registrados en ningún script.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El paquete \texttt{installr}}
+		\rscript{`:pk:installr`} automatiza la instalación y actualización de R, Rtools y RStudio desde la propia consola de R, sin salir del entorno.
+
+\begin{lstlisting}[style=RScript]
+install.packages("installr")
+library(`:pk:installr`)
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{6.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Qué hace\\
+				updateR() & descarga e instala la última versión de R\\
+				install.Rtools() & descarga e instala la versión correcta de Rtools\\
+				updateRstudio() & descarga e instala la última versión de RStudio\\
+				check.for.updates.R() & informa si hay una versión más nueva de R disponible\\
+				installr() & abre un menú interactivo con todas las opciones\\
+			\end{tblr}
+		\end{center}
+
+		\begin{alertblock}{}
+			\rscript{`:pk:installr`} solo funciona en \textbf{Windows}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actualizar R con \texttt{installr}}
+		\begin{alertblock}{}
+			Ejecutar \rscript{updateR()} desde \textbf{RGui} (el programa \quotation{R x64 ...} del menú Inicio), \textbf{no desde RStudio}. RStudio bloquea el proceso de R mientras está abierto, lo que puede impedir que la actualización finalice correctamente.
+		\end{alertblock}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{img/rgui.png}
+\end{figure}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:installr`)
+
+check.for.updates.R()   # ¿hay una versión más nueva disponible?
+updateR()               # proceso interactivo guiado
+\end{lstlisting}
+	\end{frame}
+	
+	
+	
+	\begin{frame}[fragile]
+		\titleitem{¿Qué hace \texttt{updateR()} internamente?}
+	\begin{enumerate}
+		\item Descarga e instala la última versión de R
+		\item Copia los paquetes instalados de la versión anterior
+		\item Actualiza los paquetes copiados
+		\item Opcionalmente elimina la versión anterior de R
+	\end{enumerate}
+	
+	\begin{block}{}
+		Si la versión \textbf{mayor} de R cambió (por ej. de 4.3 a 4.4), Rtools también debe actualizarse. Después de correr \rscript{updateR()}, ejecutar \rscript{install.Rtools()} para instalar la versión de Rtools correspondiente.
+	\end{block}
+	\end{frame}
+	
+
+
+	\begin{frame}[fragile]{Actualizar RStudio y paquetes}
+		\titleitem{Actualizar RStudio}
+		Desde RStudio: \texttt{Help > Check for Updates}. O con \rscript{`:pk:installr`} desde RGui:
+
+\begin{lstlisting}[style=RScript]
+`:pk:installr`::updateRstudio()   # descarga e instala la última versión
+\end{lstlisting}
+
+	Tambi\'en puede ser actualizado desde la pesta\~na \texttt{Help}
+	\begin{figure}[h!]
+\includegraphics[width = 0.75\textwidth]{img/update-rstudio.png}
+	\end{figure}
+	\end{frame}
+
+
+
+
+\begin{frame}[fragile]{Actualizar RStudio y paquetes}
+		\titleitem{Actualizar paquetes}
+Los paquetes se actualizan independientemente de R y RStudio y pueden actualizarse desde cualquier versión de R. Pueden actualizarse desde la interfaz gr\'afica de RStudio
+
+\begin{figure}[h!]
+\includegraphics[width=0.75\textwidth]{img/update-packages.png}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}[fragile]
+	Pero tambi\'en desde la l\'inea de comandos
+	
+\begin{lstlisting}[style=RScript]
+update.packages(ask = FALSE)   # actualiza todos los paquetes instalados
+install.packages("dplyr")      # reinstalar/actualizar un paquete puntual
+old.packages()                 # listar paquetes con versiones disponibles
+\end{lstlisting}
+
+\begin{exampleblock}{}
+Si en \rscript{updateR()} se eligió no copiar los paquetes automáticamente, se pueden migrar manualmente con:
+\begin{lstlisting}[style=RScript]
+	`:pk:installr`::copy.packages.between.libraries()
+\end{lstlisting}
+\end{exampleblock}
+\end{frame}
+
+
+\end{document}

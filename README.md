@@ -28,17 +28,19 @@ Incursiones por cada uno de los paquetes.
 
 | Paquete | Descripción | Machete |
 |---------|-------------|:---:|
-| `dplyr` | Verbos para manipular tablas: filtrar, seleccionar, mutar, resumir | [PDF](presentaciones/machetes/dplyr/main.pdf) |
-| `tidyr` | Reestructuración de datos: pivoteo, anidado y separación de columnas | [PDF](presentaciones/machetes/tidyr/main.pdf) |
-| `purrr` | Programación funcional: iteración sobre listas y vectores sin bucles | [PDF](presentaciones/machetes/purrr/main.pdf) |
+| Instalación | Instalación y actualización de R, Rtools y RStudio | [PDF](presentaciones/machetes/instalacion-actualizacion/main.pdf) |
+| Paquetes | Qué son, cómo instalarlos, cargarlos y gestionar conflictos | [PDF](presentaciones/machetes/paquetes/main.pdf) |
+| General | Operadores y operaciones básicas de R | [PDF](presentaciones/machetes/general/main.pdf) |
 | `readr` | Importación de archivos CSV, Excel y Google Sheets | [PDF](presentaciones/machetes/readr/main.pdf) |
 | `janitor` | Limpieza de nombres de columnas y detección de duplicados | [PDF](presentaciones/machetes/janitor/main.pdf) |
+| `dplyr` | Verbos para manipular tablas: filtrar, seleccionar, mutar, resumir | [PDF](presentaciones/machetes/dplyr/main.pdf) |
+| `tidyr` | Reestructuración de datos: pivoteo, anidado y separación de columnas | [PDF](presentaciones/machetes/tidyr/main.pdf) |
 | `lubridate` | Parseo y aritmética de fechas y horas | [PDF](presentaciones/machetes/lubridate/main.pdf) |
 | `stringr` | Operaciones sobre cadenas de texto | [PDF](presentaciones/machetes/stringr/main.pdf) |
 | `forcats` | Manejo y reordenamiento de factores | [PDF](presentaciones/machetes/forcats/main.pdf) |
 | `regex` | Expresiones regulares aplicadas en R | [PDF](presentaciones/machetes/regex/main.pdf) |
 | Funciones | Definición de funciones, argumentos y funciones anónimas | [PDF](presentaciones/machetes/funciones-anonimas/main.pdf) |
-| General | Operadores y operaciones básicas de R | [PDF](presentaciones/machetes/general/main.pdf) |
+| `purrr` | Programación funcional: iteración sobre listas y vectores sin bucles | [PDF](presentaciones/machetes/purrr/main.pdf) |
 
 ## Descripción
 
