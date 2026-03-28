@@ -46,21 +46,21 @@
 \colorlet{R_CONSOLE_INPUT}{unlfce}
 
 \makeatletter
-	\def\lst@r@booleanstyle		{\color{R_BOOLEAN}\bfseries}
-	\def\lst@r@operatorstyle	{\color{R_OPERATOR}\bfseries}
-	\def\lst@r@missingstyle		{\color{R_MISSING}\bfseries}
-	\def\lst@r@stringstyle		{\color{R_STRING}\bfseries}
+	\def\lst@r@booleanstyle		{\color{R_BOOLEAN}}
+	\def\lst@r@operatorstyle	{\color{R_OPERATOR}}
+	\def\lst@r@missingstyle		{\color{R_MISSING}}
+	\def\lst@r@stringstyle		{\color{R_STRING}}
 	\def\lst@r@commentstyle		{\color{R_COMMENT}\itshape}
-	\def\lst@r@delimiterstyle	{\color{R_DELIMITER}\bfseries}
-	\def\lst@r@numberstyle		{\color{R_NUMBER}\bfseries}
-	\def\lst@r@normalstyle		{\color{R_NORMAL}\bfseries}
-	\def\lst@r@keywordstyle		{\color{R_KEYWORD}\bfseries}
-	\def\lst@r@symbolstyle		{\color{R_SYMBOL}\bfseries}
-	\def\lst@r@keystyle				{\color{R_KEY}\bfseries}
-	\def\lst@r@functionstyle	{\color{R_FUNCTION}\bfseries}
+	\def\lst@r@delimiterstyle	{\color{R_DELIMITER}}
+	\def\lst@r@numberstyle		{\color{R_NUMBER}}
+	\def\lst@r@normalstyle		{\color{R_NORMAL}}
+	\def\lst@r@keywordstyle		{\color{R_KEYWORD}}
+	\def\lst@r@symbolstyle		{\color{R_SYMBOL}}
+	\def\lst@r@keystyle				{\color{R_KEY}}
+	\def\lst@r@functionstyle	{\color{R_FUNCTION}}
 
-	\def\lst@r@consolestyle		{\color{R_CONSOLE}\bfseries}
-	\def\lst@r@consoleinputstyle	{\color{R_CONSOLE_INPUT}\bfseries}
+	\def\lst@r@consolestyle		{\color{R_CONSOLE}}
+	\def\lst@r@consoleinputstyle	{\color{R_CONSOLE_INPUT}}
 \makeatother
 
 
@@ -141,7 +141,7 @@
 		pivot_longer, pivot_wider, replace_na, separate_wider_delim, unite, fill,
 		% ggplot2
 		geom_point, geom_line, geom_histogram, geom_density, geom_boxplot,
-		facet_wrap, facet_grid,
+		facet_wrap, facet_grid, geom_jitter, geom_violin, theme_gray, theme_bw, theme_minimal, theme_classic, theme_light, theme_void, geom_col, geom_smooth, geom_bar, reorder, scale_size_area, annotate, geom_text, geom_label, ggsave, scale_x_continuous, scale_y_continuous, scale_shape_manual, scale_color_brewer, scale_fill_manual, label_number, scale_x_date, strftime, scale_color_manual, scale_color_viridis_d, scale_color_viridis_c, scale_fill_viridis_d, scale_fill_viridis_c, element_text, element_blank, element_line, element_rect,
 		% readr / readxl / googlesheets4
 		read_csv, read_csv2, read_excel, write_csv, write_csv2, write_rds, read_rds, read_sheet, gs4_deauth,
 		% forcats
@@ -167,7 +167,7 @@
 		% verificación de tipo
 		is.na, is.numeric, is.character, is.logical, is.null, is.vector, is.factor
 	},
-	otherkeywords={paste0, read_csv2, gs4_deauth, write_csv2, map2, map2_dbl, walk2},
+	otherkeywords={paste0, read_csv2, gs4_deauth, write_csv2, map2, map2_dbl, walk2, scale_x_log10},
 	moredelim=[is][\lst@r@normalstyle]{`}{`},
 	moredelim=[is][\lst@r@normalstyle]{`:pk:}{`}, %<- packagename
 	moredelim=[is][\lst@r@consolestyle]{`:cn:}{`}, %<- console
@@ -227,7 +227,7 @@
 	{8}         {{\lst@r@numberstyle {8}}}                              1
 	{9}         {{\lst@r@numberstyle {9}}}                              1
 	{::}        {{\lst@r@operatorstyle {:\negthinspace:}}}              1
-	{:::}        {{\lst@r@operatorstyle {:\negthinspace:\negthinspace:}}}              1
+	{:::}       {{\lst@r@operatorstyle {:\negthinspace:\negthinspace:}}}1
 	{\\`}       {{\lst@r@normalstyle {`}}}								              1
 	{`:\:`}     {{\lst@r@normalstyle {\textbackslash}}}		   						1
 	{`:~:`}     {{\lst@r@operatorstyle{\textasciitilde}}}               1
@@ -279,38 +279,38 @@
 	moredelim=[is][\color{JULIA_SYMBOL}]{`:sy:}{`},
 	moredelim=[is][\color{JULIA_SYMBOL}]{`:bn:}{`}, %bare column name
 	emph={begin, end},
-	emphstyle={\color{purple}\bfseries},
+	emphstyle={\color{purple}},
 	literate=
-	*{:}{{\textcolor{JULIA_OPERATOR}{\bfseries{:}}}}1
-	{]}{{\textcolor{JULIA_DELIMITER}{\bfseries{]}}}}1
-	{[}{{\textcolor{JULIA_DELIMITER}{\bfseries{[}}}}1
-	{false}{{\textcolor{JULIA_BOOLEAN}{\bfseries{false}}}}4
-	{true}{{\textcolor{JULIA_BOOLEAN}{\bfseries{true}}}}5
-	{<}{{\textcolor{JULIA_OPERATOR}{\bfseries{<}}}}1  
-	{>}{{\textcolor{JULIA_OPERATOR}{\bfseries{>}}}}1 
-	{=}{{\textcolor{JULIA_OPERATOR}{\bfseries{=}}}}1
-	{+}{{\textcolor{JULIA_OPERATOR}{\bfseries{+}}}}1  
-	{-}{{\textcolor{JULIA_OPERATOR}{\bfseries{-}}}}1 
-	{*}{{\textcolor{JULIA_OPERATOR}{\bfseries{*}}}}1
-	{\^}{{\textcolor{JULIA_OPERATOR}{\bfseries{\textasciicircum}}}}1
-	{\&}{{\textcolor{JULIA_OPERATOR}{\bfseries{\&}}}}1 
-	{|}{{\textcolor{JULIA_OPERATOR}{\bfseries{|}}}}1
-	{/}{{\textcolor{JULIA_OPERATOR}{\bfseries{/}}}}1  
-	{!}{{\textcolor{JULIA_OPERATOR}{\bfseries{!}}}}1
-	{\%\%}{{\textcolor{JULIA_OPERATOR}{\bfseries{\%\%}}}}2
-	{\%/\%}{{\textcolor{JULIA_OPERATOR}{\bfseries{\%/\%}}}}3
-	{missing}{{\textcolor{JULIA_MISSING}{\bfseries{missing}}}}2
-	{|>}{{\textcolor{JULIA_OPERATOR}{\bfseries{|>}}}}2
-	{->}{{\textcolor{JULIA_OPERATOR}{\bfseries{->}}}}2
-	{=>}{{\textcolor{JULIA_OPERATOR}{\bfseries{=>}}}}2
-	{==}{{\textcolor{JULIA_OPERATOR}{\bfseries{==}}}}2
-	{.==}{{\textcolor{JULIA_OPERATOR}{\bfseries{\textperiodcentered\negthinspace==}}}}2
-	{!=}{{\textcolor{JULIA_OPERATOR}{\bfseries{!=}}}}2
-	{>=}{{\textcolor{JULIA_OPERATOR}{\bfseries{>=}}}}2
-	{<=}{{\textcolor{JULIA_OPERATOR}{\bfseries{<=}}}}2
-	{===}{{\textcolor{JULIA_OPERATOR}{\bfseries{===}}}}3
-	{!==}{{\textcolor{JULIA_OPERATOR}{\bfseries{!==}}}}3
-	{::}{{\textcolor{JULIA_OPERATOR}{\bfseries{::}}}}2,
+	*{:}{{\textcolor{JULIA_OPERATOR}{{:}}}}1
+	{]}{{\textcolor{JULIA_DELIMITER}{{]}}}}1
+	{[}{{\textcolor{JULIA_DELIMITER}{{[}}}}1
+	{false}{{\textcolor{JULIA_BOOLEAN}{{false}}}}4
+	{true}{{\textcolor{JULIA_BOOLEAN}{{true}}}}5
+	{<}{{\textcolor{JULIA_OPERATOR}{{<}}}}1  
+	{>}{{\textcolor{JULIA_OPERATOR}{{>}}}}1 
+	{=}{{\textcolor{JULIA_OPERATOR}{{=}}}}1
+	{+}{{\textcolor{JULIA_OPERATOR}{{+}}}}1  
+	{-}{{\textcolor{JULIA_OPERATOR}{{-}}}}1 
+	{*}{{\textcolor{JULIA_OPERATOR}{{*}}}}1
+	{\^}{{\textcolor{JULIA_OPERATOR}{{\textasciicircum}}}}1
+	{\&}{{\textcolor{JULIA_OPERATOR}{{\&}}}}1 
+	{|}{{\textcolor{JULIA_OPERATOR}{{|}}}}1
+	{/}{{\textcolor{JULIA_OPERATOR}{{/}}}}1  
+	{!}{{\textcolor{JULIA_OPERATOR}{{!}}}}1
+	{\%\%}{{\textcolor{JULIA_OPERATOR}{{\%\%}}}}2
+	{\%/\%}{{\textcolor{JULIA_OPERATOR}{{\%/\%}}}}3
+	{missing}{{\textcolor{JULIA_MISSING}{{missing}}}}2
+	{|>}{{\textcolor{JULIA_OPERATOR}{{|>}}}}2
+	{->}{{\textcolor{JULIA_OPERATOR}{{->}}}}2
+	{=>}{{\textcolor{JULIA_OPERATOR}{{=>}}}}2
+	{==}{{\textcolor{JULIA_OPERATOR}{{==}}}}2
+	{.==}{{\textcolor{JULIA_OPERATOR}{{\textperiodcentered\negthinspace==}}}}2
+	{!=}{{\textcolor{JULIA_OPERATOR}{{!=}}}}2
+	{>=}{{\textcolor{JULIA_OPERATOR}{{>=}}}}2
+	{<=}{{\textcolor{JULIA_OPERATOR}{{<=}}}}2
+	{===}{{\textcolor{JULIA_OPERATOR}{{===}}}}3
+	{!==}{{\textcolor{JULIA_OPERATOR}{{!==}}}}3
+	{::}{{\textcolor{JULIA_OPERATOR}{{::}}}}2,
 }
 
 
@@ -334,7 +334,7 @@
 		head, tail, describe, info, plot, reset_index, mean, rename, group_by
 	},
 	emph={},
-	emphstyle=\color{purple}\bfseries,
+	emphstyle=\color{purple},
 	emph={[2]self, cls},
 	emphstyle={[2]\color{orange}\itshape},
 	literate={==}{{==}}2 
