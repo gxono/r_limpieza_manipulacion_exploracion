@@ -26,7 +26,7 @@ tasa_variacion <- function(`:ky:actual`, `:ky:anterior`) {
   (`:ky:actual` / `:ky:anterior` - 1) * 100
 }
 
-tasa_variacion(`:ky:actual` = 120, `:ky:anterior` = 100)
+`:fn:tasa_variacion`(`:ky:actual` = 120, `:ky:anterior` = 100)
 \end{lstlisting}
 \begin{lstlisting}[style=RConsole]
 `:in:> tasa_variacion(actual = 120, anterior = 100)`
@@ -39,9 +39,9 @@ tasa_variacion(`:ky:actual` = 120, `:ky:anterior` = 100)
 		\titleitem{Posicionales vs nombrados}
 		Los argumentos se pueden pasar por \textbf{posición} (el orden importa) o por \textbf{nombre} (el orden no importa). Mezclar ambos estilos es válido; los nombrados van al final por convención.
 \begin{lstlisting}[style=RScript]
-tasa_variacion(120, 100)                              # posicional
-tasa_variacion(`:ky:actual` = 120, `:ky:anterior` = 100)  # nombrado
-tasa_variacion(120, `:ky:anterior` = 100)             # mixto
+`:fn:tasa_variacion`(120, 100)                              # posicional
+`:fn:tasa_variacion`(`:ky:actual` = 120, `:ky:anterior` = 100)  # nombrado
+`:fn:tasa_variacion`(120, `:ky:anterior` = 100)             # mixto
 \end{lstlisting}
 
 		\titleitem{Valores por defecto}
@@ -51,8 +51,8 @@ redondear <- function(`:ky:x`, `:ky:digitos` = 2) {
   round(`:ky:x`, `:ky:digitos`)
 }
 
-redondear(`:nm:3.14159`)   	# usa digitos = 2 -> 3.14
-redondear(`:nm:3.14159`, `:nm:4`) # usa digitos = 4 -> 3.1416
+`:fn:redondear`(`:nm:3.14159`)   	# usa digitos = 2 -> 3.14
+`:fn:redondear`(`:nm:3.14159`, `:nm:4`) # usa digitos = 4 -> 3.1416
 \end{lstlisting}
 	\end{frame}
 	
@@ -67,7 +67,7 @@ mi_mean <- function(`:ky:x`, ...) {
 	mean(`:ky:x`, ...)   # ... se pasa directo a mean()
 }
 
-mi_mean(c(1, 2, NA), na.rm = TRUE)  # -> 1.5
+`:fn:mi_mean`(c(1, 2, NA), na.rm = TRUE)  # -> 1.5
 \end{lstlisting}
 	\end{frame}
 
@@ -78,7 +78,7 @@ mi_mean(c(1, 2, NA), na.rm = TRUE)  # -> 1.5
 \begin{lstlisting}[style=RScript]
 doble <- function(`:ky:x`) `:ky:x` * 2   # retorna x * 2 implícitamente
 
-doble(`:nm:5`)   # -> 10
+`:fn:doble`(`:nm:5`)   # -> 10
 \end{lstlisting}
 
 		\titleitem{Return explícito}
@@ -100,7 +100,7 @@ clasificar_pib <- function(`:ky:pib`) {
 Las variables creadas dentro de una función \textbf{no existen} fuera de ella. Esto evita efectos secundarios no deseados.
 \begin{lstlisting}[style=RScript]
 f <- function() { temporal <- 42; temporal }
-f()       # -> 42
+`:fn:f`()       # -> 42
 temporal  # -> Error: object 'temporal' not found
 \end{lstlisting}
 \end{frame}
@@ -115,12 +115,12 @@ temporal  # -> Error: object 'temporal' not found
 doble <- function(`:ky:x`) `:ky:x` * 2
 
 # pasar como argumento a otra función
-sapply(1:5, doble)   # -> 2 4 6 8 10
+sapply(1:5, `:fn:doble`)   # -> 2 4 6 8 10
 
 # la función "operacion" recibe otra función como argumento
-aplicar <- function(`:ky:x`, `:ky:fun`) `:ky:fun`(`:ky:x`)
-aplicar(`:nm:9`, sqrt)   # -> 3
-aplicar(`:nm:9`, doble)  # -> 18
+aplicar <- function(`:ky:x`, `:ky:fun`) `:fn:fun`(x)
+`:fn:aplicar`(`:nm:9`, sqrt)   # -> 3
+`:fn:aplicar`(`:nm:9`, `:fn:doble`)  # -> 18
 \end{lstlisting}
 
 		\begin{block}{}
