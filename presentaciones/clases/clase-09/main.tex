@@ -1,0 +1,294 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{9no encuentro: Visualización de datos II}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		\begin{itemize}
+			\item \textbf{Series de tiempo}: \rscript{geom_line()} y \rscript{geom_point()}
+			\item \textbf{Comparación categórica}: \rscript{geom_col()} y \rscript{geom_bar()}
+			\item \textbf{Dispersión y tendencia}: \rscript{geom_point()} con \rscript{geom_smooth()}
+			\item \textbf{Estéticas}: \rscript{`:ky:size`}, \rscript{`:ky:alpha`}, \rscript{`:ky:color`}
+			\item \textbf{Pequeños múltiples}: \rscript{`:fn:facet_*`()}
+		\end{itemize}
+
+		\titleitem{Paquetes y datos}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyverse`)
+library(`:pk:gapminder`)
+
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+
+# Países seleccionados para ejemplos de series de tiempo
+paises <- c("Argentina", "Brazil", "Mexico", "Chile")
+gapminder_paises <- gapminder |> filter(`:bn:country` %in% paises)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_line()}: series de tiempo}
+		\rscript{geom_line()} conecta las observaciones en el orden del eje \rscript{x}. Es la geometría natural para representar la evolución de una variable a lo largo del tiempo.
+
+\begin{lstlisting}[style=RScript]
+# Evolución del PBI per cápita de Argentina
+gapminder |>
+  filter(`:bn:country` == "Argentina") |>
+  ggplot(aes(x = `:bn:year`, y = `:bn:gdpPercap`)) +
+  geom_line()
+\end{lstlisting}
+
+		\begin{block}{}
+			\rscript{geom_line()} asume que las observaciones están ordenadas por \rscript{x}. Si los datos no están en orden, la línea zigzaguea de forma incorrecta. Se puede asegurar el orden con \rscript{arrange(`:bn:year`)} antes de pasar los datos a \rscript{ggplot()}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Múltiples series: \texttt{color} y \texttt{group}}
+		Para trazar una línea por grupo, se mapea la variable de grupo a \rscript{`:ky:color`} dentro de \rscript{aes()}. ggplot2 genera una línea por grupo y agrega la leyenda automáticamente.
+
+\begin{lstlisting}[style=RScript]
+ggplot(gapminder_paises,
+       aes(x = `:bn:year`, y = `:bn:gdpPercap`, `:ky:color` = `:bn:country`)) +
+  geom_line()
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Si no se especifica \rscript{`:ky:group`} ni \rscript{`:ky:color`} con una variable discreta, todas las observaciones de distintos países se conectan en una sola línea zigzagueante. Es el error más frecuente al usar \rscript{geom_line()} con datos de panel.
+		\end{exampleblock}
+
+		\begin{block}{}
+			\rscript{`:ky:group`} controla el agrupado sin cambiar el color. \rscript{`:ky:color`} agrupa \textbf{y} colorea al mismo tiempo. Si ya se usa \rscript{`:ky:color`}, no hace falta especificar \rscript{`:ky:group`} por separado.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Combinar \texttt{geom\_line()} y \texttt{geom\_point()}}
+		Superponer \rscript{geom_point()} sobre \rscript{geom_line()} marca las observaciones individuales. Útil cuando los datos son escasos o cuando los intervalos de tiempo son irregulares.
+
+\begin{lstlisting}[style=RScript]
+ggplot(gapminder_paises,
+       aes(x = `:bn:year`, y = `:bn:gdpPercap`, `:ky:color` = `:bn:country`)) +
+  geom_line() +
+  geom_point(size = `:nm:2`)
+\end{lstlisting}
+
+		\begin{block}{}
+			Las capas se dibujan en el orden en que se agregan. \rscript{geom_point()} va después de \rscript{geom_line()} para que los puntos queden encima de las líneas. El orden de las capas importa cuando se solapan.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_col()}: barras proporcionales al valor}
+		\rscript{geom_col()} dibuja barras cuya altura es el \textbf{valor de la variable} mapeada al eje \rscript{y}. Se usa cuando los datos ya están resumidos.
+
+\begin{lstlisting}[style=RScript]
+# PBI per cápita promedio por continente en 2007
+gdp_continente <- `gapminder_2007` |>
+  group_by(`:bn:continent`) |>
+  summarise(`:bn:gdp_medio` = mean(`:bn:gdpPercap`))
+
+ggplot(gdp_continente, aes(x = `:bn:continent`, y = `:bn:gdp_medio`)) +
+  geom_col(`:ky:fill` = "steelblue")
+\end{lstlisting}
+
+		\begin{block}{}
+			\rscript{geom_col()} es equivalente a \rscript{geom_bar(`:ky:stat` = "identity")}. En la práctica, \rscript{geom_col()} es preferible cuando los datos ya vienen resumidos: el nombre lo deja explícito.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_bar()}: barras de conteo}
+		\rscript{geom_bar()} cuenta el número de observaciones por categoría y dibuja la barra. \textbf{No requiere una variable en el eje} \rscript{y}: el conteo lo calcula automáticamente.
+
+\begin{lstlisting}[style=RScript]
+# Cuántos países hay por continente en 2007
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`)) +
+  geom_bar(`:ky:fill` = "steelblue")
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Eje y & Cuándo usarla\\
+				geom_bar() & conteo automático & datos sin resumir: cuenta filas por categoría\\
+				geom_col() & valor de la variable & datos ya resumidos: usa el valor directamente\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Barras horizontales y ordenamiento}
+		Invertir los ejes mejora la legibilidad cuando las etiquetas son largas. La forma más limpia es mapear la variable categórica al eje \rscript{y}.
+
+\begin{lstlisting}[style=RScript]
+# Barras horizontales: continent en eje y
+ggplot(gdp_continente,
+       aes(x = `:bn:gdp_medio`, y = `:bn:continent`)) +
+  geom_col(`:ky:fill` = "steelblue")
+
+# Ordenar por valor: reorder() reordena el factor según otra variable
+ggplot(gdp_continente,
+       aes(x = `:bn:gdp_medio`,
+           y = reorder(`:bn:continent`, `:bn:gdp_medio`))) +
+  geom_col(`:ky:fill` = "steelblue") +
+  labs(y = "Continente")
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			\rscript{reorder(`:bn:continent`, `:bn:gdp_medio`)} reordena los niveles del factor \rscript{`:bn:continent`} según el valor de \rscript{`:bn:gdp_medio`}. Sin esto, las barras se ordenan alfabéticamente, lo que dificulta la comparación visual.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_smooth()}: curva de tendencia}
+		\rscript{geom_smooth()} superpone una curva de tendencia sobre el scatterplot. Es útil para visualizar la relación entre dos variables continuas sin imponer una forma funcional.
+
+\begin{lstlisting}[style=RScript]
+# Suavizado local (por defecto con menos de 1000 observaciones)
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(alpha = `:nm:0.6`) +
+  geom_smooth()
+
+# Regresión lineal: method = "lm"
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(alpha = `:nm:0.6`) +
+  geom_smooth(method = "lm", `:ky:se` = FALSE, color = "firebrick")
+\end{lstlisting}
+
+		\begin{block}{}
+			Por defecto se usa \rscript{method = "loess"} (suavizado local). La banda gris es el intervalo de confianza al 95\%; se desactiva con \rscript{`:ky:se` = FALSE}. Con \rscript{method = "lm"} se ajusta una recta de regresión lineal.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Escala logarítmica: \texttt{scale\_x\_log10()}}
+		La relación entre PBI per cápita y esperanza de vida no es lineal: es aproximadamente lineal en escala logarítmica. \rscript{scale\_x\_log10()} transforma el eje sin modificar los datos.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`,
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+           `:ky:color` = `:bn:continent`)) +
+  geom_point(alpha = `:nm:0.7`) +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_x_log10() +
+  labs(
+    `:ky:title`   = "PBI per cápita y esperanza de vida (2007)",
+    x       = "PBI per cápita (USD, escala log)",
+    y       = "Esperanza de vida (años)",
+    `:ky:color`   = "Continente",
+    caption = "Fuente: Gapminder"
+  )
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			El \rscript{geom_smooth()} hereda las estéticas globales: como \rscript{`:ky:color` = `:bn:continent`} está en \rscript{aes()}, calcula una recta por continente. Para una recta global, mover \rscript{`:ky:color`} al \rscript{aes()} local de \rscript{geom_point()}.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Gráfico de burbujas: \texttt{size} como estética}
+		Mapear una variable continua a \rscript{`:ky:size`} produce un \textbf{gráfico de burbujas}. Combinado con \rscript{`:ky:color`}, permite representar cuatro variables simultáneamente.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`,
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+           size = `:bn:pop`, `:ky:color` = `:bn:continent`)) +
+  geom_point(alpha = `:nm:0.6`) +
+  scale_x_log10() +
+  scale_size_area(max_size = `:nm:15`) +
+  labs(
+    `:ky:title`  = "Riqueza, salud y población (2007)",
+    x      = "PBI per cápita (USD, escala log)",
+    y      = "Esperanza de vida (años)",
+    size   = "Población",
+    `:ky:color` = "Continente"
+  )
+\end{lstlisting}
+
+		\begin{block}{}
+			\rscript{scale\_size\_area()} hace que el \textbf{área} del punto sea proporcional al valor, no el radio. Esto es perceptualmente correcto: si el radio fuera proporcional, los puntos grandes parecerían desproporcionadamente más grandes.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{facet\_wrap()}: pequeños múltiples}
+		\rscript{facet_wrap()} divide el gráfico en paneles, uno por cada nivel de una variable. Permite comparar la misma relación entre grupos sin solapar la información en un único gráfico.
+
+\begin{lstlisting}[style=RScript]
+# Un panel por continente
+ggplot(`gapminder_2007`,
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(alpha = `:nm:0.6`) +
+  facet_wrap(~ `:bn:continent`)
+
+# Controlar columnas y permitir escalas independientes
+ggplot(`gapminder_2007`,
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(alpha = `:nm:0.6`) +
+  facet_wrap(~ `:bn:continent`, `:ky:ncol` = `:nm:2`, scales = "free_x")
+\end{lstlisting}
+
+		\begin{block}{}
+			Por defecto, todos los paneles comparten la misma escala en ambos ejes (\rscript{scales = "fixed"}). Con \rscript{scales = "free"} cada panel ajusta su escala individualmente; con \rscript{scales = "free\_x"} solo el eje \rscript{x} varía. Escalas libres muestran mejor la variación interna pero dificultan la comparación entre paneles.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{facet\_grid()}: cuadrícula de dos variables}
+		\rscript{facet_grid()} organiza los paneles en una cuadrícula bidimensional: una variable define las filas y otra las columnas.
+
+\begin{lstlisting}[style=RScript]
+# Filas: year, columnas: continent
+gapminder |>
+  filter(`:bn:year` %in% c(`:nm:1952`, `:nm:1977`, `:nm:2007`)) |>
+  ggplot(aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(alpha = `:nm:0.5`) +
+  facet_grid(`:bn:year` ~ `:bn:continent`) +
+  scale_x_log10()
+\end{lstlisting}
+
+		\begin{center}
+			\begin{tblr}{
+				colspec  = {l p{3cm} p{4cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Sintaxis & Resultado & Cuándo usarla\\
+				facet_wrap(~ `:bn:var`) & múltiples paneles en filas/columnas & una sola variable de facetado\\
+				facet_grid(`:bn:f` ~ `:bn:c`) & cuadrícula: filas = f, columnas = c & cruzar dos variables\\
+				facet_grid(. ~ `:bn:c`) & solo columnas & una variable, comparar en horizontal\\
+				facet_grid(`:bn:f` ~ .) & solo filas & una variable, comparar en vertical\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		Usando el dataset \rscript{gapminder}:
+
+		\begin{enumerate}
+			\item Graficá la evolución de la esperanza de vida (\rscript{`:bn:lifeExp`}) entre 1952 y 2007 para los cinco países con mayor población en 2007. Usá \rscript{geom_line()} + \rscript{geom_point()}, con una línea por país coloreada por \rscript{`:bn:country`}.
+
+			\item Calculá el PBI per cápita promedio por continente para 1952 y 2007. Graficá el resultado con \rscript{geom_col()} en barras horizontales ordenadas de mayor a menor, usando \rscript{facet_wrap()} para separar los dos años.
+
+			\item Reproducí el gráfico de burbujas clásico de Gapminder para el año 2007: PBI per cápita (eje \rscript{x}, escala log) vs. esperanza de vida (eje \rscript{y}), tamaño proporcional a la población y color por continente. Agregá etiquetas con \rscript{labs()}.
+
+			\item Usando \rscript{facet_grid(`:bn:continent` ~ .)}, graficá la distribución del PBI per cápita con \rscript{geom_density()} para cada continente en 2007. ¿Qué diferencias observás en la forma de cada distribución?
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}

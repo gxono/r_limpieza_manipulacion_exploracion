@@ -1,0 +1,342 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{10mo encuentro: Visualización de datos III}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		\begin{itemize}
+			\item \textbf{Escalas}: \rscript{`:fn:scale_x_*`()}, \rscript{`:fn:scale_color_*`()}, \rscript{`:fn:scale_fill_*`()}
+			\item \textbf{Temas}: personalización granular con \rscript{theme()}
+			\item \textbf{Anotaciones}: \rscript{annotate()}, \rscript{geom\_text()}, \rscript{geom\_label()}
+			\item \textbf{Exportar}: \rscript{ggsave()}
+		\end{itemize}
+
+		\titleitem{Paquetes y datos}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyverse`)
+library(`:pk:gapminder`)
+library(`:pk:scales`)   # viene con tidyverse; formatos de etiquetas
+
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+\end{lstlisting}
+
+		\begin{block}{}
+			En los tres encuentros anteriores construimos gráficos correctos. Este encuentro se centra en hacerlos \textbf{presentables}: legibles, informativos y con el nivel de detalle que requiere un informe técnico o una tesis.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{¿Qué son las escalas?}
+		Cada estética de un gráfico tiene una \textbf{escala} que traduce valores de los datos a valores visuales. Las escalas por defecto funcionan bien en la mayoría de los casos, pero pueden personalizarse completamente.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{2} = {cmd = \rscript}
+			}
+				Estética & Función de escala & Qué controla\\
+				posición x & scale_x_continuous() & breaks, labels, limits, transformaciones\\
+				posición y & scale_y_continuous() & ídem\\
+				color (líneas) & `:fn:scale_color_*`() & paleta de colores\\
+				relleno & `:fn:scale_fill_*`() & paleta de colores de relleno\\
+				tamaño & scale_size_area() & mapeo de valores a tamaños\\
+				forma & scale_shape_manual() & asignación de formas\\
+			\end{tblr}
+		\end{center}
+
+		\begin{exampleblock}{}
+			La convención de nombres es siempre \rscript{`:fn:scale_<estética>_<tipo>`()}. Por ejemplo: \rscript{scale\_color\_brewer()}, \rscript{scale\_fill\_manual()}, \rscript{scale\_x\_log10()}.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{scale\_x\_continuous()} y \texttt{scale\_y\_continuous()}}
+		Controlan los ejes continuos: dónde aparecen las marcas, cómo se formatean las etiquetas y cuáles son los límites visibles.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.7`) +
+  scale_x_continuous(
+    `:ky:breaks` = c(`:nm:0`, `:nm:20000`, `:nm:40000`, `:nm:60000`),
+    `:ky:labels`  = scales::comma,
+    limits  = c(`:nm:0`, `:nm:70000`)
+  ) +
+  scale_y_continuous(
+    `:ky:labels` = scales::label_number(suffix = " años")
+  )
+\end{lstlisting}
+
+		\begin{block}{}
+			El paquete \rscript{`:pk:scales`} provee funciones de formato listas para usar: \rscript{scales::comma} (separador de miles), \rscript{scales::percent} (porcentaje), \rscript{scales::dollar} (moneda), \rscript{scales::label\_number()} (formato personalizado).
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{scale\_x\_date()}: ejes de fechas}
+		Cuando el eje \rscript{x} contiene fechas, \rscript{scale\_x\_date()} permite controlar el intervalo entre marcas y el formato de las etiquetas con la sintaxis de \rscript{strftime()}.
+
+\begin{lstlisting}[style=RScript]
+gapminder |>
+  filter(`:bn:country` == "Argentina") |>
+  mutate(`:bn:fecha` = as.Date(paste0(`:bn:year`, "-01-01"))) |>
+  ggplot(aes(x = `:bn:fecha`, y = `:bn:gdpPercap`)) +
+  geom_line() +
+  geom_point() +
+  scale_x_date(
+    date_breaks = "10 years",
+    date_labels = "%Y"
+  )
+\end{lstlisting}
+
+		\begin{block}{}
+			Códigos de formato más usados: \rscript{\%Y} (año 4 dígitos), \rscript{\%y} (2 dígitos), \rscript{\%m} (mes numérico), \rscript{\%b} (mes abreviado), \rscript{\%d} (día). Se combinan: \rscript{"\%b \%Y"} produce \quotation{ene 2007}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{scale\_color\_*()}: paletas de color}
+		Hay tres tipos de escala de color según el tipo de variable: \textbf{discreta} (categorías), \textbf{continua} (valores numéricos) y \textbf{divergente} (valores con un punto medio significativo).
+
+\begin{lstlisting}[style=RScript]
+# Colores manuales para variables discretas
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+                           `:ky:color` = `:bn:continent`)) +
+  geom_point() +
+  scale_color_manual(values = c(
+    "Africa"   = "#E69F00", "Americas" = "#56B4E9",
+    "Asia"     = "#009E73", "Europe"   = "#F0E442",
+    "Oceania"  = "#CC79A7"
+  ))
+
+# ColorBrewer: paletas probadas para visualización
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+                           `:ky:color` = `:bn:continent`)) +
+  geom_point() +
+  scale_color_brewer(`:ky:palette` = "Set2")
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			ColorBrewer ofrece paletas en tres tipos: \textbf{qualitative} (categorías sin orden: \rscript{"Set1"}, \rscript{"Set2"}), \textbf{sequential} (de claro a oscuro) y \textbf{diverging} (divergentes desde un centro). Ver todas en \texttt{colorbrewer2.org}.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Paletas Viridis y variables continuas}
+		Para variables continuas mapeadas a color, las paletas \textbf{Viridis} son la elección recomendada: perceptualmente uniformes, visibles en escala de grises y accesibles para personas con daltonismo.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`,
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+           `:ky:color` = `:bn:pop` / `:nm:1e6`)) +
+  geom_point(size = `:nm:3`) +
+  scale_x_log10() +
+  scale_color_viridis_c(name = "Población\n(millones)")
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Cuándo\\
+				scale_color_viridis_d() & color, variable discreta\\
+				scale_color_viridis_c() & color, variable continua\\
+				scale_fill_viridis_d() & relleno, variable discreta\\
+				scale_fill_viridis_c() & relleno, variable continua\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{theme()}: personalización del tema}
+		\rscript{theme()} modifica cualquier elemento no relacionado con los datos: tipografía, grillas, leyenda, fondo, márgenes. Se usa \textbf{después} del tema base.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`,
+                           `:ky:fill` = `:bn:continent`)) +
+  geom_boxplot(alpha = `:nm:0.7`) +
+  labs(`:ky:title` = "PBI per cápita por continente (2007)",
+       x = NULL, y = "PBI per cápita (USD)") +
+  theme_minimal() +                      # primero el tema base
+  theme(                                 # luego las modificaciones
+    plot.title         = element_text(size = `:nm:13`, face = "bold"),
+    axis.text.x        = element_text(size = `:nm:10`),
+    legend.position    = "none",
+    panel.grid.major.x = element_blank()
+  )
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			\rscript{`:fn:theme_*`()} debe ir \textbf{antes} de \rscript{theme()}. Si se invierte el orden, el tema base sobreescribe las modificaciones y estas no tienen efecto.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Elementos de \texttt{theme()}}
+		Cada argumento de \rscript{theme()} recibe una \textbf{función de elemento} que describe cómo se ve ese componente.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{6.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Función & Cuándo usarla\\
+				element\_text(...) & textos: títulos, etiquetas de ejes, leyenda\\
+				element\_line(...) & líneas: ejes, grillas, bordes\\
+				element\_rect(...) & rectángulos: fondo del panel, del gráfico\\
+				element\_blank() & elimina completamente el elemento\\
+			\end{tblr}
+		\end{center}
+
+\begin{lstlisting}[style=RScript]
+theme(
+  plot.title       = element_text(size = `:nm:14`, face = "bold",
+                                  color = "gray20"),
+  axis.title.y     = element_text(angle = `:nm:0`, vjust = `:nm:0.5`),
+  panel.grid.minor = element_blank(),
+  panel.background = element_rect(`:ky:fill` = "white"),
+  legend.position  = "bottom",
+  legend.title     = element_blank()
+)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{annotate()}: anotaciones manuales}
+		\rscript{annotate()} agrega elementos visuales fijos: texto, segmentos, flechas o rectángulos en coordenadas específicas. No lee datos del dataset; los valores se especifican directamente.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.6`) +
+  scale_x_log10() +
+  annotate("text",
+           x = `:nm:55000`, y = `:nm:58`,
+           label = "Alta renta,\nbaja longevidad",
+           size = `:nm:3`, hjust = `:nm:1`, color = "gray30") +
+  annotate("segment",
+           x = `:nm:55000`, xend = `:nm:60000`,
+           y = `:nm:60`, yend = `:nm:65`,
+           arrow = arrow(length = unit(`:nm:0.15`, "cm")),
+           color = "gray40") +
+  annotate("rect",
+           xmin = `:nm:500`, xmax = `:nm:2000`,
+           ymin = `:nm:40`, ymax = `:nm:60`,
+           alpha = `:nm:0.15`, `:ky:fill` = "firebrick")
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_text()} y \texttt{geom\_label()}}
+		A diferencia de \rscript{annotate()}, \rscript{geom\_text()} y \rscript{geom\_label()} leen del dataset: etiquetan cada observación con el valor de una variable mapeada a \rscript{`:ky:label`} dentro de \rscript{aes()}.
+
+\begin{lstlisting}[style=RScript]
+# Etiquetar solo los casos extremos con un subconjunto del dataset
+extremos <- `gapminder_2007` |>
+  filter(`:bn:lifeExp` < `:nm:50` | `:bn:gdpPercap` > `:nm:35000`)
+
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.6`) +
+  geom_label(
+    data = extremos,
+    aes(label = `:bn:country`),
+    size = `:nm:2.5`, alpha = `:nm:0.8`
+  ) +
+  scale_x_log10()
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Etiquetar todos los puntos produce solapamiento. La estrategia habitual es pasar un subconjunto con \rscript{data = extremos}. El paquete \rscript{`:pk:ggrepel`} (\rscript{geom\_text\_repel()}) ajusta automáticamente las posiciones para evitar superposiciones: es la solución estándar cuando hay muchas etiquetas.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{ggsave()}: exportar gráficos}
+		\rscript{ggsave()} guarda el último gráfico mostrado (o el asignado a una variable) en el formato indicado por la extensión del archivo.
+
+\begin{lstlisting}[style=RScript]
+mi_grafico <- ggplot(`gapminder_2007`,
+                     aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+                         `:ky:color` = `:bn:continent`)) +
+  geom_point(size = `:nm:2.5`, alpha = `:nm:0.8`) +
+  scale_x_log10() +
+  theme_minimal()
+
+# PNG para documentos digitales y presentaciones
+ggsave("output/grafico.png", `:ky:plot` = mi_grafico,
+       width = `:nm:8`, height = `:nm:5`, units = "in", dpi = `:nm:300`)
+
+# PDF para impresión y LaTeX (vectorial, sin pérdida de calidad)
+ggsave("output/grafico.pdf", `:ky:plot` = mi_grafico,
+       width = `:nm:8`, height = `:nm:5`, units = "in")
+\end{lstlisting}
+
+		\begin{block}{}
+			\textbf{PDF} es preferible para tesis e informes impresos: es vectorial y no pierde calidad al escalar. \textbf{PNG} con \rscript{dpi = 300} es el estándar para documentos digitales. \rscript{dpi = 96} es resolución de pantalla; \rscript{dpi = 300} es el mínimo para impresión.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Gráfico completo: de cero a publicable}
+
+\begin{lstlisting}[style=RScript]
+p <- ggplot(`gapminder_2007`,
+            aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+                `:ky:color` = `:bn:continent`, size = `:bn:pop`)) +
+  geom_point(alpha = `:nm:0.7`) +
+  scale_x_log10(`:ky:labels` = scales::comma) +
+  scale_color_brewer(`:ky:palette` = "Set2") +
+  scale_size_area(max_size = `:nm:15`, guide = "none") +
+  labs(
+    `:ky:title`    = "Riqueza y esperanza de vida (2007)",
+    subtitle = "Tamaño proporcional a la población",
+    x        = "PBI per cápita (USD, escala log)",
+    y        = "Esperanza de vida (años)",
+    `:ky:color`    = NULL,
+    caption  = "Fuente: Gapminder"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title       = element_text(face = "bold", size = `:nm:13`),
+    plot.subtitle    = element_text(color = "gray50"),
+    legend.position  = "bottom",
+    panel.grid.minor = element_blank()
+  )
+
+ggsave("output/gapminder_2007.pdf", `:ky:plot` = p,
+       width = `:nm:9`, height = `:nm:6`, units = "in")
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		Usando el dataset \rscript{gapminder}:
+
+		\begin{enumerate}
+			\item Graficá la evolución del PBI per cápita de los cinco países más ricos en 2007 con \rscript{geom\_line()}. Usá \rscript{scale\_y\_continuous(labels = scales::comma)} para formatear el eje y, y \rscript{scale\_color\_brewer(palette = "Dark2")} para los colores.
+
+			\item Tomá el gráfico de burbujas de la clase anterior y mejoralo: aplicá \rscript{scale\_color\_viridis\_d()}, personalizá el tema con \rscript{theme\_minimal()} + \rscript{theme()}, y etiquetá con \rscript{geom\_label()} los tres países con menor esperanza de vida.
+
+			\item Creá un gráfico de dispersión para 2007 con \rscript{geom\_point()} y \rscript{geom\_smooth(method = "lm")}. Agregá con \rscript{annotate("text")} una nota que indique qué región del gráfico agrupa a los países africanos.
+
+			\item Exportá cualquiera de los gráficos anteriores en PDF y PNG con \rscript{ggsave()}, con dimensiones adecuadas para un informe (ancho 8 pulgadas, alto 5 pulgadas, \rscript{dpi = 300} para el PNG).
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}

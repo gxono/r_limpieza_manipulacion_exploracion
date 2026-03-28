@@ -1,5 +1,7 @@
 # R para Limpieza, Manipulación y Exploración de Datos
 
+[![Licencia: CC BY-NC-ND 4.0](https://licensebuttons.net/l/by-nc-nd/4.0/88x31.png)](https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
 Repositorio del curso **R para limpieza, manipulación y exploración de datos**, dictado en la **Facultad de Ciencias Económicas** de la **Universidad Nacional del Litoral**.
 
 ## Archivos de este repositorio.
@@ -15,9 +17,9 @@ Repositorio del curso **R para limpieza, manipulación y exploración de datos**
 | 5 | Manipulación de datos II | [PDF](presentaciones/clases/clase-05/main.pdf) |
 | 6 | Manipulación de datos III | [PDF](presentaciones/clases/clase-06/main.pdf) |
 | 7 | Manipulación de datos IV | [PDF](presentaciones/clases/clase-07/main.pdf) |
-| 8 | 🚧 Pendiente | — |
-| 9 | 🚧 Pendiente | — |
-| 10 | 🚧 Pendiente | — |
+| 8 | Visualización de datos I | [PDF](presentaciones/clases/clase-08/main.pdf) |
+| 9 | Visualización de datos II | [PDF](presentaciones/clases/clase-09/main.pdf) |
+| 10 | Visualización de datos III | [PDF](presentaciones/clases/clase-10/main.pdf) |
 | 11 | 🚧 Pendiente | — |
 | 12 | 🚧 Pendiente | — |
 | 13 | 🚧 Pendiente | — |
@@ -125,6 +127,10 @@ Integra todas las competencias previas mediante la creación de documentos diná
 | **Eje 3** | | | | ✓ | ✓ | ✓ | ✓ | | | | | | |
 | **Eje 4** | | | ✓ | | | | | ✓ | ✓ | ✓ | | | |
 | **Eje 5** | | | | | | | | | | | ✓ | ✓ | ✓ |
+
+## Licencia
+
+Este material se distribuye bajo la licencia [CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/): podés compartirlo libremente con atribución, pero no modificarlo ni usarlo con fines comerciales.
 
 
 El resto de la información la pueden encontrar en el programa de la asignatura.

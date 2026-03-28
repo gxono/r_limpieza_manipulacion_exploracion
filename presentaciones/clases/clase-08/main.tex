@@ -1,0 +1,554 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{8vo encuentro: Visualización de datos I}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		\begin{itemize}
+			\item \textbf{ggplot2 y la gramática de gráficos}: qué es, por qué usarlo, sus componentes
+			\item \textbf{El lienzo}: \rscript{ggplot()}, \rscript{aes()} y el operador \rscript{+}
+			\item \textbf{Mapeo de estéticas}: variables a propiedades visuales
+			\item \textbf{Gráficos de distribución}: \rscript{geom\_histogram()}, \rscript{geom\_density()}, \rscript{geom\_boxplot()}
+			\item \textbf{Personalización}: \rscript{labs()} y \rscript{`:fn:theme_*`()}
+		\end{itemize}
+
+		\titleitem{Paquetes y datos}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyverse`)
+library(`:pk:gapminder`)  # install.packages("gapminder") si no está instalado
+
+# Filtrar solo el año 2007 para los primeros ejemplos
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+\end{lstlisting}
+
+		\begin{block}{}
+			El dataset \rscript{gapminder} contiene datos de \textbf{142 países} con variables de desarrollo humano y económico: esperanza de vida, población y PBI per cápita, relevados cada 5 años entre 1952 y 2007.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}{¿Qué es \texttt{ggplot2}?}
+		\rscript{`:pk:ggplot2`} es una implementación del paradigma \textbf{Grammar of Graphics} (Wilkinson, 1999) desarrollada por Hadley Wickham. En lugar de elegir un tipo de gráfico predefinido, se \textbf{construye} el gráfico capa por capa especificando sus componentes.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Paradigma & Cómo funciona\\
+				Base R & \texttt{hist(x)}, \texttt{plot(x,y)}, \texttt{boxplot(x)} --- función distinta para cada tipo\\
+				ggplot2 & \texttt{ggplot(datos, aes(x)) + geom\_*()} --- misma estructura para todo\\
+			\end{tblr}
+		\end{center}
+
+		\begin{exampleblock}{}
+			La ventaja de la gramática de gráficos es que cualquier gráfico, por complejo que sea, se construye con los mismos bloques. Aprender la lógica una vez permite hacer cualquier tipo de visualización.
+		\end{exampleblock}
+
+		\begin{block}{}
+			\rscript{`:pk:ggplot2`} viene incluido en \rscript{`:pk:tidyverse`} y se carga automáticamente con \rscript{library(`:pk:tidyverse`)}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Los componentes de un gráfico}
+		Todo gráfico de ggplot2 se compone de \textbf{capas}, y cada capa tiene estos elementos:
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Componente & Función & Qué define\\
+				ggplot() & obligatorio & el lienzo: los datos y el mapeo base\\
+				aes() & obligatorio & qué variable va en cada propiedad visual\\
+				`:fn:geom_*`() & obligatorio & la forma geométrica que representa los datos\\
+				labs() & opcional & títulos, etiquetas de ejes, leyendas\\
+				`:fn:scale_*`() & opcional & cómo se transforma o colorea cada escala\\
+				`:fn:facet_*`() & opcional & dividir el gráfico en paneles\\
+				`:fn:theme_*`() & opcional & el estilo visual general (fondo, grillas, fuentes)\\
+			\end{tblr}
+		\end{center}
+
+		\begin{alertblock}{}
+			Solo \rscript{ggplot()}, \rscript{aes()} y al menos un \rscript{`:fn:geom_*`()} son estrictamente necesarios. El resto son capas opcionales que se agregan con \rscript{+}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El lienzo: \texttt{ggplot()} y \texttt{aes()}}
+		\rscript{ggplot()} crea el lienzo del gráfico. Recibe los \textbf{datos} y el \textbf{mapeo estético base}: qué variable va en cada eje o propiedad visual.
+
+\begin{lstlisting}[style=RScript]
+# Solo el lienzo: define ejes pero no dibuja nada todavía
+ggplot(`:ky:data` = `gapminder_2007`, mapping = aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`))
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width = 0.5\textwidth]{img/plot1.png}
+		\end{figure}
+
+		\begin{block}{}
+			\rscript{ggplot()} solo prepara el lienzo con los ejes correctos. Hasta que no se agrega un \rscript{`:fn:geom_*`()}, no hay ningún elemento visual que represente los datos.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agregar geometrías: \texttt{geom\_*()}}
+		Para dibujar los datos, se añade una \textbf{geometría} con el operador \rscript{+}. La geometría define la forma visual: puntos, barras, líneas, cajas, etc.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, mapping = aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point()
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot2.png}
+		\end{figure}
+
+		\begin{exampleblock}{}
+			El operador \rscript{+} \textbf{no es el pipe} \rscript{|>}. En ggplot2, \rscript{+} agrega una capa al gráfico. El pipe transforma datos antes de pasarlos a \rscript{ggplot()}. Ambos se combinan: \rscript{datos |> filter(...) |> ggplot(aes(...)) + `:fn:geom_*`()}.
+		\end{exampleblock}
+	\end{frame}
+	
+	
+	\begin{frame}[fragile]
+		Teniendo en cuenta el operador pipe y que \rscript{mapping} es tambi\'en un argumento posicional
+		\begin{lstlisting}[style=RScript]
+			# Casi siempre optaremos por escribir
+			`df` |> ggplot(aes(...))
+			# o
+			ggplot(`df`, aes(...))
+			
+			# en lugar de 
+			ggplot(`data` = `df`, mapping = aes(...))
+		\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Mapeo de estéticas: \texttt{aes()}}
+		\rscript{aes()} mapea \textbf{variables del dataset} a \textbf{propiedades visuales}. Cada propiedad visual del gráfico puede representar una variable.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l l p{5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Estética & Tipo de variable & Qué controla\\
+				x, y & continua o discreta & posición en cada eje\\
+				color & discreta o continua & color del borde o la línea\\
+				`fill` & discreta o continua & color de relleno interior\\
+				alpha & continua (0--1) & transparencia\\
+				size & continua & tamaño del punto o línea\\
+				shape & discreta & forma del punto (círculo, triángulo...)\\
+				linetype & discreta & tipo de línea (sólida, punteada...)\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+\begin{frame}[fragile]
+	\begin{lstlisting}[style=RScript]
+# Agregar una tercera variable al gráfico de dispersión:
+`gapminder_2007` |> ggplot(aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`, color = `:bn:continent`)) +
+	geom_point()
+	\end{lstlisting}
+	\begin{figure}[h!]
+		\includegraphics[width=0.5\textwidth]{img/plot3.png}
+	\end{figure}
+\end{frame}
+
+
+
+	\begin{frame}[fragile]{Estéticas globales vs. locales}
+		Las estéticas definidas en \rscript{ggplot(aes())} son \textbf{globales}: se aplican a todas las capas. Las definidas dentro de un \rscript{`:fn:geom_*`(aes())} son \textbf{locales}: solo afectan a esa capa.
+
+\begin{lstlisting}[style=RScript]
+# Global: color se aplica a todos los geoms del gráfico
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
+                           color = `:bn:continent`)) +
+  geom_point()
+
+# Local: color solo en geom_point, no en otras capas que se agreguen
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+  geom_point(aes(color = `:bn:continent`))
+\end{lstlisting}
+
+		\titleitem{Valores fijos vs. mapeo de variables}
+\begin{lstlisting}[style=RScript]
+# DENTRO de aes(): mapea una variable -> genera leyenda automática
+geom_point(aes(color = `:bn:continent`))   # color según el continente
+
+# FUERA de aes(): valor fijo para todos los puntos -> no genera leyenda
+geom_point(color = "steelblue")            # todos los puntos azules
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Error clásico: \rscript{aes(color = "blue")}. En lugar de colorear en azul, R trata \rscript{"blue"} como una categoría de una sola observación y asigna el primer color de la paleta. Los valores fijos van \textbf{fuera} de \rscript{aes()}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_histogram()}: introducción}
+		El histograma divide el rango de una variable en intervalos (\textbf{bins}) y cuenta cuántas observaciones caen en cada uno. Es el gráfico más directo para explorar la distribución de una variable continua.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+  geom_histogram()
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot4.png}
+		\end{figure}
+
+		\begin{alertblock}{}
+			Por defecto, ggplot2 usa \textbf{30 bins} y muestra el mensaje \texttt{`stat\_bin()` using `bins = 30`. Pick better value with `binwidth`}. No es un error: es un recordatorio.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_histogram()}: \texttt{bins} y \texttt{binwidth}}
+		El número y ancho de los bins cambia drásticamente cómo se percibe la distribución. Es importante elegir un valor informativo: ni tan fino que muestre ruido, ni tan grueso que pierda estructura.
+
+\begin{lstlisting}[style=RScript]
+# bins: número total de intervalos
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+  geom_histogram(bins = `:nm:10`)
+\end{lstlisting}
+	\begin{figure}[h!]
+		\includegraphics[width=0.5\textwidth]{img/plot5.png}
+	\end{figure}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{geom\_histogram()}: \texttt{bins} y \texttt{binwidth}}	
+	\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+	geom_histogram(bins = `:nm:50`)
+\end{lstlisting}
+	\begin{figure}[h!]
+		\includegraphics[width=0.5\textwidth]{img/plot6.png}
+	\end{figure}
+\end{frame}
+
+
+
+	\begin{frame}[fragile]{\texttt{geom\_histogram()}: \texttt{bins} y \texttt{binwidth}}	
+	\begin{lstlisting}[style=RScript]
+# binwidth: ancho de cada intervalo en las unidades de la variable
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+	geom_histogram(binwidth = `:nm:5000`)   # intervalos de USD 5.000
+\end{lstlisting}
+	
+	\begin{figure}[h!]
+		\includegraphics[width=0.5\textwidth]{img/plot7.png}
+	\end{figure}
+	
+	\begin{block}{}
+		\rscript{bins} y \rscript{binwidth} son equivalentes: especificar uno determina el otro. \rscript{binwidth} suele ser más interpretable porque se expresa en las unidades de la variable: \rscript{binwidth = 5000} significa \textit{intervalos de USD 5.000}.
+	\end{block}
+\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_histogram()}: \texttt{fill}, \texttt{color} y \texttt{alpha}}
+		\rscript{`fill`} controla el \textbf{interior} de las barras; \rscript{color} controla el \textbf{borde}. \rscript{alpha} ajusta la transparencia (de \rscript{0} completamente invisible a \rscript{1} completamente sólido).
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+  geom_histogram(
+    binwidth = `:nm:5000`,
+    `fill`     = "steelblue",
+    color    = "white",
+    alpha    = `:nm:0.8`
+  )
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot8.png}
+		\end{figure}
+	\end{frame}
+	
+	\begin{frame}[fragile]
+		\begin{block}{}
+			\rscript{`:ky:fill` = "steelblue"} y \rscript{color = "white"} van \textbf{fuera de \rscript{aes()}} porque son valores fijos, no variables. Si se quisiera colorear cada barra según el continente, ahí sí irían dentro de \rscript{aes()}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_density()}}
+		\rscript{geom\_density()} estima una \textbf{función de densidad de probabilidad} continua a partir de los datos. Es una versión suavizada del histograma que elimina la arbitrariedad de los bins.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
+  geom_density(`fill` = "steelblue", alpha = `:nm:0.5`)
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot9.png}
+		\end{figure}
+
+		\begin{block}{}
+			El parámetro \rscript{adjust} controla el suavizado: \rscript{adjust = 0.5} produce una curva más irregular (más detalle), \rscript{adjust = 2} produce una curva más suave (menos detalle). El default es \rscript{adjust = 1}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Distribuciones por grupo}
+		Asignar una variable discreta a \rscript{`:ky:fill`} dentro de \rscript{aes()} genera una distribución separada por grupo. El parámetro \rscript{alpha} permite ver el solapamiento entre grupos.
+
+\begin{lstlisting}[style=RScript]
+# Densidades superpuestas por continente
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, `:ky:fill` = `:bn:continent`)) +
+  geom_density(alpha = `:nm:0.4`)
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot10.png}
+		\end{figure}
+	\end{frame}
+	
+	
+	
+		\begin{frame}[fragile]{Distribuciones por grupo}
+		\begin{lstlisting}[style=RScript]
+# Histogramas superpuestos: position = "identity" evita el apilado
+ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, `:ky:fill` = `:bn:continent`)) +
+	geom_histogram(binwidth = `:nm:5000`, alpha = `:nm:0.5`,
+								 position = "identity")
+\end{lstlisting}
+		
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot11.png}
+		\end{figure}
+		
+		\begin{block}{}
+			En los histogramas, \rscript{position = "identity"} hace que las barras se superpongan. Sin él, el default \rscript{position = "stack"} apila cada grupo sobre el anterior, lo que dificulta comparar las distribuciones.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_boxplot()}: anatomía}
+		El diagrama de caja (boxplot) resume la distribución con cinco estadísticos y señala los valores atípicos. Es compacto y permite comparar grupos de un vistazo.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Elemento & Qué representa\\
+				Línea central & mediana (Q2: percentil 50)\\
+				Borde inferior de la caja & primer cuartil (Q1: percentil 25)\\
+				Borde superior de la caja & tercer cuartil (Q3: percentil 75)\\
+				Altura de la caja & rango intercuartílico (RIC = Q3 $-$ Q1)\\
+				Bigotes & se extienden hasta 1,5 $\times$ RIC desde la caja\\
+				Puntos sueltos & outliers: valores más allá de los bigotes\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+	
+	
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+# Un único boxplot (sin grupos): x queda vacío
+ggplot(`gapminder_2007`, aes(y = `:bn:gdpPercap`)) +
+	geom_boxplot()
+\end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot12.png}
+\end{figure}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_boxplot()}: comparación entre grupos}
+		Mapear una variable discreta al eje \rscript{x} genera un boxplot por grupo: es la forma más directa de comparar distribuciones entre categorías.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
+  geom_boxplot(`:ky:fill` = "steelblue", alpha = `:nm:0.7`)
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot13.png}
+		\end{figure}
+
+		\begin{block}{}
+			Si se usa \rscript{`:ky:fill` = `:bn:continent`} dentro de \rscript{aes()}, cada continente recibe un color distinto y ggplot2 agrega una leyenda automáticamente. Con un valor fijo (\rscript{`:ky:fill` = "steelblue"}), todas las cajas tienen el mismo color y no hay leyenda.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Combinar capas: \texttt{geom\_jitter()}}
+		El boxplot oculta cuántas observaciones hay y cómo se distribuyen dentro de los cuartiles. Superponerle \rscript{geom\_jitter()} muestra los puntos individuales con dispersión aleatoria para evitar el solapamiento.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
+  geom_boxplot(`:ky:fill` = "steelblue", alpha = `:nm:0.4`,
+               outlier.shape = NA) +       # oculta outliers del boxplot
+  geom_jitter(width = `:nm:0.2`, alpha = `:nm:0.6`, color = "gray30")
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot14.png}
+		\end{figure}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{geom\_violin()}}
+		\rscript{geom\_violin()} combina lo mejor del boxplot (comparación entre grupos) y la densidad (forma de la distribución). El ancho en cada punto es proporcional a la cantidad de observaciones.
+
+\begin{lstlisting}[style=RScript]
+# Violín solo
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
+  geom_violin(`:ky:fill` = "steelblue", alpha = `:nm:0.5`)
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot15.png}
+		\end{figure}
+	\end{frame}
+	
+	
+	
+	
+		\begin{frame}[fragile]{\texttt{geom\_violin()}}
+		\begin{lstlisting}[style=RScript]
+# Violín + boxplot anidado: combinación muy usada en publicaciones
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
+	geom_violin(`:ky:fill` = "steelblue", alpha = `:nm:0.5`) +
+	geom_boxplot(width = `:nm:0.1`, `:ky:fill` = "white")
+\end{lstlisting}
+		
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot16.png}
+		\end{figure}
+		
+		\begin{exampleblock}{}
+			La combinación violín + boxplot anidado muestra la forma de la distribución (violín) y los estadísticos resumen (boxplot). El boxplot anidado tiene sentido cuando hay suficientes observaciones por grupo.
+		\end{exampleblock}
+	\end{frame}
+	
+
+
+	\begin{frame}[fragile]{\texttt{labs()}: títulos y etiquetas}
+		\rscript{labs()} controla todos los textos del gráfico. Un gráfico sin etiquetas claras es incompleto: el lector no debería tener que adivinar qué está viendo.
+
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`, `:ky:fill` = `:bn:continent`)) +
+  geom_boxplot(alpha = `:nm:0.7`) +
+  labs(
+    `:ky:title`    = "Distribución del PBI per cápita por continente (2007)",
+    subtitle = "142 países · dólares internacionales del año 2007",
+    x        = "Continente",
+    y        = "PBI per cápita (USD)",
+    `:ky:fill`     = "Continente",
+    caption  = "Fuente: Gapminder"
+  )
+\end{lstlisting}
+
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[width=0.5\textwidth]{img/plot17.png}
+		\end{figure}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Temas: \texttt{theme\_*()}}
+		Los temas controlan el estilo visual del gráfico: fondo, grillas, tipografía, márgenes. ggplot2 incluye varios temas predefinidos que mejoran notablemente la presentación por defecto.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+				cell{2-Z}{1} = {cmd = \rscript}
+			}
+				Tema & Aspecto\\
+				theme_gray() & default: fondo gris con grillas blancas\\
+				theme_bw() & fondo blanco, borde negro, grillas grises\\
+				theme_minimal() & mínimo: sin borde, grillas suaves\\
+				theme_classic() & ejes sin grillas; estilo de publicación académica\\
+				theme_light() & variante clara de \rscript{theme\_bw()}\\
+				theme_void() & sin ejes ni fondo; útil para mapas\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+	
+	
+	
+	
+	\begin{frame}[fragile]
+\begin{lstlisting}[style=RScript]
+ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
+	geom_boxplot(`:ky:fill` = "steelblue", alpha = `:nm:0.7`) +
+	labs(title = "PBI per cápita por continente (2007)",
+			 x = "Continente", y = "PBI per cápita (USD)") +
+	theme_minimal()
+\end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot18.png}
+\end{figure}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		Usando el dataset \rscript{gapminder} (completo, todos los años):
+
+		\begin{enumerate}
+			\item Graficá la distribución de la esperanza de vida (\rscript{`:bn:lifeExp`}) con un histograma. Probá al menos tres valores distintos de \rscript{bins}.
+			\item Repetí el gráfico anterior pero con \rscript{geom\_density()}. Probá \rscript{adjust = 0.5} y \rscript{adjust = 2}. ¿Qué diferencia notás?
+			\item Graficá la distribución de \rscript{`:bn:lifeExp`} con densidades separadas por continente. Usá \rscript{alpha = 0.4}.
+			\item Creá un boxplot de \rscript{`:bn:lifeExp`} por continente. Luego agregale color con \rscript{`:ky:fill` = `:bn:continent`}.
+			\item Superponele puntos con \rscript{geom\_jitter()} al boxplot anterior. ¿Qué continente muestra mayor dispersión interna?
+			\item Graficá la distribución del PBI per cápita (\rscript{`:bn:gdpPercap`}) solo para los años \rscript{`:nm:1952`} y \rscript{`:nm:2007`} en un mismo gráfico de densidad. Usá \rscript{`:ky:fill`} para distinguir los años. ¿Qué cambió?
+			\item Repetí el ejercicio anterior pero con \rscript{geom\_histogram()}. ¿Qué problema aparece si no usás \rscript{position = "identity"}?
+			\item Usando solo los datos de América (\rscript{`:bn:continent` == "Americas"}), hacé un boxplot de \rscript{`:bn:lifeExp`} por año. ¿Cómo cambió la distribución?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\begin{enumerate}
+			\setcounter{enumi}{8}
+			\item Creá un histograma de \rscript{`:bn:gdpPercap`} para \rscript{`:nm:2007`}. Modificá \rscript{`:ky:fill`}, \rscript{color} y \rscript{alpha} hasta obtener una presentación que te parezca clara.
+			\item Aplicá los temas \rscript{theme\_minimal()}, \rscript{theme\_classic()} y \rscript{theme\_bw()} a un mismo gráfico. ¿Cuál te parece más apropiado para un informe académico?
+			\item Tomá el boxplot del ejercicio 4 y completalo con \rscript{labs()}: título descriptivo, etiquetas de ejes en español y nota al pie con la fuente (\textit{Gapminder}).
+			\item Usando todo el dataset, graficá la distribución de la población (\rscript{`:bn:pop`}). ¿Qué forma tiene? ¿Qué observación se puede hacer sobre la mayoría de los países?
+			\item Elegí dos continentes y compará la distribución del PBI per cápita en \rscript{`:nm:2007`} usando los tres tipos de gráfico vistos: densidades superpuestas, histogramas y boxplot. ¿Cuál comunica mejor las diferencias?
+			\item Usá \rscript{geom\_violin()} + \rscript{geom\_boxplot()} anidado para comparar la distribución de \rscript{`:bn:lifeExp`} entre los cinco continentes en \rscript{`:nm:2007`}. Agregá título, etiquetas de ejes y un tema apropiado para presentación.
+			\item El dataset cubre el período 1952--2007. Creá un gráfico de densidad de \rscript{`:bn:lifeExp`} que compare los años \rscript{`:nm:1952`}, \rscript{`:nm:1977`} y \rscript{`:nm:2007`}. ¿Qué tendencia muestra? Completá el gráfico con \rscript{labs()} y \rscript{theme\_minimal()}.
+		\end{enumerate}
+		
+		\begin{exampleblock}{}
+			En el próximo encuentro: \rscript{geom\_line()} para series de tiempo, \rscript{geom\_col()} para comparaciones categóricas, \rscript{geom\_smooth()} para tendencias y \rscript{facet\_wrap()} para paneles múltiples.
+		\end{exampleblock}
+	\end{frame}
+
+\end{document}
