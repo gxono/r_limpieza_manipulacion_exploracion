@@ -43,11 +43,17 @@ gapminder |>
   ggplot(aes(x = `:bn:year`, y = `:bn:gdpPercap`)) +
   geom_line()
 \end{lstlisting}
-
-		\begin{block}{}
-			\rscript{geom_line()} asume que las observaciones están ordenadas por \rscript{x}. Si los datos no están en orden, la línea zigzaguea de forma incorrecta. Se puede asegurar el orden con \rscript{arrange(`:bn:year`)} antes de pasar los datos a \rscript{ggplot()}.
-		\end{block}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot1.png}
+\end{figure}
 	\end{frame}
+	
+	
+\begin{frame}[fragile]
+			\begin{block}{}
+		\rscript{geom_line()} asume que las observaciones están ordenadas por \rscript{x}. Si los datos no están en orden, la línea zigzaguea de forma incorrecta. Se puede asegurar el orden con \rscript{arrange(`:bn:year`)} antes de pasar los datos a \rscript{ggplot()}.
+	\end{block}
+\end{frame}
 
 
 	\begin{frame}[fragile]{Múltiples series: \texttt{color} y \texttt{group}}
@@ -58,11 +64,20 @@ ggplot(gapminder_paises,
        aes(x = `:bn:year`, y = `:bn:gdpPercap`, `:ky:color` = `:bn:country`)) +
   geom_line()
 \end{lstlisting}
-
-		\begin{exampleblock}{}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot2.png}
+\end{figure}
+	\end{frame}
+	
+	
+	\begin{frame}
+			\begin{exampleblock}{}
 			Si no se especifica \rscript{`:ky:group`} ni \rscript{`:ky:color`} con una variable discreta, todas las observaciones de distintos países se conectan en una sola línea zigzagueante. Es el error más frecuente al usar \rscript{geom_line()} con datos de panel.
 		\end{exampleblock}
-
+		\begin{figure}[h!]
+			\includegraphics[width=0.5\textwidth]{img/plot3.png}
+		\end{figure}
+		
 		\begin{block}{}
 			\rscript{`:ky:group`} controla el agrupado sin cambiar el color. \rscript{`:ky:color`} agrupa \textbf{y} colorea al mismo tiempo. Si ya se usa \rscript{`:ky:color`}, no hace falta especificar \rscript{`:ky:group`} por separado.
 		\end{block}
@@ -78,9 +93,12 @@ ggplot(gapminder_paises,
   geom_line() +
   geom_point(size = `:nm:2`)
 \end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot4.png}
+\end{figure}
 
 		\begin{block}{}
-			Las capas se dibujan en el orden en que se agregan. \rscript{geom_point()} va después de \rscript{geom_line()} para que los puntos queden encima de las líneas. El orden de las capas importa cuando se solapan.
+			Las capas se dibujan en el orden en que se agregan. \rscript{geom_point()} va después de \rscript{geom_line()} para que los puntos queden encima de las líneas.
 		\end{block}
 	\end{frame}
 
@@ -97,11 +115,19 @@ gdp_continente <- `gapminder_2007` |>
 ggplot(gdp_continente, aes(x = `:bn:continent`, y = `:bn:gdp_medio`)) +
   geom_col(`:ky:fill` = "steelblue")
 \end{lstlisting}
-
-		\begin{block}{}
-			\rscript{geom_col()} es equivalente a \rscript{geom_bar(`:ky:stat` = "identity")}. En la práctica, \rscript{geom_col()} es preferible cuando los datos ya vienen resumidos: el nombre lo deja explícito.
-		\end{block}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot5.png}
+\end{figure}
 	\end{frame}
+	
+	
+	
+\begin{frame}[fragile]
+			\begin{block}{}
+		\rscript{geom_col()} es equivalente a \rscript{geom_bar(`:ky:stat` = "identity")}. En la práctica, \rscript{geom_col()} es preferible cuando los datos ya vienen resumidos: el nombre lo deja explícito.
+	\end{block}
+\end{frame}
+
 
 
 	\begin{frame}[fragile]{\texttt{geom\_bar()}: barras de conteo}
@@ -112,7 +138,9 @@ ggplot(gdp_continente, aes(x = `:bn:continent`, y = `:bn:gdp_medio`)) +
 ggplot(`gapminder_2007`, aes(x = `:bn:continent`)) +
   geom_bar(`:ky:fill` = "steelblue")
 \end{lstlisting}
-
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot6.png}
+\end{figure}
 		\begin{center}
 			\small
 			\begin{tblr}{
@@ -137,19 +165,33 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`)) +
 ggplot(gdp_continente,
        aes(x = `:bn:gdp_medio`, y = `:bn:continent`)) +
   geom_col(`:ky:fill` = "steelblue")
-
+\end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot7.png}
+\end{figure}
+	\end{frame}
+	
+	
+	
+	
+		\begin{frame}[fragile]{Barras horizontales y ordenamiento}
+\begin{lstlisting}[style=RScript]
 # Ordenar por valor: reorder() reordena el factor según otra variable
 ggplot(gdp_continente,
-       aes(x = `:bn:gdp_medio`,
-           y = reorder(`:bn:continent`, `:bn:gdp_medio`))) +
-  geom_col(`:ky:fill` = "steelblue") +
-  labs(y = "Continente")
+			 aes(x = `:bn:gdp_medio`,
+					 y = reorder(`:bn:continent`, `:bn:gdp_medio`))) +
+	geom_col(`:ky:fill` = "steelblue") +
+	labs(y = "Continente")
 \end{lstlisting}
-
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot8.png}
+\end{figure}
+		
 		\begin{exampleblock}{}
 			\rscript{reorder(`:bn:continent`, `:bn:gdp_medio`)} reordena los niveles del factor \rscript{`:bn:continent`} según el valor de \rscript{`:bn:gdp_medio`}. Sin esto, las barras se ordenan alfabéticamente, lo que dificulta la comparación visual.
 		\end{exampleblock}
 	\end{frame}
+	
 
 
 	\begin{frame}[fragile]{\texttt{geom\_smooth()}: curva de tendencia}
@@ -160,17 +202,31 @@ ggplot(gdp_continente,
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(alpha = `:nm:0.6`) +
   geom_smooth()
+\end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot9.png}
+\end{figure}
+	\end{frame}
 
+
+
+
+	\begin{frame}[fragile]{\texttt{geom\_smooth()}: curva de tendencia}
+\begin{lstlisting}[style=RScript]
 # Regresión lineal: method = "lm"
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
-  geom_point(alpha = `:nm:0.6`) +
-  geom_smooth(method = "lm", `:ky:se` = FALSE, color = "firebrick")
+	geom_point(alpha = `:nm:0.6`) +
+	geom_smooth(method = "lm", `:ky:se` = FALSE, color = "firebrick")
 \end{lstlisting}
+	\begin{figure}[h!]
+		\includegraphics[width=0.5\textwidth]{img/plot10.png}
+	\end{figure}
+	\begin{block}{}
+		Por defecto se usa \rscript{method = "loess"} (suavizado local). La banda gris es el intervalo de confianza al 95\%; se desactiva con \rscript{`:ky:se` = FALSE}. Con \rscript{method = "lm"} se ajusta una recta de regresión lineal.
+	\end{block}
+\end{frame}
 
-		\begin{block}{}
-			Por defecto se usa \rscript{method = "loess"} (suavizado local). La banda gris es el intervalo de confianza al 95\%; se desactiva con \rscript{`:ky:se` = FALSE}. Con \rscript{method = "lm"} se ajusta una recta de regresión lineal.
-		\end{block}
-	\end{frame}
+
 
 
 	\begin{frame}[fragile]{Escala logarítmica: \texttt{scale\_x\_log10()}}
@@ -178,8 +234,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
 
 \begin{lstlisting}[style=RScript]
 ggplot(`gapminder_2007`,
-       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
-           `:ky:color` = `:bn:continent`)) +
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`, `:ky:color` = `:bn:continent`)) +
   geom_point(alpha = `:nm:0.7`) +
   geom_smooth(method = "lm", se = FALSE) +
   scale_x_log10() +
@@ -191,11 +246,17 @@ ggplot(`gapminder_2007`,
     caption = "Fuente: Gapminder"
   )
 \end{lstlisting}
-
-		\begin{exampleblock}{}
-			El \rscript{geom_smooth()} hereda las estéticas globales: como \rscript{`:ky:color` = `:bn:continent`} está en \rscript{aes()}, calcula una recta por continente. Para una recta global, mover \rscript{`:ky:color`} al \rscript{aes()} local de \rscript{geom_point()}.
-		\end{exampleblock}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot11.png}
+\end{figure}
 	\end{frame}
+
+
+\begin{frame}[fragile]
+		\begin{exampleblock}{}
+	El \rscript{geom_smooth()} hereda las estéticas globales: como \rscript{`:ky:color` = `:bn:continent`} está en \rscript{aes()}, calcula una recta por continente. Para una recta global, mover \rscript{`:ky:color`} al \rscript{aes()} local de \rscript{geom_point()}.
+\end{exampleblock}
+\end{frame}
 
 
 	\begin{frame}[fragile]{Gráfico de burbujas: \texttt{size} como estética}
@@ -203,8 +264,7 @@ ggplot(`gapminder_2007`,
 
 \begin{lstlisting}[style=RScript]
 ggplot(`gapminder_2007`,
-       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
-           size = `:bn:pop`, `:ky:color` = `:bn:continent`)) +
+       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`, size = `:bn:pop`, `:ky:color` = `:bn:continent`)) +
   geom_point(alpha = `:nm:0.6`) +
   scale_x_log10() +
   scale_size_area(max_size = `:nm:15`) +
@@ -216,8 +276,13 @@ ggplot(`gapminder_2007`,
     `:ky:color` = "Continente"
   )
 \end{lstlisting}
-
-		\begin{block}{}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot12.png}
+\end{figure}
+	\end{frame}
+	
+	\begin{frame}[fragile]
+				\begin{block}{}
 			\rscript{scale\_size\_area()} hace que el \textbf{área} del punto sea proporcional al valor, no el radio. Esto es perceptualmente correcto: si el radio fuera proporcional, los puntos grandes parecerían desproporcionadamente más grandes.
 		\end{block}
 	\end{frame}
@@ -232,14 +297,28 @@ ggplot(`gapminder_2007`,
        aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(alpha = `:nm:0.6`) +
   facet_wrap(~ `:bn:continent`)
+\end{lstlisting}
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot13.png}
+\end{figure}
+	\end{frame}
+	
+	
+	
+	
+	
+		\begin{frame}[fragile]{\texttt{facet\_wrap()}: pequeños múltiples}
 
+\begin{lstlisting}[style=RScript]
 # Controlar columnas y permitir escalas independientes
 ggplot(`gapminder_2007`,
-       aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
-  geom_point(alpha = `:nm:0.6`) +
-  facet_wrap(~ `:bn:continent`, `:ky:ncol` = `:nm:2`, scales = "free_x")
+			 aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
+	geom_point(alpha = `:nm:0.6`) +
+	facet_wrap(~ `:bn:continent`, `:ky:ncol` = `:nm:2`, scales = "free_x")
 \end{lstlisting}
-
+		\begin{figure}[h!]
+			\includegraphics[width=0.5\textwidth]{img/plot14.png}
+		\end{figure}
 		\begin{block}{}
 			Por defecto, todos los paneles comparten la misma escala en ambos ejes (\rscript{scales = "fixed"}). Con \rscript{scales = "free"} cada panel ajusta su escala individualmente; con \rscript{scales = "free\_x"} solo el eje \rscript{x} varía. Escalas libres muestran mejor la variación interna pero dificultan la comparación entre paneles.
 		\end{block}
@@ -258,22 +337,29 @@ gapminder |>
   facet_grid(`:bn:year` ~ `:bn:continent`) +
   scale_x_log10()
 \end{lstlisting}
-
+\begin{figure}[h!]
+	\includegraphics[width=0.5\textwidth]{img/plot15.png}
+\end{figure}
+	\end{frame}
+	
+	
+	
+\begin{frame}[fragile]
 		\begin{center}
-			\begin{tblr}{
+		\begin{tblr}{
 				colspec  = {l p{3cm} p{4cm}},
 				row{1}   = {font=\bfseries},
 				hline{1,2,Z} = {solid},
 				cell{2-Z}{1} = {cmd = \rscript}
 			}
-				Sintaxis & Resultado & Cuándo usarla\\
-				facet_wrap(~ `:bn:var`) & múltiples paneles en filas/columnas & una sola variable de facetado\\
-				facet_grid(`:bn:f` ~ `:bn:c`) & cuadrícula: filas = f, columnas = c & cruzar dos variables\\
-				facet_grid(. ~ `:bn:c`) & solo columnas & una variable, comparar en horizontal\\
-				facet_grid(`:bn:f` ~ .) & solo filas & una variable, comparar en vertical\\
-			\end{tblr}
-		\end{center}
-	\end{frame}
+			Sintaxis & Resultado & Cuándo usarla\\
+			facet_wrap(~ `:bn:var`) & múltiples paneles en filas/columnas & una sola variable de facetado\\
+			facet_grid(`:bn:f` ~ `:bn:c`) & cuadrícula: filas = f, columnas = c & cruzar dos variables\\
+			facet_grid(. ~ `:bn:c`) & solo columnas & una variable, comparar en horizontal\\
+			facet_grid(`:bn:f` ~ .) & solo filas & una variable, comparar en vertical\\
+		\end{tblr}
+	\end{center}
+\end{frame}
 
 
 	\begin{frame}[fragile]{Ejercicios}
