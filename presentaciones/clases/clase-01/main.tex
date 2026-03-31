@@ -1464,4 +1464,31 @@ Poder entender el funcionamiento de este mecanismo \textbf{es fundamental}!
 		\item Crea una matriz de 5 filas y 2 columnas. La primera columna debe tener los números del 1 al 5, y la segunda columna sus cuadrados. Asigna nombres a las columnas ("Numero", "Cuadrado") usando \rscript{colnames()}.
 	\end{enumerate}
 \end{frame}
+
+
+
+
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Se realizó una encuesta a 10 estudiantes de primer año. Los datos recolectados son los siguientes:
+
+		\begin{itemize}
+			\item \textbf{Nombres}: Ana, Bruno, Carla, Diego, Elena, Facundo, Gisela, Hernán, Ivana, Julián
+			\item \textbf{Notas del parcial} (sobre 10): 7, 4, 9, 5, 8, 3, 6, 10, 5, 7
+			\item \textbf{Asistencia} (proporción, 0 a 1): 0.9, 0.5, 1.0, 0.6, 0.8, 0.4, 0.7, 1.0, 0.5, 0.85
+			\item \textbf{Trabaja}: sí, no, no, sí, no, sí, no, no, sí, no
+		\end{itemize}
+
+		\begin{enumerate}
+			\item Creá un vector para cada variable. Verificá el tipo de dato de cada uno con \rscript{class()} y usá las funciones \rscript{is.*} para confirmar que cada vector tiene el tipo correcto. Convertí el vector de empleo a lógico (\rscript{TRUE}/\rscript{FALSE}).
+			\item Calculá el promedio, el máximo y el mínimo de las notas. Luego calculá la nota promedio \textbf{solo de quienes trabajan}.
+			\item Creá un vector lógico \rscript{aprobo} que sea \rscript{TRUE} para quienes obtuvieron nota mayor o igual a 6. ¿Cuántos aprobaron? ¿Qué proporción representan?
+			\item Un estudiante aprueba la cursada si aprobó el parcial \textbf{y} su asistencia supera el 60\%. Creá el vector \rscript{aprueba\_cursada} con esa condición. ¿Hay algún estudiante que haya aprobado el parcial pero perdido la cursada por inasistencia?
+			\item Usá \rscript{paste()} para generar, para cada estudiante, una frase del tipo \quotation{Ana obtuvo 7 puntos}. Guardá el resultado en un vector.
+			\item Construí una matriz de 10 filas y 2 columnas con las notas y la asistencia. Asignale nombres a las columnas. Extraé la fila del estudiante con nota más alta usando indexación por posición.
+			\item Usando indexación lógica, extraé los nombres de los estudiantes que aprobaron la cursada.
+		\end{enumerate}
+	\end{frame}
+
 \end{document}

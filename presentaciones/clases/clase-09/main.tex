@@ -24,7 +24,7 @@
 library(`:pk:tidyverse`)
 library(`:pk:gapminder`)
 
-`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == 2007)
 
 # Países seleccionados para ejemplos de series de tiempo
 paises <- c("Argentina", "Brazil", "Mexico", "Chile")
@@ -91,7 +91,7 @@ ggplot(gapminder_paises,
 ggplot(gapminder_paises,
        aes(x = `:bn:year`, y = `:bn:gdpPercap`, `:ky:color` = `:bn:country`)) +
   geom_line() +
-  geom_point(size = `:nm:2`)
+  geom_point(size = 2)
 \end{lstlisting}
 \begin{figure}[h!]
 	\includegraphics[width=0.5\textwidth]{img/plot4.png}
@@ -267,7 +267,7 @@ ggplot(`gapminder_2007`,
        aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`, size = `:bn:pop`, `:ky:color` = `:bn:continent`)) +
   geom_point(alpha = `:nm:0.6`) +
   scale_x_log10() +
-  scale_size_area(max_size = `:nm:15`) +
+  scale_size_area(max_size = 15) +
   labs(
     `:ky:title`  = "Riqueza, salud y población (2007)",
     x      = "PBI per cápita (USD, escala log)",
@@ -314,7 +314,7 @@ ggplot(`gapminder_2007`,
 ggplot(`gapminder_2007`,
 			 aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
 	geom_point(alpha = `:nm:0.6`) +
-	facet_wrap(~ `:bn:continent`, `:ky:ncol` = `:nm:2`, scales = "free_x")
+	facet_wrap(~ `:bn:continent`, `:ky:ncol` = 2, scales = "free_x")
 \end{lstlisting}
 		\begin{figure}[h!]
 			\includegraphics[width=0.5\textwidth]{img/plot14.png}
@@ -331,7 +331,7 @@ ggplot(`gapminder_2007`,
 \begin{lstlisting}[style=RScript]
 # Filas: year, columnas: continent
 gapminder |>
-  filter(`:bn:year` %in% c(`:nm:1952`, `:nm:1977`, `:nm:2007`)) |>
+  filter(`:bn:year` %in% c(1952, 1977, 2007)) |>
   ggplot(aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(alpha = `:nm:0.5`) +
   facet_grid(`:bn:year` ~ `:bn:continent`) +

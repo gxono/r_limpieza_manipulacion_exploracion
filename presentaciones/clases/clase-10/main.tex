@@ -24,7 +24,7 @@ library(`:pk:tidyverse`)
 library(`:pk:gapminder`)
 library(`:pk:scales`)   # viene con tidyverse; formatos de etiquetas
 
-`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == 2007)
 \end{lstlisting}
 
 		\begin{block}{}
@@ -67,9 +67,9 @@ library(`:pk:scales`)   # viene con tidyverse; formatos de etiquetas
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.7`) +
   scale_x_continuous(
-    `:ky:breaks` = c(`:nm:0`, `:nm:20000`, `:nm:40000`, `:nm:60000`),
+    `:ky:breaks` = c(0, 20000, 40000, 60000),
     `:ky:labels`  = scales::comma,
-    limits  = c(`:nm:0`, `:nm:70000`)
+    limits  = c(0, 70000)
   ) +
   scale_y_continuous(
     `:ky:labels` = scales::label_number(suffix = " años")
@@ -138,7 +138,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
 ggplot(`gapminder_2007`,
        aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`,
            `:ky:color` = `:bn:pop` / `:nm:1e6`)) +
-  geom_point(size = `:nm:3`) +
+  geom_point(size = 3) +
   scale_x_log10() +
   scale_color_viridis_c(name = "Población\n(millones)")
 \end{lstlisting}
@@ -172,8 +172,8 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`,
        x = NULL, y = "PBI per cápita (USD)") +
   theme_minimal() +                      # primero el tema base
   theme(                                 # luego las modificaciones
-    plot.title         = element_text(size = `:nm:13`, face = "bold"),
-    axis.text.x        = element_text(size = `:nm:10`),
+    plot.title         = element_text(size = 13, face = "bold"),
+    axis.text.x        = element_text(size = 10),
     legend.position    = "none",
     panel.grid.major.x = element_blank()
   )
@@ -206,9 +206,9 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`,
 
 \begin{lstlisting}[style=RScript]
 theme(
-  plot.title       = element_text(size = `:nm:14`, face = "bold",
+  plot.title       = element_text(size = 14, face = "bold",
                                   color = "gray20"),
-  axis.title.y     = element_text(angle = `:nm:0`, vjust = `:nm:0.5`),
+  axis.title.y     = element_text(angle = 0, vjust = `:nm:0.5`),
   panel.grid.minor = element_blank(),
   panel.background = element_rect(`:ky:fill` = "white"),
   legend.position  = "bottom",
@@ -226,17 +226,17 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.6`) +
   scale_x_log10() +
   annotate("text",
-           x = `:nm:55000`, y = `:nm:58`,
+           x = 55000, y = 58,
            label = "Alta renta,\nbaja longevidad",
-           size = `:nm:3`, hjust = `:nm:1`, color = "gray30") +
+           size = 3, hjust = 1, color = "gray30") +
   annotate("segment",
-           x = `:nm:55000`, xend = `:nm:60000`,
-           y = `:nm:60`, yend = `:nm:65`,
+           x = 55000, xend = 60000,
+           y = 60, yend = 65,
            arrow = arrow(length = unit(`:nm:0.15`, "cm")),
            color = "gray40") +
   annotate("rect",
-           xmin = `:nm:500`, xmax = `:nm:2000`,
-           ymin = `:nm:40`, ymax = `:nm:60`,
+           xmin = 500, xmax = 2000,
+           ymin = 40, ymax = 60,
            alpha = `:nm:0.15`, `:ky:fill` = "firebrick")
 \end{lstlisting}
 	\end{frame}
@@ -248,7 +248,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
 \begin{lstlisting}[style=RScript]
 # Etiquetar solo los casos extremos con un subconjunto del dataset
 extremos <- `gapminder_2007` |>
-  filter(`:bn:lifeExp` < `:nm:50` | `:bn:gdpPercap` > `:nm:35000`)
+  filter(`:bn:lifeExp` < 50 | `:bn:gdpPercap` > 35000)
 
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, y = `:bn:lifeExp`)) +
   geom_point(aes(`:ky:color` = `:bn:continent`), alpha = `:nm:0.6`) +
@@ -279,11 +279,11 @@ mi_grafico <- ggplot(`gapminder_2007`,
 
 # PNG para documentos digitales y presentaciones
 ggsave("output/grafico.png", `:ky:plot` = mi_grafico,
-       width = `:nm:8`, height = `:nm:5`, units = "in", dpi = `:nm:300`)
+       width = 8, height = 5, units = "in", dpi = 300)
 
 # PDF para impresión y LaTeX (vectorial, sin pérdida de calidad)
 ggsave("output/grafico.pdf", `:ky:plot` = mi_grafico,
-       width = `:nm:8`, height = `:nm:5`, units = "in")
+       width = 8, height = 5, units = "in")
 \end{lstlisting}
 
 		\begin{block}{}
@@ -301,7 +301,7 @@ p <- ggplot(`gapminder_2007`,
   geom_point(alpha = `:nm:0.7`) +
   scale_x_log10(`:ky:labels` = scales::comma) +
   scale_color_brewer(`:ky:palette` = "Set2") +
-  scale_size_area(max_size = `:nm:15`, guide = "none") +
+  scale_size_area(max_size = 15, guide = "none") +
   labs(
     `:ky:title`    = "Riqueza y esperanza de vida (2007)",
     subtitle = "Tamaño proporcional a la población",
@@ -312,14 +312,14 @@ p <- ggplot(`gapminder_2007`,
   ) +
   theme_minimal() +
   theme(
-    plot.title       = element_text(face = "bold", size = `:nm:13`),
+    plot.title       = element_text(face = "bold", size = 13),
     plot.subtitle    = element_text(color = "gray50"),
     legend.position  = "bottom",
     panel.grid.minor = element_blank()
   )
 
 ggsave("output/gapminder_2007.pdf", `:ky:plot` = p,
-       width = `:nm:9`, height = `:nm:6`, units = "in")
+       width = 9, height = 6, units = "in")
 \end{lstlisting}
 	\end{frame}
 

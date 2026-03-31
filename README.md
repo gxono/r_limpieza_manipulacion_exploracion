@@ -6,7 +6,13 @@ Repositorio del curso **R para limpieza, manipulación y exploración de datos**
 
 ## Archivos de este repositorio.
 
+### Archivos de clase
+
+En la carpeta [`archivos de clase/`](archivos%20de%20clase/) se encuentran los scripts de R y notebooks con los que trabajamos en cada encuentro.
+
 ### Clases
+
+Las diapositivas de cada encuentro están disponibles en formato PDF.
 
 | # | Encuentro | Presentación |
 |---|-----------|:---:|

@@ -25,7 +25,7 @@ library(`:pk:tidyverse`)
 library(`:pk:gapminder`)  # install.packages("gapminder") si no está instalado
 
 # Filtrar solo el año 2007 para los primeros ejemplos
-`gapminder_2007` <- gapminder |> filter(`:bn:year` == `:nm:2007`)
+`gapminder_2007` <- gapminder |> filter(`:bn:year` == 2007)
 \end{lstlisting}
 
 		\begin{block}{}
@@ -231,7 +231,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
 \begin{lstlisting}[style=RScript]
 # bins: número total de intervalos
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
-  geom_histogram(bins = `:nm:10`)
+  geom_histogram(bins = 10)
 \end{lstlisting}
 	\begin{figure}[h!]
 		\includegraphics[width=0.5\textwidth]{img/plot5.png}
@@ -241,7 +241,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
 	\begin{frame}[fragile]{\texttt{geom\_histogram()}: \texttt{bins} y \texttt{binwidth}}	
 	\begin{lstlisting}[style=RScript]
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
-	geom_histogram(bins = `:nm:50`)
+	geom_histogram(bins = 50)
 \end{lstlisting}
 	\begin{figure}[h!]
 		\includegraphics[width=0.5\textwidth]{img/plot6.png}
@@ -254,7 +254,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
 	\begin{lstlisting}[style=RScript]
 # binwidth: ancho de cada intervalo en las unidades de la variable
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
-	geom_histogram(binwidth = `:nm:5000`)   # intervalos de USD 5.000
+	geom_histogram(binwidth = 5000)   # intervalos de USD 5.000
 \end{lstlisting}
 	
 	\begin{figure}[h!]
@@ -273,7 +273,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
 \begin{lstlisting}[style=RScript]
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`)) +
   geom_histogram(
-    binwidth = `:nm:5000`,
+    binwidth = 5000,
     `fill`     = "steelblue",
     color    = "white",
     alpha    = `:nm:0.8`
@@ -333,7 +333,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, `:ky:fill` = `:bn:continent`))
 		\begin{lstlisting}[style=RScript]
 # Histogramas superpuestos: position = "identity" evita el apilado
 ggplot(`gapminder_2007`, aes(x = `:bn:gdpPercap`, `:ky:fill` = `:bn:continent`)) +
-	geom_histogram(binwidth = `:nm:5000`, alpha = `:nm:0.5`,
+	geom_histogram(binwidth = 5000, alpha = `:nm:0.5`,
 								 position = "identity")
 \end{lstlisting}
 		
@@ -527,7 +527,7 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
 			\item Graficá la distribución de \rscript{`:bn:lifeExp`} con densidades separadas por continente. Usá \rscript{alpha = 0.4}.
 			\item Creá un boxplot de \rscript{`:bn:lifeExp`} por continente. Luego agregale color con \rscript{`:ky:fill` = `:bn:continent`}.
 			\item Superponele puntos con \rscript{geom\_jitter()} al boxplot anterior. ¿Qué continente muestra mayor dispersión interna?
-			\item Graficá la distribución del PBI per cápita (\rscript{`:bn:gdpPercap`}) solo para los años \rscript{`:nm:1952`} y \rscript{`:nm:2007`} en un mismo gráfico de densidad. Usá \rscript{`:ky:fill`} para distinguir los años. ¿Qué cambió?
+			\item Graficá la distribución del PBI per cápita (\rscript{`:bn:gdpPercap`}) solo para los años \rscript{1952} y \rscript{2007} en un mismo gráfico de densidad. Usá \rscript{`:ky:fill`} para distinguir los años. ¿Qué cambió?
 			\item Repetí el ejercicio anterior pero con \rscript{geom\_histogram()}. ¿Qué problema aparece si no usás \rscript{position = "identity"}?
 			\item Usando solo los datos de América (\rscript{`:bn:continent` == "Americas"}), hacé un boxplot de \rscript{`:bn:lifeExp`} por año. ¿Cómo cambió la distribución?
 		\end{enumerate}
@@ -537,13 +537,13 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
 	\begin{frame}[fragile]
 		\begin{enumerate}
 			\setcounter{enumi}{8}
-			\item Creá un histograma de \rscript{`:bn:gdpPercap`} para \rscript{`:nm:2007`}. Modificá \rscript{`:ky:fill`}, \rscript{color} y \rscript{alpha} hasta obtener una presentación que te parezca clara.
+			\item Creá un histograma de \rscript{`:bn:gdpPercap`} para \rscript{2007}. Modificá \rscript{`:ky:fill`}, \rscript{color} y \rscript{alpha} hasta obtener una presentación que te parezca clara.
 			\item Aplicá los temas \rscript{theme\_minimal()}, \rscript{theme\_classic()} y \rscript{theme\_bw()} a un mismo gráfico. ¿Cuál te parece más apropiado para un informe académico?
 			\item Tomá el boxplot del ejercicio 4 y completalo con \rscript{labs()}: título descriptivo, etiquetas de ejes en español y nota al pie con la fuente (\textit{Gapminder}).
 			\item Usando todo el dataset, graficá la distribución de la población (\rscript{`:bn:pop`}). ¿Qué forma tiene? ¿Qué observación se puede hacer sobre la mayoría de los países?
-			\item Elegí dos continentes y compará la distribución del PBI per cápita en \rscript{`:nm:2007`} usando los tres tipos de gráfico vistos: densidades superpuestas, histogramas y boxplot. ¿Cuál comunica mejor las diferencias?
-			\item Usá \rscript{geom\_violin()} + \rscript{geom\_boxplot()} anidado para comparar la distribución de \rscript{`:bn:lifeExp`} entre los cinco continentes en \rscript{`:nm:2007`}. Agregá título, etiquetas de ejes y un tema apropiado para presentación.
-			\item El dataset cubre el período 1952--2007. Creá un gráfico de densidad de \rscript{`:bn:lifeExp`} que compare los años \rscript{`:nm:1952`}, \rscript{`:nm:1977`} y \rscript{`:nm:2007`}. ¿Qué tendencia muestra? Completá el gráfico con \rscript{labs()} y \rscript{theme\_minimal()}.
+			\item Elegí dos continentes y compará la distribución del PBI per cápita en \rscript{2007} usando los tres tipos de gráfico vistos: densidades superpuestas, histogramas y boxplot. ¿Cuál comunica mejor las diferencias?
+			\item Usá \rscript{geom\_violin()} + \rscript{geom\_boxplot()} anidado para comparar la distribución de \rscript{`:bn:lifeExp`} entre los cinco continentes en \rscript{2007}. Agregá título, etiquetas de ejes y un tema apropiado para presentación.
+			\item El dataset cubre el período 1952--2007. Creá un gráfico de densidad de \rscript{`:bn:lifeExp`} que compare los años \rscript{1952}, \rscript{1977} y \rscript{2007}. ¿Qué tendencia muestra? Completá el gráfico con \rscript{labs()} y \rscript{theme\_minimal()}.
 		\end{enumerate}
 		
 		\begin{exampleblock}{}
