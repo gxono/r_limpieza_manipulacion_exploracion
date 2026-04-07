@@ -780,20 +780,13 @@ productos <- data.frame(
 		
 		\item Convertí la variable \rscript{categoría} en un factor. Definí manualmente el orden de los niveles de modo que \quotation{Computadora} aparezca primero y \quotation{Periférico} último. ¿Por qué podría ser importante este orden en un gráfico?
 		
-		\item Calculá:
-		\begin{itemize}
-			\item El precio promedio de los productos
-			\item El producto más caro y el más barato
-			\item El valor total del inventario
-		\end{itemize}
-		
 		\item Creá una nueva columna \rscript{valor_stock} con el valor total del grupo de productos.
 		
 		\item Calculá:
 		\begin{itemize}
 			\item El precio promedio de los productos
 			\item El producto más caro y el más barato
-			\item El valor total del inventario (usando \rscript{valor_stock})
+			\item El valor total del inventario
 		\end{itemize}
 	\end{enumerate}
 \end{frame}
@@ -802,7 +795,7 @@ productos <- data.frame(
 
 \begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
 	
-	\begin{enumerate}		
+	\begin{enumerate}[start=5]
 		\item Creá una columna \rscript{categoria\_precio} que clasifique cada producto como (hay que anidar):
 		\begin{itemize}
 			\item \quotation{Bajo} si vale menos de \$20000
