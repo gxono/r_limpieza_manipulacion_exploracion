@@ -763,4 +763,74 @@ productos <- data.frame(
 
 
 
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	Se dispone de información sobre 12 productos de una tienda online. Los datos son:
+	
+	\begin{itemize}
+		\item \textbf{Nombre}: "Teclado", "Mouse", "Monitor", "Notebook", "Tablet", "Auriculares", "Webcam", "Impresora", "Router", "Parlantes", "Disco externo", "Pendrive"
+		\item \textbf{Precio} (en \$): 15000, 8000, 120000, 450000, 90000, 20000, 18000, 70000, 25000, 30000, 60000, 10000
+		\item \textbf{Stock}: 25, 40, 10, 5, 12, 30, 18, 8, 22, 15, 9, 50
+		\item \textbf{Categoría}: "Periférico", "Periférico", "Pantalla", "Computadora", "Computadora", "Periférico", "Periférico", "Impresión", "Red", "Audio", "Almacenamiento", "Almacenamiento"
+		\item \textbf{Importado}: sí, sí, sí, sí, sí, no, no, sí, no, no, sí, no
+	\end{itemize}
+	
+	\begin{enumerate}
+		\item Creá un vector para cada variable. Convertí \rscript{importado} a lógico. Luego construí un \rscript{data.frame} llamado \rscript{productos}. Verificá que los tipos de datos sean adecuados.
+		
+		\item Convertí la variable \rscript{categoría} en un factor. Definí manualmente el orden de los niveles de modo que \quotation{Computadora} aparezca primero y \quotation{Periférico} último. ¿Por qué podría ser importante este orden en un gráfico?
+		
+		\item Calculá:
+		\begin{itemize}
+			\item El precio promedio de los productos
+			\item El producto más caro y el más barato
+			\item El valor total del inventario
+		\end{itemize}
+		
+		\item Creá una nueva columna \rscript{valor_stock} con el valor total del grupo de productos.
+		
+		\item Calculá:
+		\begin{itemize}
+			\item El precio promedio de los productos
+			\item El producto más caro y el más barato
+			\item El valor total del inventario (usando \rscript{valor_stock})
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	
+	\begin{enumerate}		
+		\item Creá una columna \rscript{categoria\_precio} que clasifique cada producto como (hay que anidar):
+		\begin{itemize}
+			\item \quotation{Bajo} si vale menos de \$20000
+			\item \quotation{Medio} si está entre \$20000 y \$100000
+			\item \quotation{Alto} si supera \$100000
+		\end{itemize}
+		
+		\item Construí una lista llamada \rscript{resumen} que contenga:
+		\begin{itemize}
+			\item El precio promedio
+			\item El nombre del producto más caro
+			\item La cantidad de productos con stock menor a 10
+		\end{itemize}
+		
+		\item Escribí un bloque \rscript{if/else} que:
+		\begin{itemize}
+			\item Imprima \quotation{Inventario grande} si el valor total del stock supera \$2.000.000
+			\item Caso contrario, imprima \quotation{Inventario pequeño}
+		\end{itemize}
+		
+		\item Usando un bucle \rscript{for}, generá un vector de mensajes del tipo:
+		\quotation{El producto X tiene Y unidades en stock}.
+		Compará esta solución con una versión vectorizada usando \rscript{paste()}.
+	\end{enumerate}
+\end{frame}
+
+
+
+
+
 \end{document}
