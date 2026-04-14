@@ -404,5 +404,13 @@ barplot(mtcars$cyl) #y esto qué grafica? es útil?
 \end{frame}
 
 
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	\begin{enumerate}
+		\item Buscá un dataset en formato \texttt{.csv} o \texttt{.xlsx} de tu interés (podés usar portales de datos abiertos como \texttt{datos.gob.ar}, \texttt{kaggle.com} u otros). Creá un proyecto de RStudio con la estructura recomendada, ubicá el archivo en \texttt{datos/} y cargalo con la función apropiada. Realizá una inspección inicial con \rscript{dim()}, \rscript{head()} y \rscript{summary()}. ¿Cuántas filas y columnas tiene? ¿Qué tipo de dato tiene cada columna?
 
+		\item Elegí una variable numérica del dataset y graficá su distribución con \rscript{hist()}. Probá al menos dos valores distintos para \rscript{breaks}. Describí brevemente lo que observás: ¿es simétrica la distribución? ¿hay concentración en algún rango?
+
+		\item Elegí una variable numérica y una categórica. Usá \rscript{boxplot()} con notación de fórmula para comparar la variable numérica entre los grupos de la categórica. Luego, con \rscript{barplot(table(...))} mostrá la frecuencia de cada categoría. Comentá lo que encontrás en ambos gráficos.
+	\end{enumerate}
+\end{frame}
 \end{document}
