@@ -461,4 +461,40 @@ z <- round(y, 1)
 \end{frame}
 
 
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	Trabajaremos con el dataset \rscript{flights} del paquete \rscript{`nycflights13`}, que registra los \textbf{336.776 vuelos} que partieron desde Nueva York durante 2013. Tiene 19 columnas: fechas, horarios programados y reales de salida y llegada, demoras, aerolínea, origen, destino, distancia, tiempo en el aire, entre otras. Instalá el paquete y cargalo junto con \rscript{tidyverse}. Inspeccioná la documentación del \emph{dataset} si es necesario con \rscript{?flights}.
+	
+	
+
+	\begin{enumerate}
+		\item Como hemos visto, la función \rscript{str()} nos permite inspeccionar la estructura de un marco de datos. Compara la salida de \rscript{str(flights)} y \rscript{glimpse(flights)}. ?`Qu\'e ventajas tiene uno sobre el otro? revisa la documentaci\'on de \rscript{glimpse()}.
+
+		\item Obten\'e cuatro datasets que contengan:
+		\begin{itemize}
+			\item Todas las columnas que empiezan con \quotation{dep} (salida).
+			\item Todas las columnas que terminan con \quotation{delay} (demora).
+			\item Todas las columnas que contienen \quotation{time} (tiempo).
+			\item Solo las columnas numéricas.
+		\end{itemize}
+
+		\item Modific\'a \rscript{flights} y agreg\'a las siguientes variables:
+		\begin{itemize}
+			\item \rscript{velocidad}: velocidad media del vuelo en km/h (ojo con las unidades \emoji{wink}).
+			\item \rscript{retraso\_total}: suma de la demora de salida y la demora de llegada.
+			\item \rscript{salio\_puntual}: variable lógica, \rscript{TRUE} si \rscript{dep\_delay} es menor o igual a cero.
+		\end{itemize}
+	\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	\begin{enumerate}[start = 4]		
+		\item Clasificá cada vuelo según \rscript{retraso\_total} (que calculaste arriba) en: \quotation{En hora} (retraso $\leq$ 0), \quotation{Leve} (entre 1 y 30 minutos), \quotation{Grave} (más de 30 minutos). 
+		
+		\item Construí un único \textit{pipeline} que: seleccione las columnas \rscript{carrier}, \rscript{origin}, \rscript{dest}, \rscript{`distance`} y las que terminan en \quotation{delay}; calcule \rscript{velocidad}, \rscript{retraso\_total} y la categoría del punto anterior; y finalmente seleccione solo \rscript{carrier}, \rscript{origin}, \rscript{dest}, \rscript{velocidad} y \rscript{categoria\_retraso}. Guardá el resultado en \rscript{vuelos\_resumen}.
+	\end{enumerate}
+\end{frame}
+
 \end{document}
