@@ -491,4 +491,28 @@ ventas |>
 
 
 
+
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	Continuaremos trabajando con el dataset \rscript{flights} del paquete \rscript{`nycflights13`}. Asegurate de tenerlo cargado junto con \rscript{tidyverse}. El objetivo es aplicar los verbos de este encuentro —\rscript{filter()}, \rscript{arrange()}, \rscript{summarise()} y \rscript{group\_by()}— para responder preguntas concretas sobre los vuelos de Nueva York en 2013.
+
+	\begin{enumerate}
+		\item Usá \rscript{filter()} para obtener los vuelos que cumplan \textbf{todas} estas condiciones: la aerolínea (\rscript{carrier}) sea \quotation{UA}, \quotation{AA} o \quotation{DL}; la demora de salida (\rscript{dep\_delay}) sea mayor a 30 minutos; y el vuelo haya partido en julio o agosto (\rscript{month}). ¿Cuántos vuelos cumplen esas condiciones?
+
+		\item Encontrá los 5 vuelos con mayor demora de llegada \textbf{en todo el dataset}. Luego repetí el análisis pero agrupando primero por \rscript{origin}: ¿los mismos vuelos aparecen en ambos resultados? ¿Por qué?
+
+		\item Para cada aerolínea (\rscript{carrier}), calculá en un único \rscript{group\_by()} + \rscript{summarise()}: la cantidad total de vuelos (\rscript{n()} en la diapositiva 14), la demora media de salida y la demora media de llegada (recordá \rscript{na.rm = TRUE}). Ordená el resultado de mayor a menor demora media de salida. ¿Qué aerolínea fue la más puntual? ¿Cuál la peor?
+	\end{enumerate}
+\end{frame}
+
+
+
+\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+	\begin{enumerate}[start = 4]
+		\item Usá \rscript{group\_by(origin)} + \rscript{mutate()} (diapositiva 19) para agregar al dataset una columna \rscript{prop\_origen} que indique qué porcentaje representa cada vuelo del total de vuelos que salieron de su aeropuerto de origen. El dataset resultante debe conservar todas las filas originales. Aplicá \rscript{ungroup()} al final. ¿Cuántos decimales tiene sentido mostrar?
+
+		\item Construí un único \textit{pipeline} que responda: \textit{\quotation{¿Cuáles son las rutas (par \rscript{origin}–\rscript{dest}) más frecuentes entre los vuelos con demora de llegada positiva, y cuánto demoran en promedio?}}.
+	\end{enumerate}
+\end{frame}
+
 \end{document}
