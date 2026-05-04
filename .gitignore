@@ -9,6 +9,8 @@
 *.aux
 *.Rhistory
 *.tmp*
+*.bat
+
 
 /apunte_quarto/
 /propuesta_solicitud_curso/
