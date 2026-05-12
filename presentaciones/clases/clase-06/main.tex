@@ -573,4 +573,32 @@ ipc |>
 	\end{frame}
 
 
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Continuaremos trabajando con \rscript{flights} de \rscript{`nycflights13`}. El objetivo es integrar las tres herramientas del encuentro: clasificación condicional (\rscript{if\_else()}, \rscript{case\_when()}, \rscript{case\_match()}), operaciones sobre múltiples columnas con \rscript{across()}, y manejo de fechas con \rscript{`:pk:lubridate`}.
+
+		\begin{enumerate}
+			\item En un único \rscript{mutate()}, agregá dos columnas nuevas:
+			\begin{itemize}
+				\item \rscript{salio\_tarde}: \rscript{TRUE} si \rscript{dep\_delay} $>$ 0, \rscript{FALSE} si es menor o igual a cero, y \rscript{NA} cuando la demora sea desconocida.
+				\item \rscript{categoria\_demora}: \quotation{En hora} (demora $\leq$ 0), \quotation{Leve} (1--30 min), \quotation{Moderada} (31--120 min), \quotation{Grave} (más de 120 min). Los registros con \rscript{dep\_delay} igual a \rscript{NA} deben quedar como \rscript{NA}.
+			\end{itemize}
+
+			\item Usá \rscript{make\_date(year, month, day)} de \rscript{`:pk:lubridate`} para construir una columna \rscript{fecha} de tipo \rscript{Date}. Luego, en el mismo \rscript{mutate()}, extraé el día de la semana con \rscript{wday(label = TRUE)} y el trimestre con \rscript{quarter()}. ¿En qué día de la semana hay más vuelos? ¿Ese patrón varía según el aeropuerto de origen?
+
+			\item Calculá, agrupando por \rscript{origin}, la media de las columnas de demora en una única operación con \rscript{across()} dentro de \rscript{summarise()}. ¿Qué aeropuerto tiene menor demora media de salida?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		\begin{enumerate}[start = 4]
+			\item Usá \rscript{case\_match()} para crear una columna \rscript{aerolinea} a partir de \rscript{carrier}, asignando el nombre completo a por lo menos 6 aerolíneas (podés consultar los códigos con \rscript{`nycflights13`::airlines}). Las restantes deben quedar como \quotation{Otra}. Luego, agrupando por \rscript{aerolinea}, calculá la cantidad de vuelos y la demora media de salida.
+
+			\item Construí un único \textit{pipeline} que integre todo lo anterior. Partiendo de \rscript{flights}: construí \rscript{fecha} con \rscript{make\_date()}, extraé el trimestre, creá \rscript{salio\_tarde} con \rscript{if\_else()}, clasificá \rscript{dep\_delay} con \rscript{case\_when()} en las cuatro categorías del punto 1, recodificá \rscript{carrier} con \rscript{case\_match()} al nombre completo, y calculá por aerolínea y trimestre: cantidad de vuelos, demora media de salida y proporción de vuelos que salieron a tiempo. Guardá el resultado en \rscript{resumen\_vuelos}.
+
+			\item \shaky{Para que pienses vos la implementación}\emoji{wink} ¿Las aerolíneas con más vuelos son también las más puntuales? ¿En qué trimestre del año se concentran las mayores demoras?
+		\end{enumerate}
+	\end{frame}
+
+
 \end{document}
