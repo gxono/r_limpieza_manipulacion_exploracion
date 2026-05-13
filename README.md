@@ -42,7 +42,9 @@ Incursiones por cada uno de los paquetes.
 | `readr` | Importación de archivos CSV, Excel y Google Sheets | [PDF](presentaciones/machetes/readr/main.pdf) |
 | `janitor` | Limpieza de nombres de columnas y detección de duplicados | [PDF](presentaciones/machetes/janitor/main.pdf) |
 | `dplyr` | Verbos para manipular tablas: filtrar, seleccionar, mutar, resumir | [PDF](presentaciones/machetes/dplyr/main.pdf) |
+| `dplyr` — joins | Combinación de tablas: mutating joins, filtering joins y bind | [PDF](presentaciones/machetes/joins/main.pdf) |
 | `tidyr` | Reestructuración de datos: pivoteo, anidado y separación de columnas | [PDF](presentaciones/machetes/tidyr/main.pdf) |
+| `tidyr` — pivots | Reestructuración con `pivot_longer` y `pivot_wider`: casos básicos y avanzados | [PDF](presentaciones/machetes/pivots/main.pdf) |
 | `lubridate` | Parseo y aritmética de fechas y horas | [PDF](presentaciones/machetes/lubridate/main.pdf) |
 | `stringr` | Operaciones sobre cadenas de texto | [PDF](presentaciones/machetes/stringr/main.pdf) |
 | `forcats` | Manejo y reordenamiento de factores | [PDF](presentaciones/machetes/forcats/main.pdf) |

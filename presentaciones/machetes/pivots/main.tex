@@ -1,0 +1,515 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \emph{pivots} en R}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+	\begin{frame}{\rscript{tidyr} — pivots}
+		Las funciones de pivot transforman la \textbf{forma} de un data frame:
+
+		\begin{itemize}
+			\item \rscript{pivot_longer()} — de \textbf{ancho} a \textbf{largo}: colapsa varias columnas en filas.
+			\item \rscript{pivot_wider()} — de \textbf{largo} a \textbf{ancho}: expande filas en columnas.
+		\end{itemize}
+
+		Ambas forman parte del paquete \rscript{tidyr} (incluido en el \emph{tidyverse}).
+
+		\begin{block}{}
+			El concepto subyacente es el de \textbf{datos ordenados} (\emph{tidy data}): una variable por columna, una observación por fila, un valor por celda.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Datos anchos vs.\ datos largos}
+		\begin{columns}[T]
+			\begin{column}{0.45\linewidth}
+				\titleitem{Formato ancho}
+				\begin{tblr}{
+					colspec = {l r r r},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries},
+					cells = {valign=m},
+				}
+					pais & 2021 & 2022 & 2023 \\
+					ARG  & 480  & 630  & 620  \\
+					URY  & 50   & 58   & 62   \\
+				\end{tblr}
+
+				\vspace{4pt}
+				Una fila por país. Cada año es una columna.
+			\end{column}
+			\begin{column}{0.45\linewidth}
+				\titleitem{Formato largo}
+				\begin{tblr}{
+					colspec = {l l r},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries},
+					cells = {valign=m},
+				}
+					pais & anio & pbi \\
+					ARG  & 2021 & 480 \\
+					ARG  & 2022 & 630 \\
+					ARG  & 2023 & 620 \\
+					URY  & 2021 &  50 \\
+					URY  & 2022 &  58 \\
+					URY  & 2023 &  62 \\
+				\end{tblr}
+
+				\vspace{4pt}
+				Una fila por combinación país--año.
+			\end{column}
+		\end{columns}
+
+		\begin{exampleblock}{}
+			El formato largo es el estándar \emph{tidy}: facilita el filtrado, la agregación y la visualización con \rscript{`ggplot2`}.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}{Datasets usados en este machete}
+		Todos pertenecen al paquete \rscript{tidyr} — disponibles con \rscript{library(tidyr)} o \rscript{library(tidyverse)}, sin instalar nada extra.
+
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Dataset & Descripción \\
+			billboard & ranking Billboard Hot 100 (año 2000): \texttt{artist}, \texttt{track}, \texttt{date.entered}, \texttt{wk1}--\texttt{wk76} \\
+			relig_income & distribución de ingresos por religión (Pew Research): \texttt{religion} + 10 tramos de ingreso \\
+			`who2` & casos de tuberculosis OMS: \texttt{country}, \texttt{year} + columnas con forma \texttt{diagnóstico\_sexo\_edad} \\
+			us_rent_income & ingreso mediano y alquiler por estado de EEUU (2017 ACS): \texttt{GEOID}, \texttt{NAME}, \texttt{variable}, \texttt{estimate}, \texttt{moe} \\
+			fish_encounters & avistamientos de peces en estaciones de monitoreo: \texttt{fish}, \texttt{station}, \texttt{seen} \\
+			world_bank_pop & población mundial Banco Mundial: \texttt{country}, \texttt{indicator}, columnas \texttt{2000}--\texttt{2017} \\
+		\end{tblr}
+
+		\begin{block}{}
+			\rscript{anscombe} (cuarteto de Anscombe) es de base R: disponible sin ningún \rscript{library()}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{¿Para qué sirve \texttt{pivot\_longer()}?}
+		\begin{alertblock}{}
+			En \rscript{billboard}, las semanas son columnas (\rscript{`wk1`}, \rscript{`wk2`}, \ldots, \rscript{`wk76`}): no existe una columna única \rscript{semana}. \rscript{`ggplot2`} no puede graficar \rscript{aes(x = semana, y = posicion)}.
+		\end{alertblock}
+
+		Con \rscript{pivot\_longer()} los datos quedan en formato tidy:
+
+		\begin{lstlisting}[style=RScript]
+billboard |>
+  pivot_longer(starts_with("wk"),
+    `:ky:names_to` = "semana", `:ky:values_to` = "posicion") |>
+  ggplot(aes(x = `:bn:semana`, y = `:bn:posicion`, group = `:bn:track`)) +
+    geom_line()
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			También habilita \rscript{group_by(semana) |> summarise()} y \rscript{filter(semana == "wk10")} sobre una sola columna.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — caso mínimo}
+		\begin{lstlisting}[style=RScript]
+library(`:pk:tidyr`)
+
+relig_income |> pivot_longer(
+  `:ky:cols`      = !`:bn:religion`,   # todas menos "religion"
+  `:ky:names_to`  = "ingreso",
+  `:ky:values_to` = "n"
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+# A tibble: 180 x 3
+  religion ingreso       n
+  <chr>    <chr>     <int>
+1 Agnostic <$10k        27
+2 Agnostic $10-20k      34
+3 Agnostic $20-30k      60
+\end{lstlisting}
+
+		\begin{block}{}
+			\rscript{relig_income} tiene 10 columnas de tramos de ingreso. \rscript{!religion} selecciona todas las columnas excepto \rscript{religion}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{\texttt{pivot\_longer()} — selección de columnas}
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Patrón de cols & Selecciona \\
+			cols = 2:5 & columnas por posición (2ª a 5ª) \\
+			cols = c(ene, feb, mar) & columnas nombradas \\
+			cols = starts_with("wk") & columnas cuyo nombre empieza con \texttt{wk} \\
+			cols = where(is.numeric) & todas las columnas numéricas \\
+			cols = !religion & todas excepto \texttt{religion} \\
+			cols = everything() & todas las columnas \\
+		\end{tblr}
+
+		\begin{exampleblock}{}
+			Se admiten todos los \emph{tidy-select helpers}: \rscript{ends_with()}, \rscript{matches()}, \rscript{num_range()}, etc.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — \texttt{names\_prefix}}
+		Elimina un prefijo fijo de los nombres de columna al convertirlos en valores.
+
+		\begin{lstlisting}[style=RScript]
+billboard |> pivot_longer(
+  `:ky:cols`         = starts_with("wk"),
+  `:ky:names_to`     = "semana",
+  `:ky:names_prefix` = "wk",
+  `:ky:values_to`    = "posicion"
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  artist track               date.entered semana posicion
+  <chr>  <chr>               <date>       <chr>     <dbl>
+1 2 Pac  Baby Don't Cry (Ke) 2000-02-26   1            87
+2 2 Pac  Baby Don't Cry (Ke) 2000-02-26   2            82
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			\rscript{names_prefix} acepta una expresión regular. El prefijo se elimina siempre del \textbf{inicio} del nombre.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — \texttt{names\_transform}}
+		La columna de claves es \rscript{character} por defecto. \rscript{names_transform} cambia su tipo.
+
+		\begin{lstlisting}[style=RScript]
+billboard |> pivot_longer(
+  `:ky:cols`            = starts_with("wk"),
+  `:ky:names_to`        = "semana",
+  `:ky:names_prefix`    = "wk",
+  `:ky:names_transform` = list(`:bn:semana` = as.integer),
+  `:ky:values_to`       = "posicion"
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  artist track          date.entered semana posicion
+  <chr>  <chr>          <date>        <int>    <dbl>
+1 2 Pac  Baby Don't Cry 2000-02-26        1       87
+\end{lstlisting}
+
+		\begin{block}{}
+			Se pueden transformar varias claves a la vez: \rscript{list(semana = as.integer, otra = as.factor)}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — \texttt{values\_drop\_na}}
+		Descarta automáticamente las filas donde el valor pivotado es \rscript{NA}.
+
+		\begin{lstlisting}[style=RScript]
+billboard |> pivot_longer(
+  `:ky:cols`           = starts_with("wk"),
+  `:ky:names_to`       = "semana",
+  `:ky:values_to`      = "posicion",
+  `:ky:values_drop_na` = TRUE
+)
+\end{lstlisting}
+
+		\begin{block}{}
+			En \rscript{billboard}, la mayoría de canciones no dura 76 semanas en el ranking: las semanas sin posición son \rscript{NA}. Sin \rscript{values_drop_na = TRUE} el resultado conserva esas filas vacías.
+		\end{block}
+
+		\begin{exampleblock}{}
+			Equivale a agregar \rscript{|> filter(!is.na(posicion))} después del pivot, pero más eficiente.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — múltiples claves en \texttt{names\_to}}
+		Cuando el nombre de columna codifica \textbf{varias variables}: cada parte se convierte en una columna de clave.
+
+		\begin{lstlisting}[style=RScript]
+who2 |> pivot_longer(
+  `:ky:cols`      = !c(`:bn:country`, `:bn:year`),
+  `:ky:names_to`  = c("diagnostico", "sexo", "edad"),
+  `:ky:names_sep` = "_"
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  country      year diagnostico sexo  edad  count
+  <chr>       <int> <chr>       <chr> <chr> <int>
+1 Afghanistan  1980 sp          m     014      NA
+2 Afghanistan  1980 sp          m     1524     NA
+\end{lstlisting}
+
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Argumento & Cuándo usarlo \\
+			names_sep & el separador es un carácter fijo (\texttt{\_}, \texttt{.}, \texttt{-}) \\
+			names_pattern & el separador varía o no existe; se necesita regex \\
+		\end{tblr}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_longer()} — el sentinel \texttt{".value"}}
+		Si una parte del nombre de columna es el \textbf{nombre de una variable} (no una categoría), se usa \rscript{".value"}: esa parte se convierte en nombre de columna, no en valor de celda.
+
+		\begin{block}{}
+			\rscript{anscombe} contiene 4 conjuntos de datos artificiales con las mismas estadísticas (media, varianza, correlación) pero patrones visuales completamente distintos.
+		\end{block}
+
+		\vskip1em
+		\begin{columns}[T]
+			\begin{column}{0.44\linewidth}
+				\small{Sin \rscript{".value"}:}
+				\begin{tblr}{
+					colspec = {l l r},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries\footnotesize},
+					cells = {valign=m, font=\footnotesize},
+				}
+					conjunto & variable & valor \\
+					1 & x & 10.0 \\
+					1 & y & 8.04 \\
+					2 & x & 10.0 \\
+					2 & y & 9.14 \\
+				\end{tblr}
+			\end{column}
+			\begin{column}{0.44\linewidth}
+				\small{Con \rscript{".value"}:}\\
+				\begin{tblr}{
+					colspec = {l r r},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries\footnotesize},
+					cells = {valign=m, font=\footnotesize},
+				}
+					conjunto & x & y \\
+					1 & 10.0 & 8.04 \\
+					2 & 10.0 & 9.14 \\
+					3 & 10.0 & 7.46 \\
+					4 &  8.0 & 6.58 \\
+				\end{tblr}
+			\end{column}
+		\end{columns}
+
+		\vspace{4pt}
+		\begin{lstlisting}[style=RScript]
+anscombe |> pivot_longer(
+  `:ky:cols`          = everything(),
+  `:ky:names_to`      = c(".value", "conjunto"),
+  `:ky:names_pattern` = "([xy])([1-4])"
+)
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{¿Para qué sirve \texttt{pivot\_wider()}?}
+		\begin{alertblock}{}
+			En \rscript{us_rent_income}, \rscript{income} y \rscript{rent} son filas de la columna \rscript{variable}: no existen como columnas. Calcular \rscript{mutate(income / rent)} produce un error en tiempo de ejecución.
+		\end{alertblock}
+
+		Con \rscript{pivot\_wider()} cada categoría pasa a ser una columna:
+
+		\begin{lstlisting}[style=RScript]
+us_rent_income |>
+  pivot_wider(`:ky:names_from` = `:bn:variable`, `:ky:values_from` = `:bn:estimate`) |>
+  mutate(`:bn:ratio` = `:bn:income` / `:bn:rent`)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  GEOID NAME    income  rent ratio
+  <chr> <chr>    <dbl> <dbl> <dbl>
+1 01    Alabama  24476   747  32.8
+2 02    Alaska   32940  1200  27.5
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — caso mínimo}
+		\begin{lstlisting}[style=RScript]
+us_rent_income |> pivot_wider(
+  `:ky:names_from`  = `:bn:variable`,   # valores -> nombres de columna
+  `:ky:values_from` = `:bn:estimate`    # valores -> celdas
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  GEOID NAME      income  rent
+  <chr> <chr>      <dbl> <dbl>
+1 01    Alabama    24476   747
+2 02    Alaska     32940  1200
+3 04    Arizona    27517   972
+\end{lstlisting}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — \texttt{values\_fill}}
+		Cuando una combinación identificador × nombre no existe, la celda es \rscript{NA}. \rscript{values_fill} la reemplaza.
+
+		\begin{lstlisting}[style=RScript]
+fish_encounters |> pivot_wider(
+  `:ky:names_from`  = `:bn:station`,
+  `:ky:values_from` = `:bn:seen`,
+  `:ky:values_fill` = `:nm:0`
+)
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			\rscript{values_fill} acepta un escalar (aplica a todas las columnas nuevas) o una lista nombrada para distintos valores por columna: \rscript{values_fill = list(seen = 0)}.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — \texttt{names\_prefix}}
+		Agrega un prefijo a los nombres de las columnas creadas.
+
+		\begin{lstlisting}[style=RScript]
+us_rent_income |> pivot_wider(
+  `:ky:names_from`   = `:bn:variable`,
+  `:ky:names_prefix` = "est_",
+  `:ky:values_from`  = `:bn:estimate`
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  GEOID NAME    est_income  est_rent
+  <chr> <chr>        <dbl>     <dbl>
+1 01    Alabama      24476       747
+\end{lstlisting}
+
+		\begin{block}{}
+			Útil cuando \rscript{names_from} contiene números: evita columnas con nombres que empiezan con dígitos (que requieren backticks en R).
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — \texttt{values\_fn}}
+		Cuando hay más de un valor para la misma celda, \rscript{values_fn} define cómo agregarlos.
+
+		\begin{lstlisting}[style=RScript]
+datos |> pivot_wider(
+  `:ky:names_from`  = `:bn:categoria`,
+  `:ky:values_from` = `:bn:monto`,
+  `:ky:values_fn`   = sum
+)
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Sin \rscript{values_fn}, los duplicados generan columnas de tipo \textbf{lista} (\texttt{<list>}). Si aparece ese tipo en el resultado, hay filas duplicadas o falta \rscript{values_fn}.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — \texttt{id\_cols}}
+		Por defecto, \rscript{pivot_wider} usa todas las columnas que no son \rscript{names_from} ni \rscript{values_from} como identificadores de fila. \rscript{id_cols} permite especificarlos explícitamente.
+
+		\begin{lstlisting}[style=RScript]
+us_rent_income |> pivot_wider(
+  `:ky:id_cols`     = c(`:bn:GEOID`, `:bn:NAME`),
+  `:ky:names_from`  = `:bn:variable`,
+  `:ky:values_from` = `:bn:estimate`
+)
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Sin \rscript{id_cols}, la columna \rscript{moe} también actúa como identificador involuntario → columnas de tipo \texttt{<list>}. \rscript{id_cols} aísla exactamente qué columnas identifican cada fila.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — múltiples columnas de valores}
+		\rscript{values_from} acepta un vector: genera una columna por combinación nombre × variable.
+
+		\begin{lstlisting}[style=RScript]
+us_rent_income |> pivot_wider(
+  `:ky:names_from`  = `:bn:variable`,
+  `:ky:values_from` = c(`:bn:estimate`, `:bn:moe`)
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  GEOID NAME    estimate_income estimate_rent moe_income moe_rent
+  <chr> <chr>             <dbl>         <dbl>      <dbl>    <dbl>
+1 01    Alabama           24476           747        136        3
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			El orden es: todos los valores de \rscript{names_from} para la primera variable de \rscript{values_from}, luego para la segunda.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{pivot\_wider()} — \texttt{names\_glue}}
+		Controla el patrón de nombres de columna cuando \rscript{values_from} recibe un vector. La cadena se interpola con \texttt{\{.value\}} (la variable) y el nombre de la columna de \rscript{names_from}.
+
+		\begin{lstlisting}[style=RScript]
+us_rent_income |> pivot_wider(
+  `:ky:names_from`  = `:bn:variable`,
+  `:ky:values_from` = c(`:bn:estimate`, `:bn:moe`),
+  `:ky:names_glue`  = "{variable}_{.value}"
+)
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  GEOID NAME    income_estimate income_moe rent_estimate rent_moe
+  <chr> <chr>             <dbl>      <dbl>         <dbl>    <dbl>
+1 01    Alabama           24476        136           747        3
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Sin \rscript{names_glue}: \rscript{estimate_income}, \rscript{estimate_rent}, \rscript{moe_income}, \rscript{moe_rent} — la variable va primero, luego el valor de \rscript{names_from}.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{El ciclo largo $\leftrightarrow$ ancho}
+		\begin{lstlisting}[style=RScript]
+pop_largo <- world_bank_pop |>
+  pivot_longer(
+    `:ky:cols`      = !c(`:bn:country`, `:bn:indicator`),
+    `:ky:names_to`  = "year",
+    `:ky:values_to` = "value"
+  )
+
+pop_largo |>
+  pivot_wider(
+    `:ky:names_from`  = `:bn:year`,
+    `:ky:values_from` = `:bn:value`
+  )
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			El ciclo es reversible mientras no se pierda información: sin \rscript{values_drop_na = TRUE} ni \rscript{values_fn}.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}{Referencia rápida — \texttt{pivot\_longer()}}
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Argumento & Uso \\
+			cols & columnas a colapsar (tidy-select) \\
+			names_to & nombre(s) de la nueva columna de claves \\
+			values_to & nombre de la nueva columna de valores \\
+			names_prefix & prefijo a eliminar de los nombres de columna \\
+			names_transform & lista para convertir el tipo de las claves \\
+			values_drop_na & si TRUE, descarta filas con valor NA \\
+			names_sep & carácter que separa variables en el nombre de columna \\
+			names_pattern & regex con grupos de captura (alternativa a \rscript{names_sep}) \\
+		\end{tblr}
+	\end{frame}
+
+	\begin{frame}{Referencia rápida — \texttt{pivot\_wider()}}
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Argumento & Uso \\
+			names_from & columna cuyos valores se convierten en nombres de columna \\
+			values_from & columna(s) cuyos valores llenan las celdas \\
+			values_fill & valor para celdas sin datos (NA por defecto) \\
+			names_prefix & prefijo a agregar a los nuevos nombres de columna \\
+			names_glue & patrón de interpolación; usa \texttt{\{.value\}} y el valor de \rscript{names_from} \\
+			values_fn & función de agregación cuando hay duplicados \\
+			id_cols & columnas que identifican cada fila (por defecto: el resto) \\
+		\end{tblr}
+	\end{frame}
+
+\end{document}

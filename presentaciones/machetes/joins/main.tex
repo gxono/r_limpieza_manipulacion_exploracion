@@ -1,0 +1,414 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{Cheatsheet de \emph{joins} en R}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+	\begin{frame}{\rscript{dplyr} — joins}
+		Un join combina dos tablas usando una \textbf{clave}: una columna (o conjunto de columnas) cuyos valores permiten emparejar filas. Forman parte de \rscript{dplyr} (incluido en el \emph{tidyverse}).
+
+		\begin{columns}[T]
+			\begin{column}{0.48\linewidth}
+				\titleitem{Mutating joins} — agregan columnas
+				\begin{itemize}
+					\item \rscript{inner_join()} — solo filas con coincidencia en ambas
+					\item \rscript{left_join()} — todas las de la tabla izquierda
+					\item \rscript{right_join()} — todas las de la tabla derecha
+					\item \rscript{full_join()} — todas las de ambas tablas
+				\end{itemize}
+			\end{column}
+			\begin{column}{0.48\linewidth}
+				\titleitem{Filtering joins} — filtran filas
+				\begin{itemize}
+					\item \rscript{semi_join()} — filas \emph{con} coincidencia
+					\item \rscript{anti_join()} — filas \emph{sin} coincidencia
+				\end{itemize}
+				\titleitem{Sin clave}
+				\begin{itemize}
+					\item \rscript{bind_rows()} — apila filas
+					\item \rscript{bind_cols()} — apila columnas
+				\end{itemize}
+			\end{column}
+		\end{columns}
+	\end{frame}
+
+	\begin{frame}[fragile]{¿Por qué necesitamos joins?}
+		Los datos reales se distribuyen en múltiples tablas para evitar repetición. En \rscript{`:pk:nycflights13`}, el nombre de cada aerolínea se guarda una sola vez en \rscript{airlines}; \rscript{flights} solo guarda el código:
+
+		\begin{lstlisting}[style=RScript]
+flights |> count(`:bn:carrier`)   # devuelve "UA", "AA", "DL"... codigos sin sentido
+
+flights |>
+  left_join(airlines, `:ky:by` = "carrier") |>
+  group_by(`:bn:name`) |>
+  summarise(`:bn:demora_media` = mean(`:bn:arr_delay`, `:ky:na.rm` = TRUE))
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  name                      demora_media
+  <chr>                            <dbl>
+1 American Airlines Inc.           0.364
+2 United Air Lines Inc.            3.56
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Sin joins, el análisis queda con códigos crípticos. Los joins combinan tablas complementarias en el momento del análisis, sin necesidad de duplicar datos.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}{Datasets usados en este machete}
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Dataset & Descripción \\
+			band_members & integrantes de bandas: \texttt{name}, \texttt{band}. Incluido en \rscript{dplyr}. \\
+			band_instruments & instrumentos: \texttt{name}, \texttt{plays}. Incluido en \rscript{dplyr}. \\
+			`band_instruments2` & igual que \rscript{band_instruments} pero la columna clave se llama \texttt{artist} (no \texttt{name}). \\
+			`:pk:nycflights13`::flights & vuelos desde NYC en 2013: \texttt{tailnum}, \texttt{origin}, \texttt{year}, \texttt{month}, \texttt{day}, \texttt{hour}, \ldots \\
+			`:pk:nycflights13`::planes & datos de aeronaves: \texttt{tailnum}, \texttt{year} (fabricación), \texttt{manufacturer}, \ldots \\
+			`:pk:nycflights13`::weather & clima por hora y aeropuerto: \texttt{origin}, \texttt{year}, \texttt{month}, \texttt{day}, \texttt{hour}, \ldots \\
+		\end{tblr}
+
+		\begin{block}{}
+			Los datasets \rscript{`band_*`} están diseñados para practicar joins: son pequeños y tienen casos sin coincidencia intencionales. \rscript{`:pk:nycflights13`} requiere \rscript{install.packages("nycflights13")}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{Las tablas de ejemplo}
+		\begin{columns}[T]
+			\begin{column}{0.30\linewidth}
+				\titleitem{band\_members}
+				\begin{tblr}{
+					colspec = {l l},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries},
+					cells = {valign=m},
+				}
+					name & band \\
+					Mick & Stones \\
+					John & Beatles \\
+					Paul & Beatles \\
+				\end{tblr}
+			\end{column}
+			\begin{column}{0.30\linewidth}
+				\titleitem{band\_instruments}
+				\begin{tblr}{
+					colspec = {l l},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries},
+					cells = {valign=m},
+				}
+					name  & plays \\
+					John  & guitar \\
+					Paul  & bass \\
+					Keith & guitar \\
+				\end{tblr}
+			\end{column}
+			\begin{column}{0.30\linewidth}
+				\titleitem{band\_instruments2}
+				\begin{tblr}{
+					colspec = {l l},
+					hlines, vlines,
+					row{1} = {bg=gray9, font=\bfseries},
+					cells = {valign=m},
+				}
+					artist & plays \\
+					John   & guitar \\
+					Paul   & bass \\
+					Keith  & guitar \\
+				\end{tblr}
+			\end{column}
+		\end{columns}
+
+		\begin{block}{}
+			La clave es \rscript{name} (o \rscript{artist} en \rscript{`band_instruments2`}). \textbf{Mick} no tiene instrumento; \textbf{Keith} no tiene banda: son los casos sin coincidencia.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}{¿Qué filas incluye cada join?}
+		Con \rscript{band_members} (x) y \rscript{band_instruments} (y):
+
+		\begin{tblr}{
+			colspec = {l *{6}{c}},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m, halign=c},
+			column{1} = {halign=l},
+		}
+			Fila & inner & left & right & full & semi & anti \\
+			Mick (solo en x) & --- & $\checkmark$ & --- & $\checkmark$ & --- & $\checkmark$ \\
+			John (en ambas)  & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & --- \\
+			Paul (en ambas)  & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & --- \\
+			Keith (solo en y) & --- & --- & $\checkmark$ & $\checkmark$ & --- & --- \\
+		\end{tblr}
+
+		\begin{block}{}
+			\rscript{semi_join()} y \rscript{anti_join()} son \emph{filtering joins}: solo conservan filas de x. Keith no puede aparecer porque no existe en \rscript{band_members}.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{inner\_join()} — solo filas con coincidencia en ambas}
+		\begin{lstlisting}[style=RScript]
+band_members |> inner_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  name  band    plays
+  <chr> <chr>   <chr>
+1 John  Beatles guitar
+2 Paul  Beatles bass
+\end{lstlisting}
+
+		Mick (sin instrumento) y Keith (sin banda) quedan excluidos.
+
+		\begin{alertblock}{}
+			Usarlo cuando solo tienen sentido las filas con información completa en ambas tablas — por ejemplo, calcular el ratio entre dos indicadores que deben existir simultáneamente. Si falta uno, la fila no sirve.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{left\_join()} — todas las filas de la tabla izquierda}
+		\begin{lstlisting}[style=RScript]
+band_members |> left_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  name  band    plays
+  <chr> <chr>   <chr>
+1 Mick  Stones  NA      # sin coincidencia: plays = NA
+2 John  Beatles guitar
+3 Paul  Beatles bass
+\end{lstlisting}
+
+		Mick se conserva con \rscript{NA} en la columna que vino de la derecha. Keith queda excluido.
+
+		\begin{exampleblock}{}
+			Es el join más frecuente en la práctica: enriquecer una tabla principal con datos de una tabla secundaria, conservando todas las filas originales.
+		\end{exampleblock}
+	\end{frame}
+
+
+
+
+
+
+	\begin{frame}[fragile]{\texttt{right\_join()} — todas las filas de la tabla derecha}
+	\begin{lstlisting}[style=RScript]
+		band_members |> right_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+	\begin{lstlisting}[style=RConsole]
+		name  band    plays
+		<chr> <chr>   <chr>
+		1 John  Beatles guitar
+		2 Paul  Beatles bass
+		3 Keith NA      guitar  # sin coincidencia: band = NA
+\end{lstlisting}
+	
+	Keith se conserva con \rscript{NA} en \rscript{band}. Mick queda excluido.
+
+	\begin{exampleblock}{}
+		Útil cuando la tabla principal está a la derecha --- por ejemplo, al enriquecer una tabla de referencia completa con datos parciales de x. En la práctica, \rscript{right_join(x, y)} es equivalente a \rscript{left_join(y, x)}: se prefiere \rscript{left_join} invirtiendo el orden para mantener la tabla principal siempre a la izquierda.
+	\end{exampleblock}
+\end{frame}
+
+
+
+	\begin{frame}[fragile]{\texttt{full\_join()}}
+	\begin{lstlisting}[style=RScript]
+		band_members |> full_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+	\begin{lstlisting}[style=RConsole]
+		name  band    plays
+		<chr> <chr>   <chr>
+		1 Mick  Stones  NA
+		2 John  Beatles guitar
+		3 Paul  Beatles bass
+		4 Keith NA      guitar
+\end{lstlisting}
+	
+	\begin{exampleblock}{}
+		\rscript{full_join()} es útil para \textbf{auditar} dos fuentes: muestra qué filas tienen coincidencia y cuáles quedan sin emparejar en cada tabla — los \rscript{NA} señalan exactamente dónde falta información.
+	\end{exampleblock}
+\end{frame}
+
+
+
+
+	\begin{frame}[fragile]{\texttt{semi\_join()} — filtrar filas \emph{con} coincidencia}
+		\textbf{Filtering join}: no agrega columnas. Solo conserva las filas de la tabla izquierda que tienen al menos una coincidencia en la derecha.
+
+		\begin{lstlisting}[style=RScript]
+band_members |> semi_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  name  band
+  <chr> <chr>
+1 John  Beatles
+2 Paul  Beatles
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Usarlo cuando la condición de filtro está en otra tabla pero \textbf{no} se quieren agregar sus columnas al resultado — por ejemplo, conservar solo los vuelos de aerolíneas que operan más de 10 rutas, sin incorporar datos de \rscript{airlines} al tibble.
+		\end{exampleblock}
+
+		\begin{block}{}
+			A diferencia de \rscript{inner_join()}, \rscript{semi_join()} nunca duplica filas aunque haya múltiples coincidencias en la tabla derecha.
+		\end{block}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{anti\_join()} — filtrar filas \emph{sin} coincidencia}
+		\textbf{Filtering join}: conserva solo las filas de la tabla izquierda que \textbf{no} tienen coincidencia en la derecha.
+
+		\begin{lstlisting}[style=RScript]
+band_members |> anti_join(band_instruments, `:ky:by` = "name")
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  name  band
+  <chr> <chr>
+1 Mick  Stones
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Útil para detectar registros faltantes: integrantes sin instrumento, facturas sin pago, productos sin ventas en el período.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{El argumento \texttt{by =}}
+		Siempre especificar \rscript{`:ky:by`} explícitamente. Hay tres sintaxis:
+
+		\begin{lstlisting}[style=RScript]
+band_members |> left_join(band_instruments,  `:ky:by` = "name")
+
+band_members |> left_join(`band_instruments2`, `:ky:by` = c("name" = "artist"))
+
+band_members |> left_join(`band_instruments2`, `:ky:by` = join_by(`:bn:name` == `:bn:artist`))
+
+flights |> left_join(weather,
+  `:ky:by` = join_by(`:bn:origin`, `:bn:year`, `:bn:month`, `:bn:day`, `:bn:hour`))
+\end{lstlisting}
+
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Sintaxis & Cuándo usarla \\
+			`:ky:by` = "col" & la clave tiene el mismo nombre en ambas tablas \\
+			`:ky:by` = c("x\_col" = "y\_col") & los nombres de la clave difieren entre tablas \\
+			`:ky:by` = join\_by(`:bn:x_col` == `:bn:y_col`) & equivalente al anterior; preferida en dplyr 1.1+ \\
+			`:ky:by` = join\_by(`col1`, `col2`) & clave compuesta (varias columnas) \\
+		\end{tblr}
+
+		\begin{alertblock}{}
+			Si se omite \rscript{`:ky:by`}, dplyr detecta columnas con el mismo nombre en ambas tablas y las usa como clave (emite un mensaje, no un error). Es una fuente frecuente de bugs silenciosos: basta con que dos tablas compartan una columna por coincidencia para obtener un join incorrecto.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{Columnas duplicadas — \texttt{suffix =}}
+		Cuando ambas tablas tienen una columna con el mismo nombre (que no es la clave), dplyr agrega un sufijo para desambiguar.
+
+		\begin{lstlisting}[style=RScript]
+flights |> left_join(planes, `:ky:by` = "tailnum",
+  `:ky:suffix` = c("_vuelo", "_fab"))
+\end{lstlisting}
+		\begin{lstlisting}[style=RConsole]
+  tailnum year_vuelo year_fab  manufacturer  model
+  <chr>        <int>    <int>  <chr>         <chr>
+1 N14228        2013     1999  BOEING        737-824
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Sin \rscript{suffix}, las columnas duplicadas se llaman \rscript{year.x} y \rscript{year.y}. Siempre especificar sufijos descriptivos. En \rscript{flights} y \rscript{planes}, la columna \rscript{year} tiene significados distintos (año del vuelo vs.\ año de fabricación).
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{Claves duplicadas — \texttt{relationship =}}
+		Si la clave no es única en la tabla derecha, el join multiplica filas (producto cartesiano). \rscript{relationship} permite verificar la relación esperada.
+
+		\begin{lstlisting}[style=RScript]
+flights |> left_join(airlines, `:ky:by` = "carrier",
+  `:ky:relationship` = "many-to-one")
+\end{lstlisting}
+
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Valor & Significado \\
+			"one-to-one" & la clave es única en ambas tablas \\
+			"one-to-many" & única en x, puede repetirse en y \\
+			"many-to-one" & puede repetirse en x, única en y (el más frecuente) \\
+			"many-to-many" & puede repetirse en ambas (dplyr advierte si no se declara) \\
+		\end{tblr}
+
+		\begin{exampleblock}{}
+			Si el resultado tiene más filas de las esperadas, hay claves duplicadas en la tabla derecha. Usar \rscript{anti_join()} o \rscript{count()} para diagnosticar.
+		\end{exampleblock}
+	\end{frame}
+
+	\begin{frame}[fragile]{\texttt{bind\_rows()} y \texttt{bind\_cols()}}
+		Combinan tablas \textbf{sin una clave}: por posición, no por valores.
+
+		\begin{lstlisting}[style=RScript]
+bind_rows(enero, febrero, marzo)   # apila filas (deben tener las mismas columnas)
+bind_cols(datos_x, datos_y)        # pega columnas (deben tener el mismo n de filas)
+\end{lstlisting}
+
+		\begin{tblr}{
+			colspec = {l l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Función & Dirección & Cuándo usarla \\
+			bind\_rows() & vertical & mismas columnas, más observaciones \\
+			bind\_cols() & horizontal & mismas filas, más variables \\
+		\end{tblr}
+
+		\begin{alertblock}{}
+			\rscript{bind_cols()} no verifica que las filas correspondan: es responsabilidad del programador que el orden sea correcto. Para combinar por valores usar un join.
+		\end{alertblock}
+	\end{frame}
+
+	\begin{frame}{Referencia rápida — joins}
+		\begin{tblr}{
+			colspec = {l l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Función & Tipo & Filas en el resultado \\
+			inner\_join() & mutating & solo las que coinciden en \textbf{ambas} tablas \\
+			left\_join() & mutating & todas las de x; \rscript{NA} donde no hay coincidencia en y \\
+			right\_join() & mutating & todas las de y; \rscript{NA} donde no hay coincidencia en x \\
+			full\_join() & mutating & todas las de ambas; \rscript{NA} donde no hay coincidencia \\
+			semi\_join() & filtering & las de x que \emph{tienen} coincidencia en y (sin columnas nuevas) \\
+			anti\_join() & filtering & las de x que \emph{no tienen} coincidencia en y (sin columnas nuevas) \\
+		\end{tblr}
+
+		\begin{tblr}{
+			colspec = {l X[m]},
+			hlines, vlines,
+			row{1} = {bg=gray9, font=\bfseries},
+			cells = {valign=m},
+			cell{2-Z}{1} = {cmd=\rscript},
+		}
+			Argumento & Uso \\
+			`:ky:by` & clave de unión (siempre explícito) \\
+			`:ky:suffix` & sufijos para columnas con nombre duplicado (default: \texttt{.x} / \texttt{.y}) \\
+			`:ky:relationship` & verifica la cardinalidad esperada del join \\
+		\end{tblr}
+	\end{frame}
+
+\end{document}
