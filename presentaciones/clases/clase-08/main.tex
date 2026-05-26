@@ -551,4 +551,26 @@ ggplot(`gapminder_2007`, aes(x = `:bn:continent`, y = `:bn:gdpPercap`)) +
 		\end{exampleblock}
 	\end{frame}
 
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Integraremos los gráficos de distribución del encuentro con las herramientas de transformación ya conocidas. Trabajaremos con \rscript{gapminder} (del paquete \rscript{`:pk:gapminder`}) y con el dataset \rscript{iris}. Asegurate de tener \rscript{`:pk:tidyverse`} y \rscript{`:pk:gapminder`} cargados.
+
+		\begin{enumerate}
+			\item Filtrá \rscript{gapminder} para quedarte con los años \rscript{1952} y \rscript{2007}. Con esos datos, construí un gráfico de densidad de \rscript{`:bn:lifeExp`} usando \rscript{`:ky:fill`} para distinguir los dos años (\rscript{alpha = 0.4}). Completá con \rscript{labs()} ---título descriptivo, ejes en español y fuente \textit{Gapminder}--- y \rscript{theme\_bw()}. ¿Qué cambió en la distribución de la esperanza de vida entre ambos años?
+
+			\item Con \rscript{gapminder} filtrado al año \rscript{2007}, construí un violin plot de \rscript{`:bn:lifeExp`} por continente (\rscript{`:ky:fill` = `:bn:continent`}) con un boxplot anidado dentro (\rscript{width = 0.1}, \rscript{`:ky:fill` = "white"}). Completá con \rscript{labs()} y \rscript{theme\_minimal()}. ¿Qué continente muestra mayor dispersión interna en la esperanza de vida?
+
+			\item El dataset \rscript{iris} tiene cuatro variables de medición en columnas separadas: \rscript{`:bn:Sepal.Length`}, \rscript{`:bn:Sepal.Width`}, \rscript{`:bn:Petal.Length`} y \rscript{`:bn:Petal.Width`}, lo que lo deja en formato \textit{ancho}. Para graficar la distribución de las cuatro medidas en un único boxplot, transformalo a formato largo con \rscript{pivot\_longer()}: excluí \rscript{`:bn:Species`} de la selección y nombrá las nuevas columnas \rscript{"medida"} y \rscript{"valor"}. Con el resultado, construí un boxplot con \rscript{`:bn:medida`} en \rscript{x}, \rscript{`:bn:valor`} en \rscript{y} y \rscript{`:ky:fill` = `:bn:medida`}. ¿Qué variable tiene el mayor rango intercuartílico?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		\begin{enumerate}[start = 4]
+			\item Retomá el reshape del ejercicio anterior. Esta vez usá \rscript{`:ky:fill` = `:bn:Species`} en lugar de \rscript{`:bn:medida`} para comparar las tres especies dentro de cada tipo de medición (\rscript{alpha = 0.7}). Completá con \rscript{labs()} y \rscript{theme\_bw()}. ¿En cuál de las cuatro medidas se diferencian más las tres especies entre sí?
+
+			\item Construí un único pipeline que parta de \rscript{gapminder}, filtre los países de América y produzca un histograma de \rscript{`:bn:gdpPercap`} con \rscript{binwidth = 2000}, \rscript{`:ky:fill`} fijo en \rscript{"steelblue"}, \rscript{color = "white"} y \rscript{alpha = 0.8}. Completá con \rscript{labs()} descriptivos y \rscript{theme\_classic()}. ¿La distribución del PBI per cápita en América es simétrica o asimétrica? ¿A qué se debe esa forma?
+		\end{enumerate}
+	\end{frame}
+
 \end{document}
