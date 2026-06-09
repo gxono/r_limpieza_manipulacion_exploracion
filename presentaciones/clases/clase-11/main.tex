@@ -1,0 +1,449 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{11mo encuentro: Introducci\'on a Quarto}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}
+		Hasta ahora, el análisis de datos en R y la comunicación de sus resultados vivían en lugares separados: un gráfico terminaba copiado a una presentación, una tabla reformateada en Word. Si los datos cambiaban, había que repetir todo el proceso a mano.
+
+		Quarto resuelve esto integrando el análisis y el documento en un mismo archivo. El código R y el texto narrativo conviven en un \texttt{.qmd} y, al renderizarlo, Quarto ejecuta el código y genera el documento final. Si los datos cambian, basta con volver a renderizar.
+
+		\begin{exampleblock}{}
+			La palabra clave es \textbf{reproducibilidad}: los resultados siempre son consistentes con el código y los datos que los generan, sin intervención manual.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}{¿Qué es Quarto?}
+		Quarto es el sistema de publicación de documentos dinámicos de Posit. Es la evolución de R Markdown y soporta múltiples lenguajes (R, Python, Julia) y múltiples formatos de salida desde un mismo archivo.
+
+		\begin{figure}[h!]
+			\includegraphics[width = 0.15\textwidth]{img/quarto.png}
+		\end{figure}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Herramienta & Cómo funciona\\
+				R + Word/PowerPoint & el análisis vive en R y los resultados se copian manualmente al documento. Cualquier cambio en los datos implica repetir el proceso.\\
+				Quarto & texto y código conviven en el mismo \texttt{.qmd}. Al renderizar, el código se ejecuta y el documento final se genera actualizado.\\
+			\end{tblr}
+		\end{center}
+
+		\begin{block}{}
+			Quarto viene incluido en las versiones recientes de RStudio. Desde la terminal: \texttt{quarto check} para verificar la instalación.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Proyectos de RStudio y estructura de carpetas}
+		Ya conocen los proyectos de RStudio (\texttt{.Rproj}): fijan el directorio de trabajo y hacen que todas las rutas sean relativas a la raíz del proyecto. Quarto hereda esa misma lógica: el \texttt{.qmd} se renderiza con la raíz del proyecto como directorio de trabajo.
+
+		Hasta ahora, un proyecto típico podía verse así:
+
+\begin{lstlisting}
+mi_proyecto
+|-- mi_proyecto.Rproj
+|-- datos
+|   `-- encuesta.csv
+`-- scripts
+    `-- limpieza.R
+\end{lstlisting}
+
+		Ahora que también generamos reportes, el proyecto queda:
+
+\begin{lstlisting}
+mi_proyecto
+|-- mi_proyecto.Rproj
+|-- datos
+|   |-- brutos          <- datos originales, nunca se modifican
+|   |   `-- encuesta.csv
+|   `-- procesados      <- resultado de los scripts de limpieza
+|       `-- encuesta_limpia.rds
+|-- scripts
+|   `-- limpieza.R      <- lee brutos, guarda en procesados
+`-- reporte.qmd         <- lee procesados, no limpia datos
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			El \texttt{.qmd} no limpia datos: eso es trabajo de los scripts. El reporte carga directamente desde \texttt{datos/procesados/} y se dedica al análisis y la comunicación.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}{Crear un nuevo documento Quarto en RStudio}
+		\textbf{File} $\rightarrow$ \textbf{New File} $\rightarrow$ \textbf{Quarto Document\ldots}
+
+		Se abre un diálogo donde podés ingresar el título, el autor y elegir el formato de salida inicial (HTML, PDF o Word). Al confirmar, RStudio genera un \texttt{.qmd} con una plantilla mínima.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Elemento & Para qué sirve\\
+				Título y autor & completan el encabezado YAML automáticamente\\
+				Formato & define el \texttt{format:} inicial en el YAML (se puede cambiar después)\\
+				Plantilla generada & incluye un ejemplo mínimo de YAML, Markdown y un chunk\\
+			\end{tblr}
+		\end{center}
+
+		\begin{alertblock}{}
+			Guardá el archivo (\textbf{Ctrl+S}) dentro de la carpeta del proyecto antes de renderizar. El nombre del archivo se convierte en el nombre del documento generado.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}{Estructura de un documento \texttt{.qmd}}
+		Un archivo \texttt{.qmd} tiene tres componentes, siempre en este orden:
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Componente & Descripción\\
+				Encabezado YAML & metadatos del documento: título, autor, formato de salida\\
+				Texto en Markdown & narrativa, explicaciones, interpretaciones\\
+				Chunks de código & bloques de código R que se ejecutan al renderizar\\
+			\end{tblr}
+		\end{center}
+
+		\begin{block}{}
+			El YAML siempre va al principio. Markdown y chunks pueden alternarse libremente a lo largo del cuerpo del documento.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Un \texttt{.qmd} mínimo completo}
+\begin{lstlisting}
+---
+title: "Análisis de Gapminder"
+author: "Jonatán Perren"
+date: today
+format: html
+---
+
+## Esperanza de vida en 2007
+
+El siguiente gráfico muestra la distribución
+de la esperanza de vida por continente.
+
+```{r}
+#| include: false
+library(tidyverse)
+library(gapminder)
+```
+
+```{r}
+gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot()
+```
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El encabezado YAML}
+		El encabezado YAML va al inicio del archivo, entre dos líneas de \texttt{---}. Define los metadatos y la configuración del documento.
+
+\begin{lstlisting}
+---
+title: "Análisis de Gapminder"
+subtitle: "FCE-UNL, 2025"
+author: "Jonatán Perren"
+date: today
+lang: es
+format: html
+---
+\end{lstlisting}
+
+		\begin{block}{}
+			\texttt{date: today} inserta automáticamente la fecha del renderizado. Para una fecha fija: \texttt{date: "2025-06-15"}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}{El encabezado YAML: claves más frecuentes}
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {Q[font=\ttfamily, l] p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Clave & Descripción\\
+				title & título del documento\\
+				subtitle & subtítulo (opcional)\\
+				author & autor o autores\\
+				date & fecha (\texttt{today} para la fecha actual de renderizado)\\
+				lang & idioma del documento: \texttt{es}, \texttt{en}\\
+				format & formato de salida: \texttt{html}, \texttt{pdf}, \texttt{docx}\\
+				toc & tabla de contenidos: \texttt{true} / \texttt{false}\\
+				number-sections & numerar secciones automáticamente: \texttt{true} / \texttt{false}\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Markdown: texto narrativo}
+		El cuerpo del documento se escribe en Markdown: una sintaxis minimalista que define estructura y énfasis.
+
+\begin{lstlisting}
+# Sección principal
+
+## Subsección
+
+Texto normal. Palabras **en negrita** e *en cursiva*.
+
+- Elemento de lista no ordenada
+- Otro elemento
+
+1. Primer paso
+2. Segundo paso
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}{Markdown: referencia rápida}
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {Q[font=\ttfamily, l] l},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Sintaxis & Resultado\\
+				\texttt{\# Título} & encabezado de nivel 1\\
+				\texttt{\#\# Sección} & encabezado de nivel 2\\
+				\texttt{**texto**} & \textbf{negrita}\\
+				\texttt{*texto*} & \textit{cursiva}\\
+				\texttt{`código`} & \texttt{código monoespaciado inline}\\
+				\texttt{- elemento} & ítem de lista no ordenada\\
+				\texttt{1. elemento} & ítem de lista ordenada\\
+				\texttt{[texto](url)} & hipervínculo\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Los chunks de código}
+		Un \textbf{chunk} es un bloque de código R ejecutable. Se delimita con tres backticks y la especificación del lenguaje.
+
+\begin{lstlisting}
+```{r}
+mean(c(10, 20, 30))
+```
+\end{lstlisting}
+
+		Al renderizar, Quarto ejecuta el código y embebe el resultado en el documento. El chunk de arriba produce:
+
+\begin{lstlisting}
+[1] 20
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Los chunks se pueden nombrar para referenciarlos: \texttt{```\{r nombre-del-chunk\}}. Los nombres no pueden contener espacios.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Opciones de chunk: la sintaxis \texttt{\#|}}
+		Cada chunk puede tener opciones que controlan qué aparece en el documento final. Se escriben dentro del chunk con el prefijo \texttt{\#|} (hash-pipe).
+
+\begin{lstlisting}
+```{r}
+#| echo: false
+#| warning: false
+#| fig-cap: "Distribución de la esperanza de vida (2007)"
+
+gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = lifeExp)) +
+  geom_histogram(binwidth = 5)
+```
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			La sintaxis \texttt{\#|} es la forma moderna recomendada por Quarto. El estilo anterior \texttt{```\{r echo=FALSE\}} sigue funcionando pero se desaconseja.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}{Opciones de chunk más frecuentes}
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {Q[font=\ttfamily, l] l l p{4cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Opción & Tipo & Default & Efecto\\
+				echo & lógico & true & ¿Mostrar el código en el documento?\\
+				eval & lógico & true & ¿Ejecutar el código?\\
+				warning & lógico & true & ¿Mostrar advertencias de R?\\
+				message & lógico & true & ¿Mostrar mensajes de R?\\
+				include & lógico & true & ¿Incluir código y output?\\
+				fig-width & número & 7 & Ancho de la figura (pulgadas)\\
+				fig-height & número & 5 & Alto de la figura (pulgadas)\\
+				fig-cap & texto & --- & Leyenda de la figura\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]
+		\titleitem{\texttt{echo: false} --- ocultar el código, mostrar el resultado}
+\begin{lstlisting}
+```{r}
+#| echo: false
+mean(c(10, 20, 30))
+```
+\end{lstlisting}
+		El documento muestra \texttt{[1] 20} sin el código que lo generó.
+
+		\titleitem{\texttt{eval: false} --- mostrar el código, no ejecutarlo}
+\begin{lstlisting}
+```{r}
+#| eval: false
+install.packages("gapminder")
+```
+\end{lstlisting}
+		Útil para mostrar instrucciones que el lector debe ejecutar por su cuenta.
+
+		\titleitem{\texttt{include: false} --- ejecutar en silencio}
+\begin{lstlisting}
+```{r}
+#| include: false
+library(tidyverse)
+library(gapminder)
+```
+\end{lstlisting}
+		El chunk carga los paquetes pero no aparece nada en el documento.
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Código R inline}
+		Además de los chunks, se puede insertar código R \textbf{dentro del texto} con la sintaxis \verb|`r expr`|. El resultado reemplaza la expresión directamente en la prosa.
+
+\begin{lstlisting}
+El dataset contiene `r nrow(gapminder)` observaciones
+de `r n_distinct(gapminder$country)` países.
+\end{lstlisting}
+
+		Produce: \textit{El dataset contiene \textbf{1704} observaciones de \textbf{142} países.}
+
+		\begin{exampleblock}{}
+			El código inline se actualiza con cada renderización. Si los datos cambian, los números en el texto cambian solos. Es la herramienta clave para evitar inconsistencias entre el análisis y la narrativa.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Renderizar el documento}
+		Renderizar es el proceso que ejecuta todo el código R y combina los resultados con el texto Markdown para generar el documento final.
+
+		\titleitem{Desde RStudio}
+		Hacé clic en el botón \textbf{Render} (atajo: \verb|Ctrl + Shift + K|).
+
+		\titleitem{Desde la consola de R}
+\begin{lstlisting}[style=RScript]
+quarto::quarto_render("mi_reporte.qmd")
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			El renderizado ejecuta el código en una sesión limpia desde cero. Si un objeto fue creado en la consola pero no está en el \texttt{.qmd}, el render fallará. El documento debe ser completamente autosuficiente.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Formatos de salida}
+		El campo \texttt{format} del YAML determina el formato del documento generado.
+
+		\titleitem{Un solo formato}
+\begin{lstlisting}
+format: html
+\end{lstlisting}
+
+		\titleitem{Múltiples formatos desde el mismo \texttt{.qmd}}
+\begin{lstlisting}
+format:
+  html:
+    toc: true
+  pdf:
+    number-sections: true
+  docx: default
+\end{lstlisting}
+
+		\begin{block}{}
+			Para generar PDF, Quarto requiere una instalación de \LaTeX{}. La forma más simple es \rscript{tinytex::install\_tinytex()}.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}{Formatos de salida: ¿cuándo usar cada uno?}
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{3cm} p{3cm} p{2.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Formato & Ventajas & Desventajas & Cuándo usarlo\\
+				HTML & interactivo, sin dependencias & necesita navegador & exploración, reportes web\\
+				PDF & tipografía profesional & requiere \LaTeX{} & documentos formales, TPI\\
+				Word & editable, familiar & difícil de personalizar & entregas institucionales\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		\begin{enumerate}
+			\item Creá un nuevo archivo \texttt{.qmd} en RStudio (\verb|File > New File > Quarto Document|). Poné un título y tu nombre como autor. Guardalo y hacé \textbf{Render} a HTML. ¿Qué genera el archivo por defecto?
+
+			\item Reemplazá el contenido con un chunk \texttt{\#| include: false} que cargue \rscript{`:pk:tidyverse`} y \rscript{`:pk:gapminder`}, y otro que muestre \rscript{head(gapminder)}. ¿Qué aparece en el documento?
+
+			\item Agregá un párrafo de texto antes del chunk con \rscript{head(gapminder)} que describa brevemente el dataset. Usá al menos un encabezado de nivel 2, una palabra en negrita y una en cursiva.
+
+			\item Cambiá el formato de salida a \texttt{pdf} y volvé a renderizar. Si no tenés \LaTeX{} instalado, instalalo con \rscript{tinytex::install\_tinytex()} y reiniciá RStudio.
+
+			\item Creá un chunk con \texttt{\#| echo: false} que grafique la distribución de \rscript{`:bn:lifeExp`} con \rscript{geom\_histogram()}. ¿Qué se ve en el documento final? ¿Qué no se ve?
+
+			\item Agregá una oración con código inline que reporte cuántas filas tiene \rscript{gapminder} usando \verb|`r nrow(gapminder)`|.
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Creá tu primer reporte reproducible con \rscript{gapminder} (del paquete \rscript{`:pk:gapminder`}). Entregá el archivo \texttt{.qmd} \textbf{y} el HTML generado.
+
+		\begin{enumerate}
+			\item Creá un \texttt{.qmd} con título, autor, fecha automática y formato HTML con tabla de contenidos.
+
+			\item Organizá el reporte en tres secciones: \quotation{Descripción del dataset}, \quotation{Distribución de la esperanza de vida} y \quotation{Comparación entre continentes}.
+
+			\item En la primera sección, describí el dataset en texto Markdown e incluí una oración con código inline que reporte cuántos países y cuántos años contiene.
+
+			\item En la segunda sección, incluí un gráfico de distribución de \rscript{`:bn:lifeExp`} en \rscript{2007} con el código oculto y un título descriptivo con \rscript{labs()}.
+
+			\item En la tercera sección, mostrá el código y el resultado de una comparación de la esperanza de vida promedio por continente.
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}
