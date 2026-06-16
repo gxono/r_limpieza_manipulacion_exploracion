@@ -26,7 +26,7 @@ Las diapositivas de cada encuentro están disponibles en formato PDF.
 | 8 | Visualización de datos I | [PDF](presentaciones/clases/clase-08/main.pdf) |
 | 9 | Visualización de datos II | [PDF](presentaciones/clases/clase-09/main.pdf) |
 | 10 | Visualización de datos III | [PDF](presentaciones/clases/clase-10/main.pdf) |
-| 11 | 🚧 Pendiente | — |
+| 11 | Introducción a Quarto | [PDF](presentaciones/clases/clase-11/main.pdf) |
 | 12 | 🚧 Pendiente | — |
 | 13 | 🚧 Pendiente | — |
 
