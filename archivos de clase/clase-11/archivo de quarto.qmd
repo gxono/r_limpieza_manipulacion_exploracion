@@ -1,0 +1,72 @@
+---
+#CAMPOS YAML R QUARTO
+title: "Documento de prueba"
+subtitle: "El subtitulo"
+author: "Jonatan Perren"
+date: today # o "2026-06-16"
+lang: es
+toc: true # Table of Contents
+number-sections: false
+format: pdf
+bibliography: references.bib
+---
+
+```{r}
+#| include: false
+
+library(tidyverse)
+library(gapminder)
+
+redondeo <- function(n) {round(n, 1)}
+
+media_pbi <- mean(gapminder::gapminder$gdpPercap)
+
+
+```
+
+# Este es un TITULO 1
+
+El texto se escribe como esperarian.
+
+escribir cualquier texto.
+
+Este es otro parrafo. Necesito dejar al menos una linea en blanco. [@aldana2020]
+
+Multiples espacios se ignoran.
+
+## Esta es un TITULO 2
+
+Esto es **negrita** y esto *cursiva*
+
+Estamos trabajando con `quarto`
+
+### Listas sin numerar
+
+-   Primer elemento
+    -   Este es un subitem del primer elemento
+    -   Y este es otro
+-   Segundo elemento
+-   Tercer elemento
+
+### Listas numeradas
+
+1.  Primer elemento
+2.  Tercer elemento
+3.  Algo
+4.  Segundo elemento
+
+$$\int f(x) dx$$
+
+## Usar variables en parrafos
+
+La media del PBI es `r redondeo(media_pbi)` y no `media_pbi`, que es el nombre de la variable y se calcula $\frac{1}{n}\sum_{i=1}^{n} x_{i}$.
+
+```{r}
+#| echo: false
+#| fig-cap: "Este es el caption de la figura"
+#| fig-format: pdf
+  gapminder |>
+    ggplot(aes(x = gdpPercap, y = lifeExp)) + 
+    geom_point(alpha = 0.1) + 
+    scale_x_log10()
+```

@@ -1,0 +1,307 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{12mo encuentro: Tablas, captions y referencias cruzadas}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		\begin{itemize}
+			\item \textbf{Tablas en Quarto}: de \rscript{knitr::kable()} a \rscript{`:pk:gt`}
+			\item \textbf{Captions}: títulos descriptivos en figuras y tablas
+			\item \textbf{Referencias cruzadas}: citar figuras, tablas y secciones desde el texto
+			\item \textbf{YAML}: tabla de contenidos y numeración automática de secciones
+		\end{itemize}
+
+		\titleitem{Paquetes y datos}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyverse`)
+library(`:pk:gapminder`)
+library(`:pk:gt`)      # install.packages("gt") si no está instalado
+library(`:pk:knitr`)   # viene con RStudio
+\end{lstlisting}
+
+		\begin{block}{}
+			El dataset \rscript{gapminder} contiene datos de \textbf{142 países} con variables de desarrollo humano y económico relevados cada 5 años entre 1952 y 2007.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Tablas en Quarto: el problema}
+		Por defecto, cuando un chunk imprime un data frame, Quarto lo muestra como texto plano de consola:
+
+\begin{lstlisting}
+# A tibble: 5 x 3
+  country   lifeExp gdpPercap
+  <chr>       <dbl>     <dbl>
+1 Iceland      81.8    36181.
+2 Sweden       80.9    33860.
+3 ...
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Para que una tabla aparezca formateada en el documento final, hay que pasarla por una función de renderizado. Las dos opciones más usadas son \rscript{knitr::kable()} y el paquete \rscript{`:pk:gt`}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{\texttt{knitr::kable()}: tablas simples}
+		\rscript{knitr::kable()} convierte un data frame en una tabla formateada con una sola llamada. Es la opción más rápida para HTML, PDF y Word.
+
+\begin{lstlisting}[style=RScript]
+gapminder |>
+  filter(`:bn:year` == `:nm:2007`, `:bn:continent` == "Americas") |>
+  select(`:bn:country`, `:bn:lifeExp`, `:bn:gdpPercap`) |>
+  arrange(desc(`:bn:lifeExp`)) |>
+  head(`:nm:5`) |>
+  knitr::kable(
+    `:ky:col.names` = c("País", "Esp. de vida", "PBI per cápita"),
+    `:ky:digits`    = 1
+  )
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			\rscript{knitr::kable()} funciona bien para tablas sencillas. Para tablas con formato avanzado (colores, grupos, notas al pie), usar \rscript{`:pk:gt`}.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El paquete \texttt{gt}: tablas de publicación}
+		\rscript{`:pk:gt`} (\textit{grammar of tables}) construye tablas de forma declarativa, capa por capa. Su filosofía es análoga a la de \rscript{`:pk:ggplot2`} para gráficos.
+
+\begin{lstlisting}[style=RScript]
+gapminder |>
+  filter(`:bn:year` == `:nm:2007`, `:bn:continent` == "Americas") |>
+  select(`:bn:country`, `:bn:lifeExp`, `:bn:gdpPercap`) |>
+  arrange(desc(`:bn:lifeExp`)) |>
+  head(`:nm:5`) |>
+  gt() |>
+  tab_header(
+    `:ky:title`    = "Esperanza de vida en América",
+    `:ky:subtitle` = "Cinco países con mayor esperanza de vida, 2007"
+  ) |>
+  cols_label(
+    `:bn:country`   = "País",
+    `:bn:lifeExp`   = "Esperanza de vida",
+    `:bn:gdpPercap` = "PBI per cápita"
+  ) |>
+  fmt_number(`:ky:columns` = `:bn:gdpPercap`, `:ky:decimals` = 0)
+\end{lstlisting}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Funciones principales de \texttt{gt}}
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec       = {l p{7.5cm}},
+				row{1}        = {font=\bfseries},
+				hline{1,2,Z}  = {solid},
+				cell{2-Z}{1}  = {cmd=\rscript},
+			}
+				Función & Qué hace\\
+				gt() & crea el objeto tabla a partir de un data frame\\
+				tab_header() & agrega título y subtítulo visual a la tabla\\
+				cols_label() & renombra columnas para la presentación\\
+				fmt_number() & formatea números (decimales, separador de miles)\\
+				fmt_percent() & formatea como porcentaje\\
+				tab_source_note() & agrega nota de fuente al pie de la tabla\\
+				tab_spanner() & agrupa columnas bajo un encabezado común\\
+				cols_hide() & oculta columnas sin eliminarlas del data frame\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Captions en figuras}
+		Un caption es el título descriptivo que aparece debajo de una figura o tabla en el documento. Se define con la opción \texttt{fig-cap} en el chunk.
+
+\begin{lstlisting}
+```{r}
+#| fig-cap: "Distribución de la esperanza de vida por continente, 2007."
+#| fig-width: 8
+#| fig-height: 4
+
+gapminder |>
+  filter(year == 2007) |>
+  ggplot(aes(x = continent, y = lifeExp)) +
+  geom_boxplot() +
+  labs(x = "Continente", y = "Esperanza de vida (años)")
+```
+\end{lstlisting}
+
+		\begin{block}{}
+			Un buen caption describe qué muestra la figura sin obligar al lector a buscar el texto. Debe ser autosuficiente.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Captions en tablas}
+		Con \rscript{knitr::kable()} el caption va en el argumento \texttt{caption}. Con \rscript{`:pk:gt`}, el caption numerado que habilita las referencias cruzadas va en la opción \texttt{tbl-cap} del chunk --- no en \rscript{tab\_header()}, que agrega un título visual dentro de la tabla pero no funciona como caption.
+
+		\titleitem{Con \rscript{knitr::kable()}}
+\begin{lstlisting}[style=RScript]
+tabla |> knitr::kable(`:ky:caption` = "Países con mayor esperanza de vida, 2007.")
+\end{lstlisting}
+
+		\titleitem{Con \rscript{`:pk:gt`} y chunk option}
+\begin{lstlisting}
+```{r}
+#| tbl-cap: "Países con mayor esperanza de vida, 2007."
+
+tabla |> gt()
+```
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			La opción \texttt{tbl-cap} en el chunk permite referenciar la tabla cruzadamente con \texttt{@tbl-label}, igual que se hace con las figuras.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Referencias cruzadas}
+		Las referencias cruzadas permiten citar figuras, tablas y secciones desde el texto de forma automática. Quarto numera y enlaza los elementos por sí solo.
+
+		\titleitem{Etiquetar una figura}
+\begin{lstlisting}
+```{r}
+#| label: fig-distribucion
+#| fig-cap: "Distribución de la esperanza de vida, 2007."
+
+gapminder |> filter(year == 2007) |>
+  ggplot(aes(x = lifeExp)) + geom_histogram()
+```
+\end{lstlisting}
+
+		\titleitem{Referenciarla en el texto}
+\begin{lstlisting}
+Como se observa en la @fig-distribucion, la distribución
+es bimodal con un pico en torno a los 75 años.
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Las etiquetas de figuras deben empezar con \texttt{fig-} y las de tablas con \texttt{tbl-}. Sin ese prefijo, la referencia cruzada no funciona.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Referencias cruzadas: tablas y secciones}
+		\titleitem{Etiquetar una tabla}
+\begin{lstlisting}
+```{r}
+#| label: tbl-america
+#| tbl-cap: "Países con mayor esperanza de vida en América, 2007."
+
+tabla |> gt()
+```
+\end{lstlisting}
+
+		\titleitem{Etiquetar una sección}
+\begin{lstlisting}
+## Análisis por continente {#sec-continentes}
+\end{lstlisting}
+
+		\titleitem{Referenciar en el texto}
+\begin{lstlisting}
+La tabla @tbl-america y la sección @sec-continentes
+muestran que la variación entre países es considerable.
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Al renderizar a HTML, las referencias son hipervínculos. Al renderizar a PDF, se convierten en números de figura/tabla/sección automáticamente.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{YAML: tabla de contenidos y numeración}
+		Dos opciones del YAML que mejoran la navegabilidad del documento cuando tiene múltiples secciones.
+
+\begin{lstlisting}
+---
+title: "Análisis de Gapminder"
+author: "Jonatán Perren"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+---
+\end{lstlisting}
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {Q[font=\ttfamily, l] p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Opción & Efecto\\
+				toc: true & genera tabla de contenidos al inicio del documento\\
+				toc-depth: 2 & incluye hasta encabezados de nivel 2 (\texttt{\#\#})\\
+				number-sections: true & numera las secciones automáticamente (1, 1.1, 1.2\ldots)\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{YAML: opciones globales de chunk con \texttt{execute:}}
+		En lugar de escribir \texttt{\#| echo: false} y \texttt{\#| warning: false} en cada chunk, se pueden definir como valores por defecto para todo el documento con la clave \texttt{execute:} en el YAML.
+
+\begin{lstlisting}
+---
+title: "Análisis de Gapminder"
+format: html
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+\end{lstlisting}
+
+		\begin{block}{}
+			Con \texttt{execute: echo: false} ningún chunk muestra su código en el documento. Se puede sobreescribir chunk por chunk: \texttt{\#| echo: true} en los que sí se quieran mostrar.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		\begin{enumerate}
+			\item Tomá el \texttt{.qmd} de la actividad anterior y agregá un chunk que muestre los cinco países con mayor PBI per cápita en 2007. Presentá el resultado con \rscript{knitr::kable()} con nombres de columna en español.
+
+			\item Reemplazá ese \rscript{knitr::kable()} por una tabla \rscript{`:pk:gt`} que tenga título, subtítulo y los números de PBI formateados con separador de miles.
+
+			\item Agregá \texttt{fig-cap} al gráfico que ya tenías en el reporte. ¿Cómo aparece el caption en el HTML generado?
+
+			\item Etiquetá la figura con \texttt{label: fig-nombre} y referenciala desde el párrafo de texto con \texttt{@fig-nombre}. Renderizá y verificá que el enlace funcione.
+
+			\item Etiquetá la tabla con \texttt{label: tbl-nombre} y \texttt{tbl-cap}, y referenciala desde el texto. ¿Qué diferencia hay entre cómo aparece la referencia en HTML y en PDF?
+
+			\item Agregá \texttt{toc: true} y \texttt{number-sections: true} al YAML. ¿Cómo cambia el documento?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Ampliá el reporte de la actividad anterior agregando tablas y referencias cruzadas. Entregá el \texttt{.qmd} y el HTML generado.
+
+		\begin{enumerate}
+			\item Agregá al reporte una cuarta sección: \quotation{Los diez países con mayor esperanza de vida en 2007}. Presentá los datos como tabla con \rscript{`:pk:gt`}: título, columnas en español y PBI formateado.
+
+			\item Agregá captions descriptivos a todos los gráficos del reporte.
+
+			\item Etiquetá al menos una figura y una tabla, y citálas desde el texto con referencias cruzadas.
+
+			\item Activá la tabla de contenidos y la numeración de secciones en el YAML.
+
+			\item En la sección de descripción del dataset, usá código inline para reportar el año más reciente disponible en \rscript{gapminder} y la cantidad de variables que tiene.
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}

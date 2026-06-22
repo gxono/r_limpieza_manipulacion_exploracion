@@ -1,0 +1,207 @@
+\documentclass[8pt]{beamer}
+\input{../../sty/main}
+
+\begin{document}
+	\subtitle{13mo encuentro: Parametrización e integración}
+
+	\begin{frame}[plain]
+		\maketitle
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Agenda}
+		\begin{itemize}
+			\item \textbf{Parámetros}: reportes adaptables con \texttt{params} en el YAML
+			\item \textbf{Múltiples versiones}: generar un reporte por país, año o categoría
+			\item \textbf{TPI}: cómo organizar y entregar el trabajo práctico integrador
+		\end{itemize}
+
+		\titleitem{Paquetes y datos}
+
+\begin{lstlisting}[style=RScript]
+library(`:pk:tidyverse`)
+library(`:pk:gapminder`)
+library(`:pk:gt`)
+library(`:pk:knitr`)
+\end{lstlisting}
+
+		\begin{block}{}
+			El dataset \rscript{gapminder} contiene datos de \textbf{142 países} con variables de desarrollo humano y económico relevados cada 5 años entre 1952 y 2007.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}
+		Hasta ahora, cada reporte Quarto analiza un conjunto de datos fijo. Si queremos el mismo análisis pero para Argentina en lugar de Brasil, hay que editar el código a mano.
+
+		La \textbf{parametrización} resuelve esto: se definen variables en el YAML del documento, y el código las usa en lugar de valores hardcodeados. Al renderizar, se pasan los valores que se quieran. El mismo \texttt{.qmd} produce reportes distintos sin tocar el código.
+
+		\begin{exampleblock}{}
+			Un reporte parametrizado es la herramienta natural para análisis repetitivos: el mismo esquema de gráficos y tablas aplicado a distintos países, períodos, categorías o datasets.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Parámetros en el YAML}
+		Los parámetros se declaran bajo la clave \texttt{params} en el encabezado YAML. Cada parámetro tiene un nombre y un valor por defecto.
+
+\begin{lstlisting}
+---
+title: "Análisis por país"
+author: "Jonatán Perren"
+date: today
+format: html
+params:
+  pais: "Argentina"
+  anio: 2007
+---
+\end{lstlisting}
+
+		\begin{block}{}
+			Los valores bajo \texttt{params:} son los valores \textbf{por defecto}: los que se usan si no se especifica otra cosa al renderizar. Se pueden cambiar sin tocar el YAML.
+		\end{block}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Acceder a los parámetros en el código}
+		Dentro de cualquier chunk, los parámetros están disponibles como elementos de la lista \rscript{params}.
+
+\begin{lstlisting}[style=RScript]
+# Filtrar según los parámetros recibidos
+datos_pais <- gapminder |>
+  filter(`:bn:country` == params$pais, `:bn:year` <= params$anio)
+
+# Usarlos en un título
+ggplot(datos_pais, aes(x = `:bn:year`, y = `:bn:lifeExp`)) +
+  geom_line() +
+  labs(`:ky:title` = paste("Esperanza de vida:", params$pais),
+       `:ky:subtitle` = paste("1952 -", params$anio))
+\end{lstlisting}
+
+		También se pueden usar en el texto con código inline:
+
+\begin{lstlisting}
+Este reporte analiza la evolución de `r params$pais`
+entre 1952 y `r params$anio`.
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Con \rscript{params\$pais} en el título, el gráfico se etiqueta automáticamente según el país que se analice. No hay nada que cambiar a mano.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Renderizar con parámetros distintos}
+		Para generar el reporte con valores distintos a los del YAML, se usa \rscript{quarto::quarto\_render()} con el argumento \rscript{`:ky:execute\_params`}.
+
+\begin{lstlisting}[style=RScript]
+# Reporte para Brasil en 2002
+quarto::quarto_render(
+  "reporte_pais.qmd",
+  `:ky:execute_params` = list(pais = "Brazil", anio = `:nm:2002`),
+  `:ky:output_file`    = "reporte_brasil.html"
+)
+\end{lstlisting}
+
+		\begin{alertblock}{}
+			Los nombres de países en \rscript{gapminder} están en inglés: \rscript{"Argentina"} funciona, pero \rscript{"Brasil"} no. Verificar con \rscript{unique(gapminder\$country)}.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Múltiples reportes en un loop}
+		Combinando \rscript{quarto::quarto\_render()} con un loop se generan tantos reportes como se quiera, todos a partir del mismo \texttt{.qmd}.
+
+\begin{lstlisting}[style=RScript]
+paises <- c("Argentina", "Brazil", "Chile",
+            "Colombia", "Peru")
+
+for (pais in paises) {
+  quarto::quarto_render(
+    "reporte_pais.qmd",
+    `:ky:execute_params` = list(pais = pais),
+    `:ky:output_file`    = paste0("reporte_", pais, ".html")
+  )
+}
+\end{lstlisting}
+
+		\begin{exampleblock}{}
+			Este patrón es útil para reportes institucionales: el mismo análisis para cada provincia, sucursal, producto o período, generado automáticamente.
+		\end{exampleblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{El TPI: Trabajo Práctico Integrador}
+		El TPI es el trabajo final del cursado. Consiste en un \textbf{reporte reproducible en Quarto} que integra las herramientas vistas durante el curso sobre un dataset a elección.
+
+		\begin{center}
+			\small
+			\begin{tblr}{
+				colspec  = {l p{7.5cm}},
+				row{1}   = {font=\bfseries},
+				hline{1,2,Z} = {solid},
+			}
+				Eje & Qué debe mostrar el TPI\\
+				Carga de datos & leer el dataset desde un archivo local (CSV, Excel, etc.)\\
+				Limpieza & transformaciones con \rscript{`:pk:dplyr`} y \rscript{`:pk:tidyr`}\\
+				Visualización & al menos tres gráficos con \rscript{`:pk:ggplot2`} con captions y etiquetas\\
+				Tablas & al menos una tabla formateada con \rscript{`:pk:gt`} o \rscript{knitr::kable()}\\
+				Narrativa & texto que interprete los resultados, no solo los muestre\\
+				Reproducibilidad & el \texttt{.qmd} debe renderizar sin errores en una sesión limpia\\
+			\end{tblr}
+		\end{center}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{TPI: estructura sugerida del \texttt{.qmd}}
+		\titleitem{YAML}
+		Título descriptivo, autor, fecha automática, formato HTML o PDF, tabla de contenidos y secciones numeradas.
+
+		\titleitem{Sección 1: Descripción del dataset}
+		De dónde provienen los datos, qué variables contienen, cuántas observaciones. Incluir código inline con \rscript{nrow()}, \rscript{ncol()} y \rscript{n\_distinct()}.
+
+		\titleitem{Sección 2: Limpieza y preparación}
+		Las transformaciones necesarias. El chunk de limpieza puede ir con \texttt{\#| echo: true} para mostrar el proceso.
+
+		\titleitem{Sección 3 en adelante: Análisis}
+		Una sección por pregunta o dimensión de análisis. Cada sección combina gráfico, tabla y párrafo interpretativo. Las figuras y tablas deben estar etiquetadas y referenciadas desde el texto.
+
+		\begin{alertblock}{}
+			El reporte debe leerse de corrido, como un documento. No es una lista de gráficos: es un análisis narrado.
+		\end{alertblock}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Ejercicios}
+		\begin{enumerate}
+			\item Creá un \texttt{.qmd} con el parámetro \texttt{pais} (valor por defecto: \rscript{"Argentina"}) y un parámetro \texttt{anio} (valor por defecto: \rscript{`:nm:2007`}). Mostrá la esperanza de vida del país seleccionado en el año indicado con código inline.
+
+			\item Agregá un gráfico que muestre la evolución de la esperanza de vida del país parametrizado entre 1952 y 2007. El título del gráfico debe incluir el nombre del país tomado de \rscript{params\$pais}.
+
+			\item Renderizá el reporte tres veces con \rscript{quarto::quarto\_render()}: una para Argentina, una para Brasil y una para México. Verificá que cada HTML generado muestre el país correcto.
+
+			\item Escribí un loop que genere un reporte para cada uno de los cinco países de América Latina con mayor esperanza de vida en 2007. Guardá cada archivo con el nombre del país.
+
+			\item Revisá el \texttt{.qmd} y asegurate de que renderice sin errores en una sesión limpia: reiniciá R (\verb|Ctrl+Shift+F10|), borrá el entorno y hacé Render. ¿Funciona?
+		\end{enumerate}
+	\end{frame}
+
+
+	\begin{frame}[fragile]{Actividad integradora semanal (se sube al aula)}
+		Esta actividad es el punto de partida del TPI. Elegí un dataset de tu interés (puede ser de un área de economía, finanzas, demografía, comercio, etc.) y comenzá el reporte.
+
+		\begin{enumerate}
+			\item Cargá el dataset en R y guardá una versión limpia en \texttt{datos/procesados/}. El \texttt{.qmd} debe leer desde ahí.
+
+			\item Creá la sección de descripción del dataset: de dónde provienen los datos, qué variables contienen y qué período cubren. Usá código inline para reportar dimensiones clave.
+
+			\item Formulá al menos \textbf{tres preguntas} que puedas responder con los datos. Escribilas como encabezados de sección en el \texttt{.qmd}.
+
+			\item Para una de las tres preguntas, incluí un gráfico con caption y una tabla formateada con \rscript{`:pk:gt`}.
+
+			\item Activá tabla de contenidos y numeración de secciones. Asegurate de que el documento renderice sin errores.
+		\end{enumerate}
+	\end{frame}
+
+
+\end{document}
